@@ -1,34 +1,34 @@
-"use client";
-import {
-  Box,
-  Typography,
-  Button,
-  Select,
-  MenuItem,
-  InputLabel,
-  FormControl,
-} from "@mui/material";
-import { useState } from "react";
+/**
+ * @file page.tsx
+ * @description EventSelect component
+ * @author Isaac Lloyd
+ * @author Chase Evans
+ * @return {JSX.Element} EventSelect component
+ * 1. Collects all events from doradev database
+ * 2. Wraps client rendered eventSelectForm in server side function to retrieve events from database
+ * 3. Renders the eventSelectForm with the events retrieved from the database
+ */
+
+import { Box, Typography } from "@mui/material";
 import Heading from "@/components/Heading";
+import EventSelectForm from "@/components/EventSelectForm";
+import { prisma } from "@/lib/api/db";
 
-export default function EventSelect() {
-  // TEMPORARY: WILL BE REPLACED WITH CALL TO DB
-  const events = [
-    { id: "20092", name: "Where's Diego?" },
-    { id: "28387", name: "I'm the Map!" },
-    { id: "09313", name: "Swiper, No Swiping!!" },
-  ];
-
-  const [notSelected, setselected] = useState(true);
-  const handleChange = () => {
-    setselected(false);
-  };
+// Collect all events from doradev database
+export default async function EventSelect() {
+  const events = await prisma.event.findMany({
+    select: {
+      id: true,
+      name: true,
+    },
+  });
 
   return (
     <Box width="45rem" mx="auto" display="flex" flexDirection="column">
       <Box mt={5}>
         <Heading />
       </Box>
+
       <Typography
         mx="auto"
         variant="h6"
@@ -39,36 +39,8 @@ export default function EventSelect() {
       >
         Select an Event
       </Typography>
-      <FormControl required fullWidth>
-        <InputLabel id="selectEvent">Event</InputLabel>
-        <Select
-          defaultValue=""
-          labelId="selectEvent"
-          label="Event"
-          name="eventSelected"
-          onChange={handleChange}
-          sx={{ width: "100%" }}
-        >
-          {events.length !== 0 ? (
-            events.map((event) => (
-              <MenuItem key={event.id} value={event.id}>
-                <Typography fontSize={15}>{event.name}</Typography>
-              </MenuItem>
-            ))
-          ) : (
-            <MenuItem key={1} value={"noEvent"}>
-              <Typography fontSize={15}>No events to select</Typography>
-            </MenuItem>
-          )}
-        </Select>
-      </FormControl>
-      <Button
-        disabled={notSelected}
-        variant="contained"
-        sx={{ mt: 2, maxWidth: "fit-content", alignSelf: "end" }}
-      >
-        Select
-      </Button>
+
+      <EventSelectForm events={events} />
     </Box>
   );
 }
