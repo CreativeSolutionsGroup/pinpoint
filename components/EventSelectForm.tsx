@@ -16,15 +16,20 @@ import {
   MenuItem,
   InputLabel,
   FormControl,
+  SelectChangeEvent,
 } from "@mui/material";
 import { useState } from "react";
 
 import { Event } from "@prisma/client";
+import { useRouter } from "next/navigation";
 
 export default function EventSelectForm({ events }: { events: Event[] }) {
+  const router = useRouter();
   const [notSelected, setSelected] = useState(true);
-  const handleChange = () => {
+  const [eventId, setEventId] = useState("");
+  const handleChange = (e: SelectChangeEvent) => {
     setSelected(false);
+    setEventId(e.target.value);
   };
 
   return (
@@ -56,6 +61,7 @@ export default function EventSelectForm({ events }: { events: Event[] }) {
         disabled={notSelected}
         variant="contained"
         sx={{ mt: 2, maxWidth: "fit-content", alignSelf: "end" }}
+        onClick={() => router.push(`/event/${eventId}`)}
       >
         Select
       </Button>

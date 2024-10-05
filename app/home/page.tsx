@@ -13,6 +13,7 @@ import { Box, Typography } from "@mui/material";
 import Heading from "@/components/Heading";
 import EventSelectForm from "@/components/EventSelectForm";
 import { prisma } from "@/lib/api/db";
+import ErrorToast from "@/components/ErrorToast";
 
 // Collect all events from doradev database
 export default async function EventSelect() {
@@ -41,6 +42,7 @@ export default async function EventSelect() {
       </Typography>
 
       <EventSelectForm events={events} />
+      <ErrorToast />
     </Box>
   );
 }
