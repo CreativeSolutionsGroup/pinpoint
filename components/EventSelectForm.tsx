@@ -19,10 +19,7 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 
-export type Event = {
-  id: string;
-  name: string;
-};
+import { Event } from "@prisma/client";
 
 export default function EventSelectForm({ events }: { events: Event[] }) {
   const [notSelected, setSelected] = useState(true);
