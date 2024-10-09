@@ -1,3 +1,5 @@
+import ClientProvider from "@/components/ClientProvider";
+import { AppRouterCacheProvider } from "@mui/material-nextjs/v14-appRouter";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
@@ -28,7 +30,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <AppRouterCacheProvider>
+          <ClientProvider>{children}</ClientProvider>
+        </AppRouterCacheProvider>
       </body>
     </html>
   );
