@@ -16,6 +16,6 @@ export default async function EventMainPage({
   if (!event) {
     redirect("/home?error=Event not found");
   }
-
+  
   return <ClientEventFlow />;
 }
