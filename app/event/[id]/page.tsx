@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/api/db";
 import { redirect } from "next/navigation";
-import ClientEventFlow from "@components/ClientEventFlow";
+import EventFlow from "./EventFlow";
 
 export default async function EventMainPage({
   params,
@@ -16,6 +16,6 @@ export default async function EventMainPage({
   if (!event) {
     redirect("/home?error=Event not found");
   }
-  
-  return <ClientEventFlow />;
+
+  return <EventFlow event={event} />;
 }

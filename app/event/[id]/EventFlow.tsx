@@ -1,18 +1,18 @@
 "use client";
-
+import { CustomImageNode, CustomNode } from "@components/CustomImageNode";
+import IconNode from "@components/IconNode";
+import Legend from "@components/Legend";
 import {
-  ReactFlow,
+  applyNodeChanges,
   Controls,
   MiniMap,
-  useReactFlow,
+  NodeChange,
+  ReactFlow,
   ReactFlowProvider,
-  useNodesState,
-	Panel,
+  useReactFlow,
 } from "@xyflow/react";
-import Legend from "@/components/Legend";
-import IconNode from "@components/IconNode";
 import "@xyflow/react/dist/style.css";
-import { useState, useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 let nodeId = 0;
 const getId = () => `node_${nodeId++}`;
@@ -20,14 +20,32 @@ const getId = () => `node_${nodeId++}`;
 // Define node types
 const nodeTypes = {
   iconNode: IconNode,
+  customImageNode: CustomImageNode,
 };
 
+const initialNodes: CustomNode[] = [
+  {
+    id: "map",
+    type: "customImageNode",
+    data: { label: "map" },
+    position: { x: 0, y: 0, z: -1 },
+    draggable: true,
+  },
+];
+
 function Flow({ event }) {
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [nodes, setNodes] = useState(initialNodes);
+  // const [nodes, setNodes] = useNodesState([]);
 
   const { screenToFlowPosition } = useReactFlow();
 
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  const onNodesChange = useCallback(
+    (changes: NodeChange[]) =>
+      setNodes((nds) => applyNodeChanges(changes, nds) as CustomNode[]),
+    [setNodes]
+  );
 
   // Update mouse position
   useEffect(() => {
@@ -110,7 +128,7 @@ function Flow({ event }) {
         return;
       }
 
-      const { type, iconName, label } = JSON.parse(jsonData);
+      const { iconName, label } = JSON.parse(jsonData);
 
       const position = screenToFlowPosition({
         x: event.clientX,
@@ -127,6 +145,8 @@ function Flow({ event }) {
         },
         draggable: true,
         deletable: true,
+        parentId: "map",
+        extent: "parent",
       };
 
       setNodes((nds) => [...nds, newNode]);
@@ -139,10 +159,12 @@ function Flow({ event }) {
       <ReactFlow
         nodes={nodes}
         onNodesChange={onNodesChange}
+        zoomOnScroll={false}
+        panOnScroll={false}
         onDrop={onDrop}
         onDragOver={onDragOver}
         nodeTypes={nodeTypes}
-        fitView
+        fitView={true}
         className="touch-none"
       >
         <Controls position="bottom-right" />
@@ -152,6 +174,46 @@ function Flow({ event }) {
     </div>
   );
 }
+
+// export default function ClientEventFlow() {
+//   //const [nodes, setNodes] = useState(initialNodes);
+
+//   // const onNodesChange = useCallback(
+//   //   (changes: NodeChange[]) =>
+//   //     setNodes((nds) => applyNodeChanges(changes, nds) as CustomNode[]),
+//   //   [setNodes]
+//   // );
+
+//   // const nodeTypes = useMemo(
+//   //   () => ({
+//   //     customImageNode: CustomImageNode,
+//   //   }),
+//   //   []
+//   // );
+
+//   return (
+//     <div
+//       style={{
+//         width: "100vw",
+//         height: "100vh",
+//       }}
+//     >
+//       <ReactFlow
+//         nodeTypes={nodeTypes}
+//         nodes={nodes}
+//         onNodesChange={onNodesChange}
+//         zoomOnScroll={false}
+//         panOnScroll={false}
+//         panOnDrag={true}
+//         fitView={true}
+//       >
+//         {/* <Controls position="bottom-right" />
+//         <MiniMap position="bottom-left" pannable zoomable />
+//         <Legend /> */}
+//       </ReactFlow>
+//     </div>
+//   );
+// }
 
 export default function EventFlow({ event }) {
   return (
