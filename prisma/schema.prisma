@@ -8,8 +8,9 @@ datasource db {
 }
 
 model Event {
-  id   String @id @default(cuid())
-  name String
+  id         String @id @default(cuid())
+  name       String
+  liveUpdate String?
 }
 
 model Account {
