@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { Panel } from "@xyflow/react";
 import {
   Accordion,
@@ -26,14 +27,15 @@ import {
   Theater,
   Fence,
   Armchair,
+  LucideIcon,
 } from "lucide-react";
 
-const IconItem = ({ icon: Icon, label }) => {
-  const onDragStart = (event) => {
+const IconItem = ({ icon, label }: { icon: LucideIcon; label: string }) => {
+  const onDragStart = (event: React.DragEvent<HTMLDivElement>) => {
     const data = {
       type: "iconNode",
-      iconName: Icon.displayName, // Use the display name of the Lucide icon
-      label: label,
+      iconName: icon.displayName, // Use the display name of the Lucide icon
+      label,
     };
     event.dataTransfer.setData("application/reactflow", JSON.stringify(data));
     event.dataTransfer.effectAllowed = "move";
@@ -45,7 +47,7 @@ const IconItem = ({ icon: Icon, label }) => {
       draggable
       onDragStart={onDragStart}
     >
-      <Icon className="w-6 h-6 mb-1 text-gray-700" />
+      {React.createElement(icon, { className: "w-6 h-6 mb-1 text-gray-700" })}
       <span className="text-xs text-center text-gray-600">{label}</span>
     </div>
   );

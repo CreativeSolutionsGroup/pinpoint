@@ -7,12 +7,12 @@ import {
   useReactFlow,
   ReactFlowProvider,
   useNodesState,
-	Panel,
 } from "@xyflow/react";
 import Legend from "@/components/Legend";
 import IconNode from "@components/IconNode";
 import "@xyflow/react/dist/style.css";
 import { useState, useCallback, useEffect } from "react";
+import { Event } from "@prisma/client";
 
 let nodeId = 0;
 const getId = () => `node_${nodeId++}`;
@@ -22,8 +22,23 @@ const nodeTypes = {
   iconNode: IconNode,
 };
 
-function Flow({ event }) {
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+type Node = {
+  id: string;
+  type: string;
+  position: { x: number; y: number };
+  data: {
+    label: string;
+    iconName: string;
+  };
+  draggable: boolean;
+  deletable: boolean;
+  selected: boolean;
+};
+
+function Flow({ event }: { event: Event }) {
+  console.log(event);
+
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
 
   const { screenToFlowPosition } = useReactFlow();
 
@@ -31,7 +46,7 @@ function Flow({ event }) {
 
   // Update mouse position
   useEffect(() => {
-    const handleMouseMove = (event) => {
+    const handleMouseMove = (event: MouseEvent) => {
       setMousePosition({ x: event.clientX, y: event.clientY });
     };
 
@@ -41,17 +56,14 @@ function Flow({ event }) {
 
   // Handle keyboard shortcuts
   useEffect(() => {
-    const handleKeyDown = async (event) => {
+    const handleKeyDown = async (event: KeyboardEvent) => {
       // Copy
       if (event.key === "c" && (event.ctrlKey || event.metaKey)) {
         const selectedNodes = nodes.filter((node) => node.selected);
         if (selectedNodes.length === 0) return;
 
         try {
-          const nodesToCopy = selectedNodes.map(
-            ({ id, selected, ...rest }) => rest
-          );
-          await navigator.clipboard.writeText(JSON.stringify(nodesToCopy));
+          await navigator.clipboard.writeText(JSON.stringify(selectedNodes));
         } catch (err) {
           console.error("Failed to copy:", err);
         }
@@ -78,6 +90,7 @@ function Flow({ event }) {
           const newNodes = pastedNodes.map((node) => ({
             ...node,
             id: getId(),
+            selected: false,
             position: {
               x: node.position.x + xOffset,
               y: node.position.y + yOffset,
@@ -95,13 +108,13 @@ function Flow({ event }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [nodes, mousePosition, screenToFlowPosition, setNodes]);
 
-  const onDragOver = useCallback((event) => {
+  const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
   }, []);
 
   const onDrop = useCallback(
-    (event) => {
+    (event: React.DragEvent<HTMLDivElement>) => {
       event.preventDefault();
 
       const jsonData = event.dataTransfer.getData("application/reactflow");
@@ -117,9 +130,9 @@ function Flow({ event }) {
         y: event.clientY,
       });
 
-      const newNode = {
+      const newNode: Node = {
         id: getId(),
-        type: "iconNode",
+        type,
         position,
         data: {
           label,
@@ -127,11 +140,12 @@ function Flow({ event }) {
         },
         draggable: true,
         deletable: true,
+        selected: false,
       };
 
       setNodes((nds) => [...nds, newNode]);
     },
-    [screenToFlowPosition]
+    [screenToFlowPosition, setNodes]
   );
 
   return (
@@ -142,7 +156,6 @@ function Flow({ event }) {
         onDrop={onDrop}
         onDragOver={onDragOver}
         nodeTypes={nodeTypes}
-        fitView
         className="touch-none"
       >
         <Controls position="bottom-right" />
@@ -153,7 +166,7 @@ function Flow({ event }) {
   );
 }
 
-export default function EventFlow({ event }) {
+export default function EventFlow({ event }: { event: Event }) {
   return (
     <ReactFlowProvider>
       <Flow event={event} />
