@@ -23,6 +23,7 @@ const nodeTypes = {
   customImageNode: CustomImageNode,
 };
 
+
 const initialNodes: CustomNode[] = [
   {
     id: "map",
@@ -30,14 +31,16 @@ const initialNodes: CustomNode[] = [
     data: { label: "map" },
     position: { x: 0, y: 0, z: -1 },
     draggable: true,
+    deletable: false,
   },
 ];
 
+//const defaultViewport = { x: 500, y: 500, zoom: 1.5 };
+
 function Flow({ event }) {
   const [nodes, setNodes] = useState(initialNodes);
-  // const [nodes, setNodes] = useNodesState([]);
 
-  const { screenToFlowPosition } = useReactFlow();
+  const { screenToFlowPosition, fitView } = useReactFlow();
 
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
@@ -46,6 +49,20 @@ function Flow({ event }) {
       setNodes((nds) => applyNodeChanges(changes, nds) as CustomNode[]),
     [setNodes]
   );
+
+  // Call fitView after nodes are rendered
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fitView({
+        padding: 0.1,
+        duration: 100,
+        includeHiddenNodes: false,
+      });
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [fitView, nodes]);
+
 
   // Update mouse position
   useEffect(() => {
@@ -152,8 +169,8 @@ function Flow({ event }) {
       setNodes((nds) => [...nds, newNode]);
     },
     [screenToFlowPosition]
-  );
-
+  );  
+  
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
       <ReactFlow
@@ -164,8 +181,11 @@ function Flow({ event }) {
         onDrop={onDrop}
         onDragOver={onDragOver}
         nodeTypes={nodeTypes}
-        fitView={true}
         className="touch-none"
+        fitViewOptions={{ 
+          padding: 0.5,
+          includeHiddenNodes: false 
+        }}
       >
         <Controls position="bottom-right" />
         <MiniMap position="bottom-left" pannable zoomable />
@@ -175,50 +195,10 @@ function Flow({ event }) {
   );
 }
 
-// export default function ClientEventFlow() {
-//   //const [nodes, setNodes] = useState(initialNodes);
-
-//   // const onNodesChange = useCallback(
-//   //   (changes: NodeChange[]) =>
-//   //     setNodes((nds) => applyNodeChanges(changes, nds) as CustomNode[]),
-//   //   [setNodes]
-//   // );
-
-//   // const nodeTypes = useMemo(
-//   //   () => ({
-//   //     customImageNode: CustomImageNode,
-//   //   }),
-//   //   []
-//   // );
-
-//   return (
-//     <div
-//       style={{
-//         width: "100vw",
-//         height: "100vh",
-//       }}
-//     >
-//       <ReactFlow
-//         nodeTypes={nodeTypes}
-//         nodes={nodes}
-//         onNodesChange={onNodesChange}
-//         zoomOnScroll={false}
-//         panOnScroll={false}
-//         panOnDrag={true}
-//         fitView={true}
-//       >
-//         {/* <Controls position="bottom-right" />
-//         <MiniMap position="bottom-left" pannable zoomable />
-//         <Legend /> */}
-//       </ReactFlow>
-//     </div>
-//   );
-// }
-
 export default function EventFlow({ event }) {
   return (
     <ReactFlowProvider>
-      <Flow event={event} />
+      <Flow event={event}/>
     </ReactFlowProvider>
   );
 }

@@ -9,6 +9,7 @@ export type CustomNode = {
   data: { label: string };
   position: { x: number; y: number; z: number };
   draggable: boolean;
+  deletable: boolean;
   parentId?: string;
   extent?: "parent";
 };
