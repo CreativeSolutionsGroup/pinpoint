@@ -23,14 +23,13 @@ const nodeTypes = {
   customImageNode: CustomImageNode,
 };
 
-
 const initialNodes: CustomNode[] = [
   {
     id: "map",
     type: "customImageNode",
     data: { label: "map" },
     position: { x: 0, y: 0, z: -1 },
-    draggable: true,
+    draggable: false,
     deletable: false,
   },
 ];
@@ -49,20 +48,6 @@ function Flow({ event }) {
       setNodes((nds) => applyNodeChanges(changes, nds) as CustomNode[]),
     [setNodes]
   );
-
-  // Call fitView after nodes are rendered
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      fitView({
-        padding: 0.1,
-        duration: 100,
-        includeHiddenNodes: false,
-      });
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, [fitView, nodes]);
-
 
   // Update mouse position
   useEffect(() => {
@@ -169,8 +154,8 @@ function Flow({ event }) {
       setNodes((nds) => [...nds, newNode]);
     },
     [screenToFlowPosition]
-  );  
-  
+  );
+
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
       <ReactFlow
@@ -182,10 +167,6 @@ function Flow({ event }) {
         onDragOver={onDragOver}
         nodeTypes={nodeTypes}
         className="touch-none"
-        fitViewOptions={{ 
-          padding: 0.5,
-          includeHiddenNodes: false 
-        }}
       >
         <Controls position="bottom-right" />
         <MiniMap position="bottom-left" pannable zoomable />
@@ -198,7 +179,7 @@ function Flow({ event }) {
 export default function EventFlow({ event }) {
   return (
     <ReactFlowProvider>
-      <Flow event={event}/>
+      <Flow event={event} />
     </ReactFlowProvider>
   );
 }
