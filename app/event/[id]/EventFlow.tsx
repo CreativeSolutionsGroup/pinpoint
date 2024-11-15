@@ -1,18 +1,18 @@
 "use client";
-
+import { CustomImageNode, CustomNode } from "@components/CustomImageNode";
+import IconNode from "@components/IconNode";
+import Legend from "@components/Legend";
 import {
-  ReactFlow,
+  applyNodeChanges,
   Controls,
   MiniMap,
-  useReactFlow,
+  NodeChange,
+  ReactFlow,
   ReactFlowProvider,
-  useNodesState,
-	Panel,
+  useReactFlow,
 } from "@xyflow/react";
-import Legend from "@/components/Legend";
-import IconNode from "@components/IconNode";
 import "@xyflow/react/dist/style.css";
-import { useState, useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 let nodeId = 0;
 const getId = () => `node_${nodeId++}`;
@@ -20,14 +20,34 @@ const getId = () => `node_${nodeId++}`;
 // Define node types
 const nodeTypes = {
   iconNode: IconNode,
+  customImageNode: CustomImageNode,
 };
 
-function Flow({ event }) {
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+const initialNodes: CustomNode[] = [
+  {
+    id: "map",
+    type: "customImageNode",
+    data: { label: "map" },
+    position: { x: 0, y: 0, z: -1 },
+    draggable: false,
+    deletable: false,
+  },
+];
 
-  const { screenToFlowPosition } = useReactFlow();
+//const defaultViewport = { x: 500, y: 500, zoom: 1.5 };
+
+function Flow({ event }) {
+  const [nodes, setNodes] = useState(initialNodes);
+
+  const { screenToFlowPosition, fitView } = useReactFlow();
 
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  const onNodesChange = useCallback(
+    (changes: NodeChange[]) =>
+      setNodes((nds) => applyNodeChanges(changes, nds) as CustomNode[]),
+    [setNodes]
+  );
 
   // Update mouse position
   useEffect(() => {
@@ -110,7 +130,7 @@ function Flow({ event }) {
         return;
       }
 
-      const { type, iconName, label } = JSON.parse(jsonData);
+      const { iconName, label } = JSON.parse(jsonData);
 
       const position = screenToFlowPosition({
         x: event.clientX,
@@ -127,6 +147,8 @@ function Flow({ event }) {
         },
         draggable: true,
         deletable: true,
+        parentId: "map",
+        extent: "parent",
       };
 
       setNodes((nds) => [...nds, newNode]);
@@ -139,10 +161,11 @@ function Flow({ event }) {
       <ReactFlow
         nodes={nodes}
         onNodesChange={onNodesChange}
+        zoomOnScroll={false}
+        panOnScroll={false}
         onDrop={onDrop}
         onDragOver={onDragOver}
         nodeTypes={nodeTypes}
-        fitView
         className="touch-none"
       >
         <Controls position="bottom-right" />

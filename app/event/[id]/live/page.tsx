@@ -14,8 +14,7 @@ export default async function EventLivePage({
 
   return (
     <div className="flex flex-col p-4">
-      <LiveUpdateText></LiveUpdateText>
-      {eventData.liveUpdate}
+      <LiveUpdateText />
     </div>
   );
 }
