@@ -1,18 +1,20 @@
 "use client";
-
+import { CustomImageNode } from "@components/CustomImageNode";
+import IconNode from "@components/IconNode";
+import Legend from "@components/Legend";
 import {
-  ReactFlow,
+  applyNodeChanges,
   Controls,
   MiniMap,
-  useReactFlow,
+  NodeChange,
+  ReactFlow,
   ReactFlowProvider,
-  useNodesState,
+  useReactFlow,
 } from "@xyflow/react";
-import Legend from "@/components/Legend";
-import IconNode from "@components/IconNode";
 import "@xyflow/react/dist/style.css";
-import { useState, useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Event } from "@prisma/client";
+import { CustomNode } from "@/types/CustomNode";
 
 let nodeId = 0;
 const getId = () => `node_${nodeId++}`;
@@ -20,29 +22,32 @@ const getId = () => `node_${nodeId++}`;
 // Define node types
 const nodeTypes = {
   iconNode: IconNode,
+  customImageNode: CustomImageNode,
 };
 
-type Node = {
-  id: string;
-  type: string;
-  position: { x: number; y: number };
-  data: {
-    label: string;
-    iconName: string;
-  };
-  draggable: boolean;
-  deletable: boolean;
-  selected: boolean;
+const initialNode: CustomNode = {
+  id: "map",
+  type: "customImageNode",
+  data: { label: "map" },
+  position: { x: 0, y: 0, z: -1 },
+  draggable: false,
+  deletable: false,
 };
 
 function Flow({ event }: { event: Event }) {
   console.log(event);
 
-  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+  const [nodes, setNodes] = useState<CustomNode[]>([initialNode]);
 
   const { screenToFlowPosition } = useReactFlow();
 
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  const onNodesChange = useCallback(
+    (changes: NodeChange[]) =>
+      setNodes((nds) => applyNodeChanges(changes, nds) as CustomNode[]),
+    [setNodes]
+  );
 
   // Update mouse position
   useEffect(() => {
@@ -130,7 +135,7 @@ function Flow({ event }: { event: Event }) {
         y: event.clientY,
       });
 
-      const newNode: Node = {
+      const newNode: CustomNode = {
         id: getId(),
         type,
         position,
@@ -141,6 +146,8 @@ function Flow({ event }: { event: Event }) {
         draggable: true,
         deletable: true,
         selected: false,
+        parentId: "map",
+        extent: "parent",
       };
 
       setNodes((nds) => [...nds, newNode]);
@@ -153,6 +160,8 @@ function Flow({ event }: { event: Event }) {
       <ReactFlow
         nodes={nodes}
         onNodesChange={onNodesChange}
+        zoomOnScroll={false}
+        panOnScroll={false}
         onDrop={onDrop}
         onDragOver={onDragOver}
         nodeTypes={nodeTypes}

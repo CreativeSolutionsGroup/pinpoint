@@ -30,11 +30,11 @@ import {
   LucideIcon,
 } from "lucide-react";
 
-const IconItem = ({ icon, label }: { icon: LucideIcon; label: string }) => {
+const IconItem = ({ icon: Icon, label }: { icon: LucideIcon; label: string }) => {
   const onDragStart = (event: React.DragEvent<HTMLDivElement>) => {
     const data = {
       type: "iconNode",
-      iconName: icon.displayName, // Use the display name of the Lucide icon
+      iconName: Icon.displayName, // Use the display name of the Lucide icon
       label,
     };
     event.dataTransfer.setData("application/reactflow", JSON.stringify(data));
@@ -47,7 +47,7 @@ const IconItem = ({ icon, label }: { icon: LucideIcon; label: string }) => {
       draggable
       onDragStart={onDragStart}
     >
-      {React.createElement(icon, { className: "w-6 h-6 mb-1 text-gray-700" })}
+      <Icon className="w-6 h-6 mb-1 text-gray-700" />
       <span className="text-xs text-center text-gray-600">{label}</span>
     </div>
   );

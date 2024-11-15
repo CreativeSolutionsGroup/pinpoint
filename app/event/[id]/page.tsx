@@ -1,7 +1,6 @@
-// EventMainPage.tsx
 import { prisma } from "@/lib/api/db";
 import { redirect } from "next/navigation";
-import EventFlow from "../../../components/EventFlow";  // Adjust the import path as needed
+import EventFlow from "@/components/EventFlow";
 
 export default async function EventMainPage({
   params,
