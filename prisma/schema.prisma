@@ -8,8 +8,16 @@ datasource db {
 }
 
 model Event {
-  id   String @id @default(cuid())
-  name String
+  id        String     @id @default(cuid())
+  name      String
+  locations Location[]
+}
+
+model Location {
+  id       String  @id @default(cuid())
+  imageURL String
+  name     String
+  events   Event[]
 }
 
 model Account {

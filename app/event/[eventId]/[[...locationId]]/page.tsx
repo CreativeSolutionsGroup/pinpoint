@@ -2,15 +2,17 @@ import { prisma } from "@/lib/api/db";
 import { redirect } from "next/navigation";
 import EventFlow from "./EventFlow";
 
+
 export default async function EventMainPage({
   params,
 }: {
-  params: { id: string };
+  params: { eventId: string, locationId?: string };
 }) {
   const event = await prisma.event.findFirst({
     where: {
-      id: params.id,
+      id: params.eventId,
     },
+    include: { locations: true }
   });
 
   if (!event) {

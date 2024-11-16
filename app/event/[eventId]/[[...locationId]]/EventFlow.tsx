@@ -2,10 +2,11 @@
 import { CustomImageNode, CustomNode } from "@components/CustomImageNode";
 import IconNode from "@components/IconNode";
 import Legend from "@components/Legend";
+import EventMapSelect from "@components/EventMapSelect"
+
 import {
   applyNodeChanges,
   Controls,
-  MiniMap,
   NodeChange,
   ReactFlow,
   ReactFlowProvider,
@@ -23,23 +24,24 @@ const nodeTypes = {
   customImageNode: CustomImageNode,
 };
 
+
+
 const initialNodes: CustomNode[] = [
   {
     id: "map",
     type: "customImageNode",
-    data: { label: "map" },
+    data: { label: "map" , imageURL: "/Campus.png"},
     position: { x: 0, y: 0, z: -1 },
     draggable: false,
     deletable: false,
   },
 ];
 
-//const defaultViewport = { x: 500, y: 500, zoom: 1.5 };
 
 function Flow({ event }) {
   const [nodes, setNodes] = useState(initialNodes);
 
-  const { screenToFlowPosition, fitView } = useReactFlow();
+  const { screenToFlowPosition } = useReactFlow();
 
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
@@ -169,8 +171,8 @@ function Flow({ event }) {
         className="touch-none"
       >
         <Controls position="bottom-right" />
-        <MiniMap position="bottom-left" pannable zoomable />
         <Legend />
+        <EventMapSelect eventId={event.id} locations={event.locations} />
       </ReactFlow>
     </div>
   );

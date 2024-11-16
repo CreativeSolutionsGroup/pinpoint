@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 export type CustomNode = {
   id: string;
   type?: string;
-  data: { label: string };
+  data: { label: string,  imageURL : string};
   position: { x: number; y: number; z: number };
   draggable: boolean;
   deletable: boolean;
@@ -14,9 +14,8 @@ export type CustomNode = {
   extent?: "parent";
 };
 
-const imageURL = "/Campus.png";
 
-export const CustomImageNode = () => {
+export const CustomImageNode = ({ data }: CustomNode) => {
   const [dimensions, setDimensions] = useState({ width: 100, height: 100 });
 
   useEffect(() => {
@@ -41,7 +40,7 @@ export const CustomImageNode = () => {
       });
     };
 
-    getImageDimensions(imageURL)
+    getImageDimensions(data.imageURL)
       .then((dims) => {
         setDimensions(dims);
       })
@@ -59,7 +58,7 @@ export const CustomImageNode = () => {
       }}
     >
       <Image
-        src={imageURL}
+        src={data.imageURL}
         alt="Map Image"
         fill
         style={{
