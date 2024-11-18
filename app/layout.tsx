@@ -3,6 +3,7 @@ import { AppRouterCacheProvider } from "@mui/material-nextjs/v14-appRouter";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import AblyClientProvider from "@/components/AblyProvider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -30,9 +31,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AppRouterCacheProvider>
-          <ClientProvider>{children}</ClientProvider>
-        </AppRouterCacheProvider>
+        <AblyClientProvider>
+          <AppRouterCacheProvider>
+            <ClientProvider>{children}</ClientProvider>
+          </AppRouterCacheProvider>
+        </AblyClientProvider>
       </body>
     </html>
   );
