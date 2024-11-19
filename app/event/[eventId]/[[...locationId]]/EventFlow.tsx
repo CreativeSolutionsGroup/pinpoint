@@ -3,6 +3,7 @@ import { CustomImageNode, CustomNode } from "@components/CustomImageNode";
 import IconNode from "@components/IconNode";
 import Legend from "@components/Legend";
 import EventMapSelect from "@components/EventMapSelect"
+import { Event } from "@prisma/client";
 
 import {
   applyNodeChanges,
@@ -26,20 +27,25 @@ const nodeTypes = {
 
 
 
-const initialNodes: CustomNode[] = [
-  {
-    id: "map",
-    type: "customImageNode",
-    data: { label: "map" , imageURL: "/Campus.png"},
-    position: { x: 0, y: 0, z: -1 },
-    draggable: false,
-    deletable: false,
-  },
-];
+function Flow({ event, location }) {
+  const [nodes, setNodes] = useState<CustomNode[]>();
 
+  useEffect(() => {
+    const imageURL = `/maps/${event.locations.find((loc) => loc.id == location)?.imageURL || event.locations[0].imageURL}`;
 
-function Flow({ event }) {
-  const [nodes, setNodes] = useState(initialNodes);
+    const initialNodes: CustomNode[] = [
+      {
+        id: "map",
+        type: "customImageNode",
+        data: { label: "map" , imageURL: imageURL},
+        position: { x: 0, y: 0, z: -1 },
+        draggable: false,
+        deletable: false,
+      },
+    ];
+
+    setNodes(initialNodes);
+  }, [location]);
 
   const { screenToFlowPosition } = useReactFlow();
 
@@ -178,10 +184,10 @@ function Flow({ event }) {
   );
 }
 
-export default function EventFlow({ event }) {
+export default function EventFlow({ event, location }) {
   return (
     <ReactFlowProvider>
-      <Flow event={event} />
+      <Flow event={event} location={location} />
     </ReactFlowProvider>
   );
 }
