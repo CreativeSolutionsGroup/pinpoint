@@ -1,18 +1,27 @@
-"use client"
+"use client";
 import { Panel } from "@xyflow/react";
 import { Button } from "@components/ui/button";
-import { useRouter } from 'next/navigation'
+import { useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-export default function EventMapsSelect({ eventId, locations }) {
-  const router = useRouter()
+interface Location {
+  id: string;
+  name: string;
+}
+
+interface EventMapsSelectProps {
+  eventId: string;
+  locations: Location[];
+}
+
+export default function EventMapsSelect({ eventId, locations }: EventMapsSelectProps) {
+  const router = useRouter();
 
   return (
     <Panel
@@ -21,12 +30,17 @@ export default function EventMapsSelect({ eventId, locations }) {
     >
       <Dialog>
         <DialogTrigger>Maps</DialogTrigger>
-        <DialogContent>
+        <DialogContent className="max-w-64">
           <DialogHeader>
             <DialogTitle>Choose a map location</DialogTitle>
-            <DialogDescription>
-              {locations.map((location) => <Button key={location.id} onClick={() => router.push(`/event/${eventId}/${location.id}`)}>{location.name}</Button>)}
-            </DialogDescription>
+            {locations.map((location) => (
+              <Button
+                key={location.id}
+                onClick={() => router.push(`/event/${eventId}/${location.id}`)}
+              >
+                {location.name}
+              </Button>
+            ))}
           </DialogHeader>
         </DialogContent>
       </Dialog>

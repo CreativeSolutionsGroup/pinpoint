@@ -3,7 +3,6 @@ import { CustomImageNode, CustomNode } from "@components/CustomImageNode";
 import IconNode from "@components/IconNode";
 import Legend from "@components/Legend";
 import EventMapSelect from "@components/EventMapSelect"
-import { Event } from "@prisma/client";
 
 import {
   applyNodeChanges,
@@ -24,8 +23,6 @@ const nodeTypes = {
   iconNode: IconNode,
   customImageNode: CustomImageNode,
 };
-
-
 
 function Flow({ event, location }) {
   const [nodes, setNodes] = useState<CustomNode[]>();
