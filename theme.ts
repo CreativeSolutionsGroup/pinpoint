@@ -1,22 +1,22 @@
 import { createTheme, ThemeOptions } from "@mui/material/styles";
 
 /*
-Potential Color Choices:
-Earth Yellow:   #D19E4D
-Sea Green:      #558B62 **
-  - Dark Sea Green: #3E6044
-Taupe:          #423C38 **
-Midnight Green: #084A5E
+Pinpoint Logo Colors:
+https://color.adobe.com/pinpoint-logo-1-color-theme-0c5e751b-db0a-4747-b59f-ab0a65b2f47c/
+- Light green:  #04D99D
+- Light teal:   #04BFBF
+- Sea blue:     #0487D9
+- Red:          #F21D2F
 */
 
 export const themeOptions: ThemeOptions = {
   palette: {
     mode: 'light',
     primary: {
-      main: '#3e6044',
+      main: '#0487D9',
     },
     secondary: {
-      main: '#d19e4d',
+      main: '#04D99D',
     },
   },
   typography: { },
@@ -24,7 +24,7 @@ export const themeOptions: ThemeOptions = {
     MuiInputLabel: {
       styleOverrides: {
         root: {
-          color: "#084A5E", // Midnight Green
+          color: "#0487D9", // Midnight Green
           fontSize: "1rem",
           fontWeight: 500,
         },
