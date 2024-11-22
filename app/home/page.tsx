@@ -14,7 +14,6 @@ import Heading from "@/components/Heading";
 import EventSelectForm from "@/components/EventSelectForm";
 import { prisma } from "@/lib/api/db";
 import ErrorToast from "@/components/ErrorToast";
-import {themeOptions} from "@/theme";
 
 // Collect all events from doradev database
 export default async function EventSelect() {
@@ -37,7 +36,7 @@ export default async function EventSelect() {
         align="center"
         mt={0.5}
         mb={1}
-        color={themeOptions?.palette?.primary?.main}
+        color="primary.main"
       >
         Select an Event
       </Typography>

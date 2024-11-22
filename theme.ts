@@ -11,20 +11,20 @@ https://color.adobe.com/pinpoint-logo-1-color-theme-0c5e751b-db0a-4747-b59f-ab0a
 
 export const themeOptions: ThemeOptions = {
   palette: {
-    mode: 'light',
+    mode: "light",
     primary: {
-      main: '#0487D9',
+      main: "#0487D9",
     },
     secondary: {
-      main: '#04D99D',
+      main: "#04D99D",
     },
   },
-  typography: { },
+  typography: {},
   components: {
     MuiInputLabel: {
       styleOverrides: {
         root: {
-          color: "#0487D9", // Midnight Green
+          color: "#0487D9", // Sea blue
           fontSize: "1rem",
           fontWeight: 500,
         },
