@@ -7,9 +7,7 @@ export default function IconNode({ data }) {
   // Get the icon component from the Lucide icons
   const IconComponent = Icons[data.iconName];
 
-  return (
-    <IconComponent className="w-6 h-6 text-gray-700" />
-  );
+  return <IconComponent className="w-6 h-6 text-white" />;
   
   /* return (
     <div className="bg-white border-2 border-gray-200 rounded-lg p-2 shadow-sm">

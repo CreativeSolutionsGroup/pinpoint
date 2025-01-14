@@ -12,7 +12,7 @@ export default function Heading() {
     >
       <Image
         fill
-        src="/dora-the-explorer.png"
+        src="/pinpoint-logo-color.png"
         alt="Project Dora"
         style={{ objectFit: "contain" }}
       />

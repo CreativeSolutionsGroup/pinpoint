@@ -1,18 +1,20 @@
 "use client";
-
+import { CustomImageNode } from "@components/CustomImageNode";
+import IconNode from "@components/IconNode";
+import Legend from "@components/Legend";
 import {
-  ReactFlow,
+  applyNodeChanges,
   Controls,
   MiniMap,
-  useReactFlow,
+  NodeChange,
+  ReactFlow,
   ReactFlowProvider,
-  useNodesState,
+  useReactFlow,
 } from "@xyflow/react";
-import Legend from "@/components/Legend";
-import IconNode from "@components/IconNode";
-//import TrashDropZone from "@/components/TrashDropZone";
 import "@xyflow/react/dist/style.css";
-import { useState, useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { Event } from "@prisma/client";
+import { CustomNode } from "@/types/CustomNode";
 
 let nodeId = 0;
 const getId = () => `node_${nodeId++}`;
@@ -20,18 +22,36 @@ const getId = () => `node_${nodeId++}`;
 // Define node types
 const nodeTypes = {
   iconNode: IconNode,
+  customImageNode: CustomImageNode,
 };
 
-function Flow({ event }) {
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+const initialNode: CustomNode = {
+  id: "map",
+  type: "customImageNode",
+  data: { label: "map" },
+  position: { x: 0, y: 0, z: -1 },
+  draggable: false,
+  deletable: false,
+};
 
-  const { screenToFlowPosition, deleteElements } = useReactFlow();
+function Flow({ event }: { event: Event }) {
+  console.log(event);
+
+  const [nodes, setNodes] = useState<CustomNode[]>([initialNode]);
+
+  const { screenToFlowPosition } = useReactFlow();
 
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
+  const onNodesChange = useCallback(
+    (changes: NodeChange[]) =>
+      setNodes((nds) => applyNodeChanges(changes, nds) as CustomNode[]),
+    [setNodes]
+  );
+
   // Update mouse position
   useEffect(() => {
-    const handleMouseMove = (event) => {
+    const handleMouseMove = (event: MouseEvent) => {
       setMousePosition({ x: event.clientX, y: event.clientY });
     };
 
@@ -41,17 +61,14 @@ function Flow({ event }) {
 
   // Handle keyboard shortcuts
   useEffect(() => {
-    const handleKeyDown = async (event) => {
+    const handleKeyDown = async (event: KeyboardEvent) => {
       // Copy
       if (event.key === "c" && (event.ctrlKey || event.metaKey)) {
         const selectedNodes = nodes.filter((node) => node.selected);
         if (selectedNodes.length === 0) return;
 
         try {
-          const nodesToCopy = selectedNodes.map(
-            ({ id, selected, ...rest }) => rest
-          );
-          await navigator.clipboard.writeText(JSON.stringify(nodesToCopy));
+          await navigator.clipboard.writeText(JSON.stringify(selectedNodes));
         } catch (err) {
           console.error("Failed to copy:", err);
         }
@@ -78,6 +95,7 @@ function Flow({ event }) {
           const newNodes = pastedNodes.map((node) => ({
             ...node,
             id: getId(),
+            selected: false,
             position: {
               x: node.position.x + xOffset,
               y: node.position.y + yOffset,
@@ -95,19 +113,13 @@ function Flow({ event }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [nodes, mousePosition, screenToFlowPosition, setNodes]);
 
-  const onDragOver = useCallback((event) => {
+  const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
   }, []);
 
-  //Trash can component code (delete later probably)
-  const handleDelete = useCallback((nodeId: string) => {
-    deleteElements({ nodes: [{ id: nodeId }] });
-    //setNodes((nodes) => nodes.filter(node => node.id !== nodeId));
-  }, [deleteElements]);
-  
   const onDrop = useCallback(
-    (event) => {
+    (event: React.DragEvent<HTMLDivElement>) => {
       event.preventDefault();
 
       const jsonData = event.dataTransfer.getData("application/reactflow");
@@ -123,21 +135,25 @@ function Flow({ event }) {
         y: event.clientY,
       });
 
-      const newNode = {
+      const newNode: CustomNode = {
         id: getId(),
-        type: "iconNode",
+        type,
         position,
         data: {
           label,
           iconName,
+          color: "gray",
         },
         draggable: true,
         deletable: true,
+        selected: false,
+        parentId: "map",
+        extent: "parent"
       };
 
       setNodes((nds) => [...nds, newNode]);
     },
-    [screenToFlowPosition]
+    [screenToFlowPosition, setNodes]
   );
 
   return (
@@ -145,15 +161,14 @@ function Flow({ event }) {
       <ReactFlow
         nodes={nodes}
         onNodesChange={onNodesChange}
+        zoomOnScroll={false}
+        panOnScroll={false}
         onDrop={onDrop}
         onDragOver={onDragOver}
         nodeTypes={nodeTypes}
-        fitView
-        fitView
-        onNodeDoubleClick={(event, node) => handleDelete(node.id)}
+        className="touch-none"
       >
         <Controls position="bottom-right" />
-        {/*<TrashDropZone />*/}
         <MiniMap position="bottom-left" pannable zoomable />
         <Legend />
       </ReactFlow>
@@ -161,7 +176,7 @@ function Flow({ event }) {
   );
 }
 
-export default function EventFlow({ event }) {
+export default function EventFlow({ event }: { event: Event }) {
   return (
     <ReactFlowProvider>
       <Flow event={event} />
