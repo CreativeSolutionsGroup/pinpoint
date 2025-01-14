@@ -1,11 +1,11 @@
 "use client";
 
 import * as Icons from "lucide-react";
+import React, { useState, useRef } from 'react';
 
 export default function IconNode({ data }) {
   // Get the icon component from the Lucide icons
   const IconComponent = Icons[data.iconName];
-
 
   return (
     <IconComponent className="w-6 h-6 text-gray-700" />

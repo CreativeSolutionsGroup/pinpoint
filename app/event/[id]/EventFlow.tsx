@@ -7,10 +7,10 @@ import {
   useReactFlow,
   ReactFlowProvider,
   useNodesState,
-	Panel,
 } from "@xyflow/react";
 import Legend from "@/components/Legend";
 import IconNode from "@components/IconNode";
+//import TrashDropZone from "@/components/TrashDropZone";
 import "@xyflow/react/dist/style.css";
 import { useState, useCallback, useEffect } from "react";
 
@@ -25,7 +25,7 @@ const nodeTypes = {
 function Flow({ event }) {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
 
-  const { screenToFlowPosition } = useReactFlow();
+  const { screenToFlowPosition, deleteElements } = useReactFlow();
 
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
@@ -100,6 +100,12 @@ function Flow({ event }) {
     event.dataTransfer.dropEffect = "move";
   }, []);
 
+  //Trash can component code (delete later probably)
+  const handleDelete = useCallback((nodeId: string) => {
+    deleteElements({ nodes: [{ id: nodeId }] });
+    //setNodes((nodes) => nodes.filter(node => node.id !== nodeId));
+  }, [deleteElements]);
+  
   const onDrop = useCallback(
     (event) => {
       event.preventDefault();
@@ -143,9 +149,11 @@ function Flow({ event }) {
         onDragOver={onDragOver}
         nodeTypes={nodeTypes}
         fitView
-        className="touch-none"
+        fitView
+        onNodeDoubleClick={(event, node) => handleDelete(node.id)}
       >
         <Controls position="bottom-right" />
+        {/*<TrashDropZone />*/}
         <MiniMap position="bottom-left" pannable zoomable />
         <Legend />
       </ReactFlow>
