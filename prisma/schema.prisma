@@ -10,6 +10,7 @@ datasource db {
 model Event {
   id   String @id @default(cuid())
   name String
+  state String
 }
 
 model Account {
