@@ -27,7 +27,6 @@ model Location {
   imageURL String
   name     String
   events   Event[]
-  state String
 }
 
 model Account {
