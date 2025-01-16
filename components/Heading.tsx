@@ -13,7 +13,7 @@ export default function Heading() {
       <Image
         fill
         src="/pinpoint-logo-color.png"
-        alt="Project Dora"
+        alt="Pinpoint"
         style={{ objectFit: "contain" }}
       />
     </Box>

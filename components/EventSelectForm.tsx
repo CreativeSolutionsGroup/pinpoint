@@ -22,6 +22,8 @@ import { useState } from "react";
 
 import { Event } from "@prisma/client";
 import { useRouter } from "next/navigation";
+//import { getSession } from "next-auth/client";
+
 
 export default function EventSelectForm({ events }: { events: Event[] }) {
   const router = useRouter();
@@ -31,6 +33,10 @@ export default function EventSelectForm({ events }: { events: Event[] }) {
     setSelected(false);
     setEventId(e.target.value);
   };
+  const onFormClick = () => {
+    //const session = getSession();
+    router.push(`/event/${eventId}/edit`);
+  }
 
   return (
     <>
@@ -61,7 +67,7 @@ export default function EventSelectForm({ events }: { events: Event[] }) {
         disabled={notSelected}
         variant="contained"
         sx={{ mt: 2, maxWidth: "fit-content", alignSelf: "end" }}
-        onClick={() => router.push(`/event/${eventId}`)}
+        onClick={onFormClick}
       >
         Select
       </Button>
