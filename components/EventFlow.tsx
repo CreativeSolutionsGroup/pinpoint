@@ -1,5 +1,5 @@
 "use client";
-import { CustomImageNode, CustomNode } from "@components/CustomImageNode";
+import { CustomImageNode } from "@components/CustomImageNode";
 import IconNode from "@components/IconNode";
 import Legend from "@components/Legend";
 import {
@@ -13,6 +13,8 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { useCallback, useEffect, useState } from "react";
+import { Event } from "@prisma/client";
+import { CustomNode } from "@/types/CustomNode";
 
 let nodeId = 0;
 const getId = () => `node_${nodeId++}`;
@@ -23,23 +25,21 @@ const nodeTypes = {
   customImageNode: CustomImageNode,
 };
 
-const initialNodes: CustomNode[] = [
-  {
-    id: "map",
-    type: "customImageNode",
-    data: { label: "map" },
-    position: { x: 0, y: 0, z: -1 },
-    draggable: false,
-    deletable: false,
-  },
-];
+const initialNode: CustomNode = {
+  id: "map",
+  type: "customImageNode",
+  data: { label: "map" },
+  position: { x: 0, y: 0, z: -1 },
+  draggable: false,
+  deletable: false,
+};
 
-//const defaultViewport = { x: 500, y: 500, zoom: 1.5 };
+function Flow({ event }: { event: Event }) {
+  console.log(event);
 
-function Flow({ event }) {
-  const [nodes, setNodes] = useState(initialNodes);
+  const [nodes, setNodes] = useState<CustomNode[]>([initialNode]);
 
-  const { screenToFlowPosition, fitView } = useReactFlow();
+  const { screenToFlowPosition } = useReactFlow();
 
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
@@ -51,7 +51,7 @@ function Flow({ event }) {
 
   // Update mouse position
   useEffect(() => {
-    const handleMouseMove = (event) => {
+    const handleMouseMove = (event: MouseEvent) => {
       setMousePosition({ x: event.clientX, y: event.clientY });
     };
 
@@ -61,17 +61,14 @@ function Flow({ event }) {
 
   // Handle keyboard shortcuts
   useEffect(() => {
-    const handleKeyDown = async (event) => {
+    const handleKeyDown = async (event: KeyboardEvent) => {
       // Copy
       if (event.key === "c" && (event.ctrlKey || event.metaKey)) {
         const selectedNodes = nodes.filter((node) => node.selected);
         if (selectedNodes.length === 0) return;
 
         try {
-          const nodesToCopy = selectedNodes.map(
-            ({ id, selected, ...rest }) => rest
-          );
-          await navigator.clipboard.writeText(JSON.stringify(nodesToCopy));
+          await navigator.clipboard.writeText(JSON.stringify(selectedNodes));
         } catch (err) {
           console.error("Failed to copy:", err);
         }
@@ -98,6 +95,7 @@ function Flow({ event }) {
           const newNodes = pastedNodes.map((node) => ({
             ...node,
             id: getId(),
+            selected: false,
             position: {
               x: node.position.x + xOffset,
               y: node.position.y + yOffset,
@@ -115,13 +113,13 @@ function Flow({ event }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [nodes, mousePosition, screenToFlowPosition, setNodes]);
 
-  const onDragOver = useCallback((event) => {
+  const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
   }, []);
 
   const onDrop = useCallback(
-    (event) => {
+    (event: React.DragEvent<HTMLDivElement>) => {
       event.preventDefault();
 
       const jsonData = event.dataTransfer.getData("application/reactflow");
@@ -130,16 +128,16 @@ function Flow({ event }) {
         return;
       }
 
-      const { iconName, label } = JSON.parse(jsonData);
+      const { type, iconName, label } = JSON.parse(jsonData);
 
       const position = screenToFlowPosition({
         x: event.clientX,
         y: event.clientY,
       });
 
-      const newNode = {
+      const newNode: CustomNode = {
         id: getId(),
-        type: "iconNode",
+        type,
         position,
         data: {
           label,
@@ -147,13 +145,14 @@ function Flow({ event }) {
         },
         draggable: true,
         deletable: true,
+        selected: false,
         parentId: "map",
         extent: "parent",
       };
 
       setNodes((nds) => [...nds, newNode]);
     },
-    [screenToFlowPosition]
+    [screenToFlowPosition, setNodes]
   );
 
   return (
@@ -176,7 +175,7 @@ function Flow({ event }) {
   );
 }
 
-export default function EventFlow({ event }) {
+export default function EventFlow({ event }: { event: Event }) {
   return (
     <ReactFlowProvider>
       <Flow event={event} />
