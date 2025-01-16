@@ -35,11 +35,13 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <SessionProvider>
         <AblyClientProvider>
           <AppRouterCacheProvider>
             <ClientProvider>{children}</ClientProvider>
           </AppRouterCacheProvider>
         </AblyClientProvider>
+        </SessionProvider>
       </body>
     </html>
   );

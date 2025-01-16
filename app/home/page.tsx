@@ -40,7 +40,6 @@ export default async function EventSelect() {
       >
         Select an Event
       </Typography>
-
       <EventSelectForm events={events} />
       <ErrorToast />
     </Box>

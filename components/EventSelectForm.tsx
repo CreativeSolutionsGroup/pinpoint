@@ -20,22 +20,34 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 
-import { Event } from "@prisma/client";
+import { Event, AuthorizedUser, Roles } from "@prisma/client";
 import { useRouter } from "next/navigation";
-//import { getSession } from "next-auth/client";
+import { useSession } from "next-auth/react"
+import { prisma } from "@/lib/api/db";
 
 
 export default function EventSelectForm({ events }: { events: Event[] }) {
   const router = useRouter();
   const [notSelected, setSelected] = useState(true);
   const [eventId, setEventId] = useState("");
+  const { data: session } = useSession();
   const handleChange = (e: SelectChangeEvent) => {
     setSelected(false);
     setEventId(e.target.value);
   };
-  const onFormClick = () => {
-    //const session = getSession();
-    router.push(`/event/${eventId}/edit`);
+  const onFormClick = async () => {
+    const user: AuthorizedUser | null = await prisma.authorizedUser.findFirst({
+      where: {
+        email: session?.user?.email ?? "",
+      }
+    });
+
+    if (user?.role == Roles.ADMIN || user?.role == Roles.EDITOR) {
+      router.push(`/event/${eventId}/edit`);
+    }
+    else{
+      router.push(`/event/${eventId}/view`);
+    }
   }
 
   return (
