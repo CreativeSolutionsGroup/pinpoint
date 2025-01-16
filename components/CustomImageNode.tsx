@@ -2,18 +2,6 @@ import "@xyflow/react/dist/style.css";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
-// Define the node type
-export type CustomNode = {
-  id: string;
-  type?: string;
-  data: { label: string };
-  position: { x: number; y: number; z: number };
-  draggable: boolean;
-  deletable: boolean;
-  parentId?: string;
-  extent?: "parent";
-};
-
 const imageURL = "/Campus.png";
 
 export const CustomImageNode = () => {
