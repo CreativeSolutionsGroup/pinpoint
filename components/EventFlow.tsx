@@ -15,6 +15,7 @@ import "@xyflow/react/dist/style.css";
 import { useCallback, useEffect, useState } from "react";
 import { Event } from "@prisma/client";
 import { CustomNode } from "@/types/CustomNode";
+import ColorMenu from "./ColorMenu";
 
 let nodeId = 0;
 const getId = () => `node_${nodeId++}`;
@@ -38,6 +39,8 @@ function Flow({ event }: { event: Event }) {
   console.log(event);
 
   const [nodes, setNodes] = useState<CustomNode[]>([initialNode]);
+
+  const [menuVisible, setMenuVisible] = useState(false);
 
   const { screenToFlowPosition } = useReactFlow();
 
@@ -152,6 +155,8 @@ function Flow({ event }: { event: Event }) {
       };
 
       setNodes((nds) => [...nds, newNode]);
+
+      setMenuVisible(true);
     },
     [screenToFlowPosition, setNodes]
   );
@@ -172,6 +177,8 @@ function Flow({ event }: { event: Event }) {
         <MiniMap position="bottom-left" pannable zoomable />
         <Legend />
       </ReactFlow>
+
+      {menuVisible ? <ColorMenu x={mousePosition.x} y={mousePosition.y} /> : null }
     </div>
   );
 }
