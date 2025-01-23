@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/api/db";
 import { redirect } from "next/navigation";
-import EventFlow from "./EventFlow";
+import EventFlow from "@/components/EventFlow";
 
 export default async function EventMainPage({
   params,

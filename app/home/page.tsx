@@ -36,7 +36,7 @@ export default async function EventSelect() {
         align="center"
         mt={0.5}
         mb={1}
-        color="#da5a9f"
+        color="primary.main"
       >
         Select an Event
       </Typography>
