@@ -16,6 +16,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Event } from "@prisma/client";
 import { CustomNode } from "@/types/CustomNode";
 import ColorMenu from "./ColorMenu";
+import { useRouter, useSearchParams } from "next/navigation";
 
 let nodeId = 0;
 const getId = () => `node_${nodeId++}`;
@@ -38,6 +39,9 @@ const initialNode: CustomNode = {
 function Flow({ event }: { event: Event }) {
   console.log(event);
 
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
   const [nodes, setNodes] = useState<CustomNode[]>([initialNode]);
 
   const [menuVisible, setMenuVisible] = useState(false);
@@ -46,11 +50,23 @@ function Flow({ event }: { event: Event }) {
 
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
+  const [dropPosition, setDropPosition] = useState({ x: 0, y: 0 });
+
   const onNodesChange = useCallback(
     (changes: NodeChange[]) =>
       setNodes((nds) => applyNodeChanges(changes, nds) as CustomNode[]),
     [setNodes]
   );
+
+  // Color the current icon if necessary
+  // TODO: Fix this so the icons actually get colored
+  useEffect(() => {
+    console.log(searchParams.toString());
+    nodes[nodes.length-1].data.color = "white";
+    console.log("Color:" + nodes[nodes.length-1].data.color);
+    router.push(`/event/${event.id}`);
+    //setMenuVisible(false);
+  });
 
   // Update mouse position
   useEffect(() => {
@@ -157,10 +173,11 @@ function Flow({ event }: { event: Event }) {
       setNodes((nds) => [...nds, newNode]);
 
       setMenuVisible(true);
+      setDropPosition({ x: event.clientX, y: event.clientY });
     },
     [screenToFlowPosition, setNodes]
   );
-
+  console.log(menuVisible);
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
       <ReactFlow
@@ -178,7 +195,7 @@ function Flow({ event }: { event: Event }) {
         <Legend />
       </ReactFlow>
 
-      {menuVisible ? <ColorMenu x={mousePosition.x} y={mousePosition.y} /> : null }
+      {menuVisible ? <ColorMenu x={dropPosition.x} y={dropPosition.y} /> : null }
     </div>
   );
 }
