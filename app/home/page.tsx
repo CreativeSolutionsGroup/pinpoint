@@ -17,10 +17,13 @@ import ErrorToast from "@/components/ErrorToast";
 
 // Collect all events from doradev database
 export default async function EventSelect() {
+
   const events = await prisma.event.findMany({
     select: {
       id: true,
       name: true,
+      state: true,
+      liveUpdate: true
     },
   });
 

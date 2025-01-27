@@ -13,7 +13,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { useCallback, useEffect, useState } from "react";
-import { Event } from "@prisma/client";
+import { Event, Roles } from "@prisma/client";
 import { CustomNode } from "@/types/CustomNode";
 
 let nodeId = 0;
@@ -34,7 +34,7 @@ const initialNode: CustomNode = {
   deletable: false,
 };
 
-function Flow({ event }: { event: Event }) {
+function Flow({ event, userRole }: { event: Event, userRole: Roles | undefined }) {
   console.log(event);
 
   const [nodes, setNodes] = useState<CustomNode[]>([initialNode]);
@@ -154,10 +154,24 @@ function Flow({ event }: { event: Event }) {
     },
     [screenToFlowPosition, setNodes]
   );
+  
+  // Set the draggable setting for nodes based on user role.
+  useEffect(() => {
+    console.log("viewer setting set for nodes");
+    if (userRole === "VIEWER") {
+      setNodes((nds) =>
+        nds.map((node) => ({
+          ...node,
+          draggable: false,
+        }))
+      );
+    }
+  }, [userRole, setNodes]);
 
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
-      <ReactFlow
+      {userRole === "ADMIN" || userRole === "EDITOR" ? (
+        <ReactFlow
         nodes={nodes}
         onNodesChange={onNodesChange}
         zoomOnScroll={false}
@@ -171,14 +185,29 @@ function Flow({ event }: { event: Event }) {
         <MiniMap position="bottom-left" pannable zoomable />
         <Legend />
       </ReactFlow>
+      ) : (
+        
+        <ReactFlow
+        nodes={nodes}
+        zoomOnScroll={false}
+        panOnScroll={false}
+        nodeTypes={nodeTypes}
+        className="touch-none"
+        draggable={false}
+      >
+        <Controls position="bottom-right" />
+        <MiniMap position="bottom-left" pannable zoomable />
+      </ReactFlow>
+      
+      )}
     </div>
   );
 }
 
-export default function EventFlow({ event }: { event: Event }) {
+export default function EventFlow({ event, userRole }: { event: Event, userRole: Roles | undefined }) {
   return (
     <ReactFlowProvider>
-      <Flow event={event} />
+      <Flow event={event} userRole={userRole} />
     </ReactFlowProvider>
   );
 }
