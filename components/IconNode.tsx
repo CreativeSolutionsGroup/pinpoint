@@ -1,13 +1,13 @@
 "use client";
 
 import * as Icons from "lucide-react";
-import React, { useState, useRef } from 'react';
+import React from 'react';
 
 export default function IconNode({ data }) {
   // Get the icon component from the Lucide icons
   const IconComponent = Icons[data.iconName];
 
-  return <IconComponent className="w-6 h-6 text-white" />;
+  return <IconComponent style={{color: data.color}} className="w-6 h-6" />;
   
   /* return (
     <div className="bg-white border-2 border-gray-200 rounded-lg p-2 shadow-sm">

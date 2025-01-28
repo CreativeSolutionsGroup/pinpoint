@@ -9,6 +9,7 @@ import {
   NodeChange,
   ReactFlow,
   ReactFlowProvider,
+  useNodes,
   useReactFlow,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
@@ -37,10 +38,10 @@ const initialNode: CustomNode = {
 };
 
 function Flow({ event }: { event: Event }) {
-  console.log(event);
+  //console.log(event);
 
   const searchParams = useSearchParams();
-  const router = useRouter();
+  const nodesArray = useNodes();
 
   const [nodes, setNodes] = useState<CustomNode[]>([initialNode]);
 
@@ -61,12 +62,13 @@ function Flow({ event }: { event: Event }) {
   // Color the current icon if necessary
   // TODO: Fix this so the icons actually get colored
   useEffect(() => {
-    console.log(searchParams.toString());
-    nodes[nodes.length-1].data.color = "white";
-    console.log("Color:" + nodes[nodes.length-1].data.color);
-    router.push(`/event/${event.id}`);
-    //setMenuVisible(false);
-  });
+    setNodes((nds) => {
+      const updatedNodes = [...nds];
+      updatedNodes[updatedNodes.length - 1].data.color = searchParams.get("colorSelected") || "white";
+      return updatedNodes;
+    });
+    setMenuVisible(false);
+  }, [searchParams]);
 
   // Update mouse position
   useEffect(() => {
@@ -161,13 +163,13 @@ function Flow({ event }: { event: Event }) {
         data: {
           label,
           iconName,
-          color: "gray",
+          color: "white",
         },
         draggable: true,
         deletable: true,
         selected: false,
         parentId: "map",
-        extent: "parent"
+        extent: "parent",
       };
 
       setNodes((nds) => [...nds, newNode]);
@@ -177,7 +179,7 @@ function Flow({ event }: { event: Event }) {
     },
     [screenToFlowPosition, setNodes]
   );
-  console.log(menuVisible);
+
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
       <ReactFlow

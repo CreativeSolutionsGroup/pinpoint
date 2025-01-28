@@ -14,7 +14,6 @@ import Heading from "@/components/Heading";
 import EventSelectForm from "@/components/EventSelectForm";
 import { prisma } from "@/lib/api/db";
 import ErrorToast from "@/components/ErrorToast";
-import ColorMenu from "@/components/ColorMenu";
 
 // Collect all events from doradev database
 export default async function EventSelect() {
@@ -22,6 +21,7 @@ export default async function EventSelect() {
     select: {
       id: true,
       name: true,
+      liveUpdate: true
     },
   });
 
@@ -41,8 +41,6 @@ export default async function EventSelect() {
       >
         Select an Event
       </Typography>
-
-    <ColorMenu />
 
       <EventSelectForm events={events} />
       <ErrorToast />
