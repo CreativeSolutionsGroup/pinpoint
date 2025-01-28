@@ -1,10 +1,9 @@
+import { CustomNode } from "@/types/CustomNode";
 import "@xyflow/react/dist/style.css";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
-const imageURL = "/Campus.png";
-
-export const CustomImageNode = () => {
+export function CustomImageNode ({ data }: CustomNode) {
   const [dimensions, setDimensions] = useState({ width: 100, height: 100 });
 
   useEffect(() => {
@@ -29,14 +28,14 @@ export const CustomImageNode = () => {
       });
     };
 
-    getImageDimensions(imageURL)
+    getImageDimensions(data.imageURL!)
       .then((dims) => {
         setDimensions(dims);
       })
       .catch((error) =>
         console.error("Error loading image dimensions:", error)
       );
-  }, []);
+  }, [data]);
 
   return (
     <div
@@ -47,8 +46,8 @@ export const CustomImageNode = () => {
       }}
     >
       <Image
-        src={imageURL}
-        alt="Map Image"
+        src={data.imageURL!}
+        alt={data.label}
         fill
         style={{
           objectFit: "cover",

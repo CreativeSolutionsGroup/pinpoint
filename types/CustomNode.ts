@@ -1,10 +1,7 @@
 export type CustomNode = {
   id: string;
   type?: string;
-  data: {
-    label: string;
-    iconName?: string;
-  };
+  data: { label: string; iconName?: string; imageURL?: string };
   position: { x: number; y: number; z?: number };
   draggable: boolean;
   deletable: boolean;

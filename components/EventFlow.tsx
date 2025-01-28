@@ -1,7 +1,10 @@
 "use client";
+import { CustomNode } from "@/types/CustomNode";
 import { CustomImageNode } from "@components/CustomImageNode";
-import IconNode from "@components/IconNode";
+import EventMapSelect from "@components/EventMapSelect";
+import { IconNode } from "@components/IconNode";
 import Legend from "@components/Legend";
+import { Event, Location } from "@prisma/client";
 import {
   applyNodeChanges,
   Controls,
@@ -13,8 +16,6 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { useCallback, useEffect, useState } from "react";
-import { Event } from "@prisma/client";
-import { CustomNode } from "@/types/CustomNode";
 
 let nodeId = 0;
 const getId = () => `node_${nodeId++}`;
@@ -25,23 +26,36 @@ const nodeTypes = {
   customImageNode: CustomImageNode,
 };
 
-const initialNode: CustomNode = {
-  id: "map",
-  type: "customImageNode",
-  data: { label: "map" },
-  position: { x: 0, y: 0, z: -1 },
-  draggable: false,
-  deletable: false,
-};
+interface EventWithLocation extends Event {
+  locations: Location[];
+}
 
-function Flow({ event }: { event: Event }) {
-  console.log(event);
-
-  const [nodes, setNodes] = useState<CustomNode[]>([initialNode]);
+function Flow({ event, location }: { event: EventWithLocation; location: string }) {
+  const [nodes, setNodes] = useState<CustomNode[]>([]);
 
   const { screenToFlowPosition } = useReactFlow();
 
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const imageURL = `/maps/${
+      event.locations.find((loc: Location) => loc.id == location)?.imageURL ||
+      event.locations[0].imageURL
+    }`;
+
+    const initialNodes: CustomNode[] = [
+      {
+        id: "map",
+        type: "customImageNode",
+        data: { label: "map", imageURL: imageURL },
+        position: { x: 0, y: 0, z: -1 },
+        draggable: false,
+        deletable: false,
+      },
+    ];
+
+    setNodes(initialNodes);
+  }, [location, event.locations]);
 
   const onNodesChange = useCallback(
     (changes: NodeChange[]) =>
@@ -145,7 +159,6 @@ function Flow({ event }: { event: Event }) {
         },
         draggable: true,
         deletable: true,
-        selected: false,
         parentId: "map",
         extent: "parent",
       };
@@ -170,15 +183,22 @@ function Flow({ event }: { event: Event }) {
         <Controls position="bottom-right" />
         <MiniMap position="bottom-left" pannable zoomable />
         <Legend />
+        <EventMapSelect eventId={event.id} locations={event.locations} />
       </ReactFlow>
     </div>
   );
 }
 
-export default function EventFlow({ event }: { event: Event }) {
+export default function EventFlow({
+  event,
+  location,
+}: {
+  event: EventWithLocation;
+  location: string;
+}) {
   return (
     <ReactFlowProvider>
-      <Flow event={event} />
+      <Flow event={event} location={location} />
     </ReactFlowProvider>
   );
 }

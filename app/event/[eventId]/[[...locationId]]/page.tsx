@@ -5,11 +5,16 @@ import EventFlow from "@/components/EventFlow";
 export default async function EventMainPage({
   params,
 }: {
-  params: { id: string };
+  params: { eventId: string; locationId?: string };
 }) {
+  const p = await params;
+
   const event = await prisma.event.findFirst({
     where: {
-      id: params.id,
+      id: p.eventId,
+    },
+    include: {
+      locations: true,
     },
   });
 
@@ -17,5 +22,9 @@ export default async function EventMainPage({
     redirect("/home?error=Event not found");
   }
 
-  return <EventFlow event={event} />;
+  if (event.locations.length === 0) {
+    redirect(`/home?error=Event has no locations`);
+  }
+
+  return <EventFlow event={event} location={p.locationId!} />;
 }
