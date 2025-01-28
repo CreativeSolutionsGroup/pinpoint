@@ -15,6 +15,7 @@ import "@xyflow/react/dist/style.css";
 import { useCallback, useEffect, useState } from "react";
 import { Event } from "@prisma/client";
 import { CustomNode } from "@/types/CustomNode";
+import NavButtons from "./navButtons";
 
 let nodeId = 0;
 const getId = () => `node_${nodeId++}`;
@@ -170,6 +171,8 @@ function Flow({ event }: { event: Event }) {
         <Controls position="bottom-right" />
         <MiniMap position="bottom-left" pannable zoomable />
         <Legend />
+        <NavButtons />
+        
       </ReactFlow>
     </div>
   );
