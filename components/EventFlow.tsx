@@ -9,7 +9,6 @@ import {
   NodeChange,
   ReactFlow,
   ReactFlowProvider,
-  useNodes,
   useReactFlow,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
@@ -17,7 +16,6 @@ import { useCallback, useEffect, useState } from "react";
 import { Event } from "@prisma/client";
 import { CustomNode } from "@/types/CustomNode";
 import ColorMenu from "./ColorMenu";
-import { useRouter, useSearchParams } from "next/navigation";
 
 let nodeId = 0;
 const getId = () => `node_${nodeId++}`;
@@ -38,14 +36,13 @@ const initialNode: CustomNode = {
 };
 
 function Flow({ event }: { event: Event }) {
-  //console.log(event);
-
-  const searchParams = useSearchParams();
-  const nodesArray = useNodes();
+  console.log(event);
 
   const [nodes, setNodes] = useState<CustomNode[]>([initialNode]);
 
   const [menuVisible, setMenuVisible] = useState(false);
+
+  const [currentNodeId, setCurrentNodeId] = useState<string | null>(null); // tracking most recent icon
 
   const { screenToFlowPosition } = useReactFlow();
 
@@ -59,16 +56,20 @@ function Flow({ event }: { event: Event }) {
     [setNodes]
   );
 
-  // Color the current icon if necessary
-  // TODO: Fix this so the icons actually get colored
-  useEffect(() => {
-    setNodes((nds) => {
-      const updatedNodes = [...nds];
-      updatedNodes[updatedNodes.length - 1].data.color = searchParams.get("colorSelected") || "white";
-      return updatedNodes;
-    });
+  // Color the most recently placed icon, if it hasn't been colored yet
+  function changeColor(colorSelected: string) {
+    if (!currentNodeId) return;
+
+    setNodes((nds) => 
+      nds.map((node) => 
+        node.id === currentNodeId 
+          ? { ...node, data: { ...node.data, color: colorSelected }} 
+          : node
+      )
+    );
     setMenuVisible(false);
-  }, [searchParams]);
+    setCurrentNodeId(null);
+  }
 
   // Update mouse position
   useEffect(() => {
@@ -174,10 +175,12 @@ function Flow({ event }: { event: Event }) {
 
       setNodes((nds) => [...nds, newNode]);
 
+      // prepare to color the new icon
+      setCurrentNodeId(newNode.id); // Track new node ID
       setMenuVisible(true);
+
       setDropPosition({ x: event.clientX, y: event.clientY });
-    },
-    [screenToFlowPosition, setNodes]
+    }, [screenToFlowPosition, setNodes]
   );
 
   return (
@@ -197,7 +200,7 @@ function Flow({ event }: { event: Event }) {
         <Legend />
       </ReactFlow>
 
-      {menuVisible ? <ColorMenu x={dropPosition.x} y={dropPosition.y} /> : null }
+      {menuVisible ? <ColorMenu x={dropPosition.x} y={dropPosition.y} changeColor={changeColor} /> : null }
     </div>
   );
 }

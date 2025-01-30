@@ -1,15 +1,11 @@
 "use client";
 import { Button, Card, Chip } from "@mui/material";
-import { useRouter } from "next/navigation";
 
-export default function ColorMenu(mouseState: {x: number, y: number}) {
+export default function ColorMenu(props: {x: number, y: number, changeColor: (colorSelected: string) => void}) {
   const mainStyle = `fixed z-10 bg-white shadow-md rounded-md`;
 
-  const router = useRouter();
-
   function onColorClick(color: string) {
-    console.log("clicked");
-    router.push(`?colorSelected=${color}`);
+    props.changeColor(color);
   }
 
   const buttons = ['lightblue', 'navy', 'purple', 'yellow', 'orange', 'white'].map((label, index) => (
@@ -19,7 +15,7 @@ export default function ColorMenu(mouseState: {x: number, y: number}) {
   )
 
   return (
-  <Card className={mainStyle} style={{left: mouseState.x+25, top: mouseState.y+25}}>
+  <Card className={mainStyle} style={{left: props.x+25, top: props.y+25}}>
     {buttons}
   </Card>
    );
