@@ -17,6 +17,7 @@ import "@xyflow/react/dist/style.css";
 import { useCallback, useEffect, useState } from "react";
 import { Event } from "@prisma/client";
 import { CustomNode } from "@/types/CustomNode";
+import NavButtons from "./navButtons";
 import { Button } from "@mui/material";
 import SaveState from "@/lib/api/save/ReactFlowSave";
 import { createId } from "@paralleldrive/cuid2";
@@ -182,13 +183,15 @@ function Flow({ event }: { event: Event }) {
         <Controls position="bottom-right" />
         <MiniMap position="bottom-left" pannable zoomable />
         <Legend />
+        <NavButtons />
+        
       </ReactFlow>
       <Button
         onClick={() =>
           rfInstance &&
           SaveState(event.id, JSON.stringify(rfInstance.toObject()))
         }
-        style={{ position: "fixed", top: 16, right: 16 }}
+        style={{ position: "fixed", top: "4rem", right: 16 }}
         variant="contained"
       >
         Save

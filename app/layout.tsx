@@ -1,8 +1,6 @@
 "use client"
 import ClientProvider from "@/components/ClientProvider";
-import { SessionProvider } from "next-auth/react";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v14-appRouter";
-import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import AblyClientProvider from "@/components/AblyProvider";
