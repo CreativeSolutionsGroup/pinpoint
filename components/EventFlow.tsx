@@ -191,7 +191,7 @@ function Flow({ event }: { event: Event }) {
           rfInstance &&
           SaveState(event.id, JSON.stringify(rfInstance.toObject()))
         }
-        style={{ position: "fixed", top: 16, right: 16 }}
+        style={{ position: "fixed", top: "4rem", right: 16 }}
         variant="contained"
       >
         Save
