@@ -14,6 +14,7 @@ import Heading from "@/components/Heading";
 import EventSelectForm from "@/components/EventSelectForm";
 import { prisma } from "@/lib/api/db";
 import ErrorToast from "@/components/ErrorToast";
+import { Suspense } from "react";
 
 // Collect all events from doradev database
 export default async function EventSelect() {
@@ -42,7 +43,9 @@ export default async function EventSelect() {
       </Typography>
 
       <EventSelectForm events={events} />
-      <ErrorToast />
+      <Suspense>
+        <ErrorToast />
+      </Suspense>
     </Box>
   );
 }

@@ -2,10 +2,11 @@
 
 import * as Icons from "lucide-react";
 
-export default function IconNode({ data }) {
+export default function IconNode({ data }: { data: { iconName: string; label: string } }) {
   // Get the icon component from the Lucide icons
-  const IconComponent = Icons[data.iconName];
+  const IconComponent = Icons[data.iconName as keyof typeof Icons] as React.ElementType;
 
+  if (!IconComponent) return null;
   return <IconComponent className="w-6 h-6 text-gray-700 bg-white" />;
 
   /* return (

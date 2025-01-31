@@ -44,6 +44,7 @@ export const CustomImageNode = () => {
         // MAINTAIN CONSISTENT IMAGE DIMENSIONS
         width: dimensions.width,
         height: dimensions.height,
+        position: "relative",
       }}
     >
       <Image
@@ -53,6 +54,7 @@ export const CustomImageNode = () => {
         style={{
           objectFit: "cover",
         }}
+        priority
       />
     </div>
   );

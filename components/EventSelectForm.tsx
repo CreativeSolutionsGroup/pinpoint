@@ -23,7 +23,11 @@ import { useState } from "react";
 import { Event } from "@prisma/client";
 import { useRouter } from "next/navigation";
 
-export default function EventSelectForm({ events }: { events: Event[] }) {
+export default function EventSelectForm({
+  events,
+}: {
+  events: Pick<Event, "id" | "name">[];
+}) {
   const router = useRouter();
   const [notSelected, setSelected] = useState(true);
   const [eventId, setEventId] = useState("");
