@@ -24,7 +24,7 @@ export function CustomImageNode ({ data }: CustomNode) {
           reject(new Error(`Failed to load image: ${error}`));
         };
 
-        img.src = src;
+        img.src = src ?? "/maps/campus.png";
       });
     };
 
@@ -46,7 +46,7 @@ export function CustomImageNode ({ data }: CustomNode) {
       }}
     >
       <Image
-        src={data.imageURL!}
+        src={data.imageURL ?? "/maps/campus.png"}
         alt={data.label}
         fill
         style={{
