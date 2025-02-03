@@ -1,12 +1,38 @@
 "use client";
 
 import * as Icons from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Button } from "@mui/material";
+import { useReactFlow } from '@xyflow/react';
 
-export default function IconNode({ data }) {
+export default function IconNode({ data, id }) {
+  const { deleteElements } = useReactFlow();
   // Get the icon component from the Lucide icons
   const IconComponent = Icons[data.iconName];
 
-  return <IconComponent className="w-6 h-6 text-gray-700 bg-white" />;
+  const handleDelete = () => {
+    deleteElements({ nodes: [{ id }] });
+  };
+
+  return (
+    <>
+      <Popover>
+        <PopoverTrigger>
+          <IconComponent className="w-6 h-6 text-gray-700 bg-white" />
+        </PopoverTrigger>
+        <PopoverContent className="w-80">
+          <div className="grid gap-4">
+            Place content for the popover here.
+            <Button onClick={handleDelete} color="warning">Delete</Button>
+          </div>
+        </PopoverContent>
+      </Popover>
+    </>
+  );
 
   /* return (
     <div className="bg-white border-2 border-gray-200 rounded-lg p-2 shadow-sm">
