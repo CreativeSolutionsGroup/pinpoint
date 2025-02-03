@@ -5,7 +5,7 @@ import EventFlow from "@/components/EventFlow";
 export default async function EventMainPage({
   params,
 }: {
-  params: { eventId: string; locationId?: string };
+  params: Promise<{ eventId: string; locationId?: Array<string> }>;
 }) {
   const p = await params;
 
@@ -26,5 +26,10 @@ export default async function EventMainPage({
     redirect(`/home?error=Event has no locations`);
   }
 
-  return <EventFlow event={event} location={p.locationId!} />;
+  return (
+    <EventFlow
+      event={event}
+      location={p.locationId?.[0] ?? event.locations[0].id}
+    />
+  );
 }

@@ -24,7 +24,7 @@ model Event {
 
 model Location {
   id       String  @id @default(cuid())
-  imageURL String
+  imageURL String @default("https://placehold.co/600x400")
   name     String
   events   Event[]
 }
