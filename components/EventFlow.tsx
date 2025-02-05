@@ -21,7 +21,7 @@ import NavButtons from "./navButtons";
 import { Button } from "@mui/material";
 import SaveState from "@/lib/api/save/ReactFlowSave";
 import { createId } from "@paralleldrive/cuid2";
-import ColorMenu from "./ColorMenu";
+import ColorMenu from "./ColorMenu"; 
 
 const getId = () => createId();
 
