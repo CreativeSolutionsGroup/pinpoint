@@ -5,9 +5,11 @@ import Legend from "@components/Legend";
 import {
   applyNodeChanges,
   Controls,
+  Edge,
   MiniMap,
   NodeChange,
   ReactFlow,
+  ReactFlowInstance,
   ReactFlowProvider,
   useReactFlow,
 } from "@xyflow/react";
@@ -15,10 +17,13 @@ import "@xyflow/react/dist/style.css";
 import { useCallback, useEffect, useState } from "react";
 import { Event } from "@prisma/client";
 import { CustomNode } from "@/types/CustomNode";
+import NavButtons from "./navButtons";
+import { Button } from "@mui/material";
+import SaveState from "@/lib/api/save/ReactFlowSave";
+import { createId } from "@paralleldrive/cuid2";
 import ColorMenu from "./ColorMenu";
 
-let nodeId = 0;
-const getId = () => `node_${nodeId++}`;
+const getId = () => createId();
 
 // Define node types
 const nodeTypes = {
@@ -36,9 +41,11 @@ const initialNode: CustomNode = {
 };
 
 function Flow({ event }: { event: Event }) {
-  console.log(event);
+  // console.log(event);
 
-  const [nodes, setNodes] = useState<CustomNode[]>([initialNode]);
+  const [nodes, setNodes] = useState<CustomNode[]>(
+    JSON.parse(event.state ? event.state : "{}")?.nodes || [initialNode]
+  );
 
   const [menuVisible, setMenuVisible] = useState(false);
 
@@ -47,6 +54,11 @@ function Flow({ event }: { event: Event }) {
   const { screenToFlowPosition } = useReactFlow();
 
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  const [rfInstance, setRfInstance] = useState<ReactFlowInstance<
+    CustomNode,
+    Edge
+  > | null>(null);
 
   const [dropPosition, setDropPosition] = useState({ x: 0, y: 0 });
 
@@ -192,13 +204,26 @@ function Flow({ event }: { event: Event }) {
         panOnScroll={false}
         onDrop={onDrop}
         onDragOver={onDragOver}
+        onInit={setRfInstance}
         nodeTypes={nodeTypes}
         className="touch-none"
       >
         <Controls position="bottom-right" />
         <MiniMap position="bottom-left" pannable zoomable />
         <Legend />
+        <NavButtons />
+        
       </ReactFlow>
+      <Button
+        onClick={() =>
+          rfInstance &&
+          SaveState(event.id, JSON.stringify(rfInstance.toObject()))
+        }
+        style={{ position: "fixed", top: "4rem", right: 16 }}
+        variant="contained"
+      >
+        Save
+      </Button>
 
       {menuVisible ? <ColorMenu x={dropPosition.x} y={dropPosition.y} changeColor={changeColor} /> : null }
     </div>
