@@ -21,7 +21,7 @@ import NavButtons from "./navButtons";
 import { Button } from "@mui/material";
 import SaveState from "@/lib/api/save/ReactFlowSave";
 import { createId } from "@paralleldrive/cuid2";
-import ColorMenu from "./ColorMenu"; 
+import ColorMenu from "./ColorMenu";
 
 const getId = () => createId();
 
@@ -72,10 +72,10 @@ function Flow({ event }: { event: Event }) {
   function changeColor(colorSelected: string) {
     if (!currentNodeId) return;
 
-    setNodes((nds) => 
-      nds.map((node) => 
-        node.id === currentNodeId 
-          ? { ...node, data: { ...node.data, color: colorSelected }} 
+    setNodes((nds) =>
+      nds.map((node) =>
+        node.id === currentNodeId
+          ? { ...node, data: { ...node.data, color: colorSelected } }
           : node
       )
     );
@@ -192,7 +192,8 @@ function Flow({ event }: { event: Event }) {
       setMenuVisible(true);
 
       setDropPosition({ x: event.clientX, y: event.clientY });
-    }, [screenToFlowPosition, setNodes]
+    },
+    [screenToFlowPosition, setNodes]
   );
 
   return (
@@ -212,7 +213,6 @@ function Flow({ event }: { event: Event }) {
         <MiniMap position="bottom-left" pannable zoomable />
         <Legend />
         <NavButtons />
-        
       </ReactFlow>
       <Button
         onClick={() =>
@@ -225,7 +225,13 @@ function Flow({ event }: { event: Event }) {
         Save
       </Button>
 
-      {menuVisible ? <ColorMenu x={dropPosition.x} y={dropPosition.y} changeColor={changeColor} /> : null }
+      {menuVisible ? (
+        <ColorMenu
+          x={dropPosition.x}
+          y={dropPosition.y}
+          changeColor={changeColor}
+        />
+      ) : null}
     </div>
   );
 }

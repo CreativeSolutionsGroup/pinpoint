@@ -21,7 +21,7 @@ export default async function EventSelect() {
     select: {
       id: true,
       name: true,
-      liveUpdate: true
+      liveUpdate: true,
     },
   });
 

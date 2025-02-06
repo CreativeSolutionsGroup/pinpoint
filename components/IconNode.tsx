@@ -7,8 +7,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@mui/material";
-import { useReactFlow } from '@xyflow/react';
-import React from 'react';
+import { useReactFlow } from "@xyflow/react";
+import React from "react";
 
 export default function IconNode({ data, id }) {
   const { deleteElements } = useReactFlow();
@@ -23,12 +23,17 @@ export default function IconNode({ data, id }) {
     <>
       <Popover>
         <PopoverTrigger>
-          <IconComponent style={{color: data.color}} className="w-6 h-6 text-gray-700" />
+          <IconComponent
+            style={{ color: data.color }}
+            className="w-6 h-6 text-gray-700"
+          />
         </PopoverTrigger>
         <PopoverContent className="w-80">
           <div className="grid gap-4">
             Place content for the popover here.
-            <Button onClick={handleDelete} color="warning">Delete</Button>
+            <Button onClick={handleDelete} color="warning">
+              Delete
+            </Button>
           </div>
         </PopoverContent>
       </Popover>
