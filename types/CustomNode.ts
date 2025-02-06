@@ -1,14 +1,7 @@
-export type CustomNode = {
-  id: string;
-  type?: string;
-  data: {
-    label: string;
-    iconName?: string;
-  };
+import { NodeProps } from "@xyflow/react";
+
+export interface CustomNode extends NodeProps {
+  data: { label: string; iconName?: string; imageURL?: string };
   position: { x: number; y: number; z?: number };
-  draggable: boolean;
-  deletable: boolean;
-  parentId?: string;
   extent?: "parent";
-  selected?: boolean;
-};
+}

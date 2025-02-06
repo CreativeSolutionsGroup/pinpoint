@@ -1,9 +1,9 @@
 "use client"
+import AblyClientProvider from "@/components/AblyProvider";
 import ClientProvider from "@/components/ClientProvider";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v14-appRouter";
 import localFont from "next/font/local";
 import "./globals.css";
-import AblyClientProvider from "@/components/AblyProvider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
