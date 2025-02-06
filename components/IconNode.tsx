@@ -7,31 +7,32 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@mui/material";
-import { useReactFlow } from '@xyflow/react';
+import { NodeProps, useReactFlow } from "@xyflow/react";
+import { CustomNode } from "@/types/CustomNode";
 
-export default function IconNode({ data, id }) {
+export function IconNode({ data, id }: NodeProps<CustomNode>) {
   const { deleteElements } = useReactFlow();
   // Get the icon component from the Lucide icons
-  const IconComponent = Icons[data.iconName];
+  const IconComponent = Icons[data.iconName as keyof typeof Icons.icons];
 
   const handleDelete = () => {
     deleteElements({ nodes: [{ id }] });
   };
 
   return (
-    <>
-      <Popover>
-        <PopoverTrigger>
-          <IconComponent className="w-6 h-6 text-gray-700 bg-white" />
-        </PopoverTrigger>
-        <PopoverContent className="w-80">
-          <div className="grid gap-4">
-            Place content for the popover here.
-            <Button onClick={handleDelete} color="warning">Delete</Button>
-          </div>
-        </PopoverContent>
-      </Popover>
-    </>
+    <Popover>
+      <PopoverTrigger>
+        <IconComponent className="w-6 h-6 text-gray-700 bg-white" />
+      </PopoverTrigger>
+      <PopoverContent className="w-80">
+        <div className="grid gap-4">
+          Place content for the popover here.
+          <Button onClick={handleDelete} color="warning">
+            Delete
+          </Button>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 
   /* return (

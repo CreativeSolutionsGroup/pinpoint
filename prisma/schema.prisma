@@ -7,26 +7,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Define the enum before using it
-enum Roles {
-  VIEWER
-  EDITOR
-  ADMIN
-}
-
 model Event {
   id         String     @id @default(cuid())
   name       String
   state      String
   liveUpdate String?
-  locations  Location[]
+  locations  Location[] @relation("EventToLocation")
 }
 
 model Location {
   id       String  @id @default(cuid())
-  imageURL String
   name     String
-  events   Event[]
+  imageURL String  @default("https://placehold.co/600x400")
+  events   Event[] @relation("EventToLocation")
 }
 
 model Account {
@@ -58,7 +51,7 @@ model Session {
 
 model AuthorizedUser {
   id    String @id @default(cuid())
-  email String @unique  // Added @unique since this is likely meant to be unique
+  email String @unique
   role  Roles  @default(VIEWER)
 }
 
@@ -83,4 +76,10 @@ model VerificationRequest {
   updatedAt  DateTime @updatedAt
 
   @@unique([identifier, token])
+}
+
+enum Roles {
+  VIEWER
+  EDITOR
+  ADMIN
 }
