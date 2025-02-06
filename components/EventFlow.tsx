@@ -14,7 +14,6 @@ import {
   Edge,
   MiniMap,
   NodeChange,
-  NodeProps,
   ReactFlow,
   ReactFlowInstance,
   ReactFlowProvider,

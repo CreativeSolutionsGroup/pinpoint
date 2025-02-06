@@ -1,9 +1,10 @@
 import { CustomNode } from "@/types/CustomNode";
+import { NodeProps } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
-export function CustomImageNode ({ data }: CustomNode) {
+export function CustomImageNode ({ data }: NodeProps<CustomNode>) {
   const [dimensions, setDimensions] = useState({ width: 100, height: 100 });
 
   useEffect(() => {
