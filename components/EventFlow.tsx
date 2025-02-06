@@ -1,7 +1,13 @@
 "use client";
+import SaveState from "@/lib/api/save/ReactFlowSave";
+import { CustomNode } from "@/types/CustomNode";
 import { CustomImageNode } from "@components/CustomImageNode";
-import IconNode from "@components/IconNode";
+import EventMapSelect from "@components/EventMapSelect";
+import { IconNode } from "@components/IconNode";
 import Legend from "@components/Legend";
+import { Button } from "@mui/material";
+import { createId } from "@paralleldrive/cuid2";
+import { Event, Location } from "@prisma/client";
 import {
   applyNodeChanges,
   Controls,
@@ -15,12 +21,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { useCallback, useEffect, useState } from "react";
-import { Event } from "@prisma/client";
-import { CustomNode } from "@/types/CustomNode";
 import NavButtons from "./navButtons";
-import { Button } from "@mui/material";
-import SaveState from "@/lib/api/save/ReactFlowSave";
-import { createId } from "@paralleldrive/cuid2";
 import ColorMenu from "./ColorMenu";
 
 const getId = () => createId();
@@ -31,20 +32,19 @@ const nodeTypes = {
   customImageNode: CustomImageNode,
 };
 
-const initialNode: CustomNode = {
-  id: "map",
-  type: "customImageNode",
-  data: { label: "map" },
-  position: { x: 0, y: 0, z: -1 },
-  draggable: false,
-  deletable: false,
-};
+interface EventWithLocation extends Event {
+  locations: Location[];
+}
 
-function Flow({ event }: { event: Event }) {
-  // console.log(event);
-
+function Flow({
+  event,
+  location,
+}: {
+  event: EventWithLocation;
+  location: string;
+}) {
   const [nodes, setNodes] = useState<CustomNode[]>(
-    JSON.parse(event.state ? event.state : "{}")?.nodes || [initialNode]
+    JSON.parse(event.state ? event.state : "{}")?.nodes || []
   );
 
   const [menuVisible, setMenuVisible] = useState(false);
@@ -54,6 +54,33 @@ function Flow({ event }: { event: Event }) {
   const { screenToFlowPosition } = useReactFlow();
 
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const imageURL = `/maps/${
+      event.locations.find((loc: Location) => loc.id == location)?.imageURL ||
+      event.locations[0].imageURL
+    }`;
+
+    const initialNodes: CustomNode[] = [
+      {
+        id: "map",
+        type: "customImageNode",
+        data: { label: "map", imageURL: imageURL },
+        position: { x: 0, y: 0, z: -1 },
+        draggable: false,
+        deletable: false,
+        dragging: false,
+        zIndex: 0,
+        selectable: false,
+        selected: false,
+        isConnectable: false,
+        positionAbsoluteX: 0,
+        positionAbsoluteY: 0,
+      },
+    ];
+
+    setNodes(initialNodes);
+  }, [location, event.locations]);
 
   const [rfInstance, setRfInstance] = useState<ReactFlowInstance<
     CustomNode,
@@ -180,9 +207,15 @@ function Flow({ event }: { event: Event }) {
         },
         draggable: true,
         deletable: true,
-        selected: false,
         parentId: "map",
         extent: "parent",
+        dragging: false,
+        zIndex: 0,
+        selectable: false,
+        selected: false,
+        isConnectable: false,
+        positionAbsoluteX: 0,
+        positionAbsoluteY: 0,
       };
 
       setNodes((nds) => [...nds, newNode]);
@@ -212,6 +245,7 @@ function Flow({ event }: { event: Event }) {
         <Controls position="bottom-right" />
         <MiniMap position="bottom-left" pannable zoomable />
         <Legend />
+        <EventMapSelect eventId={event.id} locations={event.locations} />
         <NavButtons />
       </ReactFlow>
       <Button
@@ -236,10 +270,16 @@ function Flow({ event }: { event: Event }) {
   );
 }
 
-export default function EventFlow({ event }: { event: Event }) {
+export default function EventFlow({
+  event,
+  location,
+}: {
+  event: EventWithLocation;
+  location: string;
+}) {
   return (
     <ReactFlowProvider>
-      <Flow event={event} />
+      <Flow event={event} location={location} />
     </ReactFlowProvider>
   );
 }

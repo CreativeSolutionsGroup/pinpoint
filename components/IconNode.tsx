@@ -7,13 +7,13 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@mui/material";
-import { useReactFlow } from "@xyflow/react";
-import React from "react";
+import { NodeProps, useReactFlow } from "@xyflow/react";
+import { CustomNode } from "@/types/CustomNode";
 
-export default function IconNode({ data, id }) {
+export function IconNode({ data, id }: NodeProps<CustomNode>) {
   const { deleteElements } = useReactFlow();
   // Get the icon component from the Lucide icons
-  const IconComponent = Icons[data.iconName];
+  const IconComponent = Icons[data.iconName as keyof typeof Icons.icons];
 
   const handleDelete = () => {
     deleteElements({ nodes: [{ id }] });
