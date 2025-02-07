@@ -7,7 +7,7 @@ import { IconNode } from "@components/IconNode";
 import Legend from "@components/Legend";
 import { Button } from "@mui/material";
 import { createId } from "@paralleldrive/cuid2";
-import { Event, Location } from "@prisma/client";
+import { Event, EventToLocation, Location } from "@prisma/client";
 import {
   applyNodeChanges,
   Controls,
@@ -33,7 +33,9 @@ const nodeTypes = {
 };
 
 interface EventWithLocation extends Event {
-  locations: Location[];
+  locations: (EventToLocation & {
+    location: Location;
+  })[];
 }
 
 function Flow({
@@ -43,8 +45,9 @@ function Flow({
   event: EventWithLocation;
   location: string;
 }) {
+  const eventLocation = event.locations.find((l) => l.locationId === location);
   const [nodes, setNodes] = useState<CustomNode[]>(
-    JSON.parse(event.state ? event.state : "{}")?.nodes || []
+    JSON.parse(eventLocation?.state ?? "{}")?.nodes || []
   );
 
   const [menuVisible, setMenuVisible] = useState(false);
@@ -56,9 +59,11 @@ function Flow({
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
+    if (nodes.length > 0) return;
+
     const imageURL = `/maps/${
-      event.locations.find((loc: Location) => loc.id == location)?.imageURL ||
-      event.locations[0].imageURL
+      event.locations.find((loc) => loc.locationId == location)?.location
+        .imageURL || event.locations[0].location.imageURL
     }`;
 
     const initialNodes: CustomNode[] = [
@@ -80,7 +85,7 @@ function Flow({
     ];
 
     setNodes(initialNodes);
-  }, [location, event.locations]);
+  }, [location, event.locations, nodes]);
 
   const [rfInstance, setRfInstance] = useState<ReactFlowInstance<
     CustomNode,
@@ -245,13 +250,16 @@ function Flow({
         <Controls position="bottom-right" />
         <MiniMap position="bottom-left" pannable zoomable />
         <Legend />
-        <EventMapSelect eventId={event.id} locations={event.locations} />
+        <EventMapSelect
+          eventId={event.id}
+          locations={event.locations.map((l) => l.location)}
+        />
         <NavButtons />
       </ReactFlow>
       <Button
         onClick={() =>
-          rfInstance &&
-          SaveState(event.id, JSON.stringify(rfInstance.toObject()))
+          rfInstance && eventLocation &&
+          SaveState(event.id, eventLocation.locationId, JSON.stringify(rfInstance.toObject()))
         }
         style={{ position: "fixed", top: "4rem", right: 16 }}
         variant="contained"

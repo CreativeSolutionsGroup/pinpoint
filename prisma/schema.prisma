@@ -8,16 +8,27 @@ datasource db {
 }
 
 model Event {
-  id              String            @id @default(cuid())
-  name            String
-  EventToLocation EventToLocation[]
+  id        String            @id @default(cuid())
+  name      String
+  locations EventToLocation[]
+}
+
+model EventToLocation {
+  id         String   @id @default(cuid())
+  eventId    String
+  locationId String
+  state      String   @default("{}")
+  event      Event    @relation(fields: [eventId], references: [id])
+  location   Location @relation(fields: [locationId], references: [id])
+
+  @@unique([eventId, locationId])
 }
 
 model Location {
-  id              String            @id @default(cuid())
-  name            String
-  imageURL        String            @default("https://placehold.co/600x400")
-  EventToLocation EventToLocation[]
+  id       String            @id @default(cuid())
+  name     String
+  imageURL String            @default("https://placehold.co/600x400")
+  events   EventToLocation[]
 }
 
 model Account {
@@ -74,17 +85,6 @@ model VerificationRequest {
   updatedAt  DateTime @updatedAt
 
   @@unique([identifier, token])
-}
-
-model EventToLocation {
-  id         String   @id
-  eventId    String
-  locationId String
-  state      String   @default("{}")
-  Event      Event    @relation(fields: [eventId], references: [id])
-  Location   Location @relation(fields: [locationId], references: [id])
-
-  @@unique([eventId, locationId])
 }
 
 enum Roles {

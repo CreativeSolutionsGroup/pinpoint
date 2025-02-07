@@ -14,7 +14,11 @@ export default async function EventMainPage({
       id: p.eventId,
     },
     include: {
-      locations: true,
+      locations: {
+        include: {
+          location: true,
+        }
+      }
     },
   });
 
@@ -29,7 +33,7 @@ export default async function EventMainPage({
   return (
     <EventFlow
       event={event}
-      location={p.locationId?.[0] ?? event.locations[0].id}
+      location={p.locationId?.[0] ?? event.locations[0].locationId}
     />
   );
 }

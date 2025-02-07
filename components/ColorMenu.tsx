@@ -1,5 +1,5 @@
 "use client";
-import { Button, Card, Chip } from "@mui/material";
+import { Button, Card, Chip, ChipPropsColorOverrides } from "@mui/material";
 
 export default function ColorMenu(props: {
   x: number;
@@ -20,12 +20,12 @@ export default function ColorMenu(props: {
     props.changeColor(color);
   }
 
-  const buttons = colorArray.map((label, index) => (
+  const buttons = colorArray.map((label , index) => (
     <Button key={index} onClick={() => onColorClick(label)}>
       <Chip
-        className="w-8 h-8"
-        color={label}
-        sx={{ border: 2, borderColor: "grey.300" }}
+      className="w-8 h-8"
+      color={label as keyof ChipPropsColorOverrides}
+      sx={{ border: 2, borderColor: "grey.300" }}
       />
     </Button>
   ));

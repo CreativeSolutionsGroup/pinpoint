@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, DragEvent } from "react";
 import { Trash2 } from "lucide-react";
 import { useReactFlow } from "@xyflow/react";
 
@@ -6,7 +6,7 @@ const TrashDropZone = () => {
   const [isOver, setIsOver] = useState(false);
   const { setNodes, getNode } = useReactFlow();
 
-  const handleDragOver = (e) => {
+  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsOver(true);
   };
@@ -15,7 +15,7 @@ const TrashDropZone = () => {
     setIsOver(false);
   };
 
-  const handleDrop = (e) => {
+  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     const nodeId = e.dataTransfer.getData("application/reactflow");
     if (nodeId) {
