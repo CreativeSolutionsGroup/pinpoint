@@ -4,9 +4,10 @@ import { prisma } from "@/lib/api/db";
 export default async function EventLivePage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ eventId: string }>;
 }) {
-  const eventData = await prisma.event.findFirst({ where: { id: params.id } });
+  const { eventId: id } = await params;
+  const eventData = await prisma.event.findFirst({ where: { id } });
 
   if (!eventData) {
     return <div>Event not found</div>;
