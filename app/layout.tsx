@@ -1,4 +1,3 @@
-"use client"
 import AblyClientProvider from "@/components/AblyProvider";
 import ClientProvider from "@/components/ClientProvider";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v14-appRouter";
