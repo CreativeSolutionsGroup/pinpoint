@@ -21,5 +21,5 @@ export default withAuth(
 );
 
 export const config = {
-  matcher: ["/(.*)"],
+  matcher: ["/((?!.swa).*)"],
 };
