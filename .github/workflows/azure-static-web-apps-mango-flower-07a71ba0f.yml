@@ -34,7 +34,12 @@ jobs:
           app_build_command: "yarn prodBuild"
           ###### End of Repository/Build Configurations ######
         env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          MS_CLIENT_ID: ${{ secrets.MS_CLIENT_ID }}
+          MS_CLIENT_SECRET: ${{ secrets.MS_CLIENT_SECRET }}
+          MS_TENANT_ID: ${{ secrets.MS_TENANT_ID }}
           NEXT_PUBLIC_ABLY_API_KEY: ${{ secrets.NEXT_PUBLIC_ABLY_API_KEY }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
