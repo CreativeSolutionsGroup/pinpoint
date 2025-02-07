@@ -4,6 +4,13 @@ import AzureADProvider from "next-auth/providers/azure-ad";
 import { prisma } from "@/lib/api/db";
 import { AuthorizedUser, Roles } from "@prisma/client";
 
+declare module "next-auth" {
+  interface Session {
+    id_token: unknown;
+    isAdmin: boolean;
+  }
+}
+
 const defaultOptions: NextAuthOptions = {
   providers: [
     AzureADProvider({
@@ -41,7 +48,7 @@ const defaultOptions: NextAuthOptions = {
       session.id_token = token.id_token;
 
       // session.roles = token.roles;
-      session.isAdmin = token.isAdmin;
+      session.isAdmin = token.isAdmin as boolean;
 
       return session;
     },

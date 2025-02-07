@@ -44,6 +44,7 @@ export function CustomImageNode ({ data }: NodeProps<CustomNode>) {
         // MAINTAIN CONSISTENT IMAGE DIMENSIONS
         width: dimensions.width,
         height: dimensions.height,
+        position: "relative",
       }}
     >
       <Image
@@ -53,6 +54,7 @@ export function CustomImageNode ({ data }: NodeProps<CustomNode>) {
         style={{
           objectFit: "cover",
         }}
+        priority
       />
     </div>
   );
