@@ -2,6 +2,20 @@
 
 import { prisma } from "../db";
 
-export default async function SaveState(eventId: string, state: string) {
-  await prisma.event.update({ where: { id: eventId }, data: { state } });
+export default async function SaveState(
+  eventId: string,
+  locationId: string,
+  state: string
+) {
+  await prisma.eventToLocation.update({
+    where: {
+      eventId_locationId: {
+        eventId,
+        locationId,
+      },
+    },
+    data: {
+      state,
+    },
+  });
 }
