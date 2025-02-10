@@ -20,8 +20,10 @@ import {
   useReactFlow,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import NavButtons from "./navButtons";
+import { ChannelProvider, useChannel } from "ably/react";
+import { GetEventLocationInfo } from "@/lib/api/save/GetEventLocationInfo";
 
 const getId = () => createId();
 
@@ -44,6 +46,23 @@ function Flow({
   event: EventWithLocation;
   location: string;
 }) {
+  const timeoutId = useRef<NodeJS.Timeout>();
+
+  useChannel("event-updates", "subscribe", (message) => {
+    const { eventId, locationId } = message.data;
+
+    if (eventId !== event.id || locationId !== eventLocation?.locationId)
+      return;
+
+    GetEventLocationInfo(eventId, locationId).then((eventLocationInfo) => {
+      if (!eventLocationInfo?.state) return;
+
+      const state = JSON.parse(eventLocationInfo.state);
+
+      setNodes(state.nodes);
+    });
+  });
+
   const eventLocation = event.locations.find((l) => l.locationId === location);
   const [nodes, setNodes] = useState<CustomNode[]>(
     JSON.parse(eventLocation?.state ?? "{}")?.nodes || []
@@ -88,9 +107,20 @@ function Flow({
   > | null>(null);
 
   const onNodesChange = useCallback(
-    (changes: NodeChange[]) =>
-      setNodes((nds) => applyNodeChanges(changes, nds) as CustomNode[]),
-    [setNodes]
+    (changes: NodeChange[]) => {
+      setNodes((nds) => applyNodeChanges(changes, nds) as CustomNode[]);
+      clearTimeout(timeoutId.current);
+      timeoutId.current = setTimeout(() => {
+        rfInstance &&
+          eventLocation &&
+          SaveState(
+            event.id,
+            eventLocation.locationId,
+            JSON.stringify(rfInstance.toObject())
+          );
+      }, 500);
+    },
+    [event.id, eventLocation, rfInstance]
   );
 
   // Update mouse position
@@ -229,8 +259,13 @@ function Flow({
       </ReactFlow>
       <Button
         onClick={() =>
-          rfInstance && eventLocation &&
-          SaveState(event.id, eventLocation.locationId, JSON.stringify(rfInstance.toObject()))
+          rfInstance &&
+          eventLocation &&
+          SaveState(
+            event.id,
+            eventLocation.locationId,
+            JSON.stringify(rfInstance.toObject())
+          )
         }
         style={{ position: "fixed", top: "4rem", right: 16 }}
         variant="contained"
@@ -250,7 +285,9 @@ export default function EventFlow({
 }) {
   return (
     <ReactFlowProvider>
-      <Flow event={event} location={location} />
+      <ChannelProvider channelName="event-updates">
+        <Flow event={event} location={location} />
+      </ChannelProvider>
     </ReactFlowProvider>
   );
 }

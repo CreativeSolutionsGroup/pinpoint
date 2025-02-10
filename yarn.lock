@@ -1185,7 +1185,7 @@
     d3-selection "^3.0.0"
     d3-zoom "^3.0.0"
 
-ably@^2.5.0:
+ably@^2.6.3:
   version "2.6.3"
   resolved "https://registry.yarnpkg.com/ably/-/ably-2.6.3.tgz#523960c6cda7cc6405637f9bd129d78b4779f658"
   integrity sha512-M3YP4+fX1SrJXPPf5wTIWTZoKKqygxTYvrEGuqorOXFo19/ezbSIPZaY+U2znFfuK82k/LAEF7Q4sJ4oIgO1AA==
