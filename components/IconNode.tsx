@@ -20,19 +20,24 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
   };
 
   return (
-    <Popover>
-      <PopoverTrigger>
-        <IconComponent className="w-6 h-6 text-gray-700 bg-white" />
-      </PopoverTrigger>
-      <PopoverContent className="w-80">
-        <div className="grid gap-4">
-          Place content for the popover here.
-          <Button onClick={handleDelete} color="warning">
-            Delete
-          </Button>
-        </div>
-      </PopoverContent>
-    </Popover>
+    <>
+      <Popover>
+        <PopoverTrigger>
+          <IconComponent
+            style={{ color: data.color }}
+            className="w-6 h-6 text-gray-700"
+          />
+        </PopoverTrigger>
+        <PopoverContent className="w-80">
+          <div className="grid gap-4">
+            Place content for the popover here.
+            <Button onClick={handleDelete} color="warning">
+              Delete
+            </Button>
+          </div>
+        </PopoverContent>
+      </Popover>
+    </>
   );
 
   /* return (
