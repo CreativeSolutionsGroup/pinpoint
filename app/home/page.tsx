@@ -15,11 +15,18 @@ import EventSelectForm from "@/components/EventSelectForm";
 import { prisma } from "@/lib/api/db";
 import ErrorToast from "@/components/ErrorToast";
 import { Suspense } from "react";
+import { getServerSession } from "next-auth";
 
 // Collect all events from doradev database
 export default async function EventSelect() {
   const events = await prisma.event.findMany({
-    select: { id: true, name: true },
+    select: { id: true, name: true, locations: true },
+  });
+  const session = await getServerSession();
+  const authUser = await prisma.authorizedUser.findFirst({
+    where: {
+      email: session?.user?.email ?? "",
+    },
   });
 
   return (
@@ -38,8 +45,7 @@ export default async function EventSelect() {
       >
         Select an Event
       </Typography>
-
-      <EventSelectForm events={events} />
+      <EventSelectForm events={events} authUser={authUser} />
       <Suspense>
         <ErrorToast />
       </Suspense>

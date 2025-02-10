@@ -18,7 +18,7 @@ interface EventMapsSelectProps {
 
 export default function EventMapsSelect({ eventId, locations }: EventMapsSelectProps) {
   const router = useRouter();
-
+  
   return (
     <Panel
       position="bottom-center"

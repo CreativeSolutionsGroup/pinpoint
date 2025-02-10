@@ -19,14 +19,18 @@ import {
   SelectChangeEvent,
 } from "@mui/material";
 import { useState } from "react";
-
-import { Event } from "@prisma/client";
+import { $Enums, Event } from "@prisma/client";
 import { useRouter } from "next/navigation";
 
 export default function EventSelectForm({
   events,
+  authUser
 }: {
   events: Pick<Event, "id" | "name">[];
+  authUser: {id: string;
+            email: string;
+            role: $Enums.Roles;
+            } | null
 }) {
   const router = useRouter();
   const [notSelected, setSelected] = useState(true);
@@ -35,6 +39,10 @@ export default function EventSelectForm({
     setSelected(false);
     setEventId(e.target.value);
   };
+
+  async function handleClick() {
+    router.push(`/event/${eventId}/${authUser?.role}/0`);
+  }
 
   return (
     <>
@@ -65,7 +73,7 @@ export default function EventSelectForm({
         disabled={notSelected}
         variant="contained"
         sx={{ mt: 2, maxWidth: "fit-content", alignSelf: "end" }}
-        onClick={() => router.push(`/event/${eventId}`)}
+        onClick={handleClick}
       >
         Select
       </Button>
