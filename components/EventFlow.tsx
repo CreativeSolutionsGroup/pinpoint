@@ -40,9 +40,11 @@ interface EventWithLocation extends Event {
 function Flow({
   event,
   location,
+  isEditable,
 }: {
   event: EventWithLocation;
   location: string;
+  isEditable: boolean;
 }) {
   const eventLocation = event.locations.find((l) => l.locationId === location);
   const [nodes, setNodes] = useState<CustomNode[]>(
@@ -88,23 +90,29 @@ function Flow({
   > | null>(null);
 
   const onNodesChange = useCallback(
+    // allow node changes only on edit mode
     (changes: NodeChange[]) =>
+      isEditable &&
       setNodes((nds) => applyNodeChanges(changes, nds) as CustomNode[]),
-    [setNodes]
+    [setNodes, isEditable]
   );
 
-  // Update mouse position
+  // Update mouse position - only in edit mode
   useEffect(() => {
+    if (!isEditable) return;
+
     const handleMouseMove = (event: MouseEvent) => {
       setMousePosition({ x: event.clientX, y: event.clientY });
     };
 
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
+  }, [isEditable]);
 
-  // Handle keyboard shortcuts
+  // Handle keyboard shortcuts - only in edit mode
   useEffect(() => {
+    if (!isEditable) return;
+
     const handleKeyDown = async (event: KeyboardEvent) => {
       // Copy
       if (event.key === "c" && (event.ctrlKey || event.metaKey)) {
@@ -155,15 +163,24 @@ function Flow({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [nodes, mousePosition, screenToFlowPosition, setNodes]);
+  }, [nodes, mousePosition, screenToFlowPosition, setNodes, isEditable]);
 
-  const onDragOver = useCallback((event: React.DragEvent) => {
-    event.preventDefault();
-    event.dataTransfer.dropEffect = "move";
-  }, []);
+  const onDragOver = useCallback(
+    (event: React.DragEvent) => {
+      event.preventDefault();
+      // block drag overs on view mode
+      if (isEditable) {
+        event.dataTransfer.dropEffect = "move";
+      }
+    },
+    [isEditable]
+  );
 
   const onDrop = useCallback(
     (event: React.DragEvent<HTMLDivElement>) => {
+      // block drag and drops on view mode
+      if (!isEditable) return;
+
       event.preventDefault();
 
       const jsonData = event.dataTransfer.getData("application/reactflow");
@@ -202,7 +219,7 @@ function Flow({
 
       setNodes((nds) => [...nds, newNode]);
     },
-    [screenToFlowPosition, setNodes]
+    [screenToFlowPosition, setNodes, isEditable]
   );
 
   return (
@@ -216,27 +233,40 @@ function Flow({
         onDragOver={onDragOver}
         onInit={setRfInstance}
         nodeTypes={nodeTypes}
+        nodesDraggable={isEditable}
+        elementsSelectable={isEditable}
         className="touch-none"
       >
         <Controls position="bottom-right" />
         <MiniMap position="bottom-left" pannable zoomable />
-        <Legend />
+
+        {/* Hide legend on view only mode */}
+        {isEditable && <Legend />}
         <EventMapSelect
           eventId={event.id}
           locations={event.locations.map((l) => l.location)}
         />
         <NavButtons />
       </ReactFlow>
-      <Button
-        onClick={() =>
-          rfInstance && eventLocation &&
-          SaveState(event.id, eventLocation.locationId, JSON.stringify(rfInstance.toObject()))
-        }
-        style={{ position: "fixed", top: "4rem", right: 16 }}
-        variant="contained"
-      >
-        Save
-      </Button>
+
+      {/* Hide save button in view mode */}
+      {isEditable && (
+        <Button
+          onClick={() =>
+            rfInstance &&
+            eventLocation &&
+            SaveState(
+              event.id,
+              eventLocation.locationId,
+              JSON.stringify(rfInstance.toObject())
+            )
+          }
+          style={{ position: "fixed", top: "4rem", right: 16 }}
+          variant="contained"
+        >
+          Save
+        </Button>
+      )}
     </div>
   );
 }
@@ -244,13 +274,15 @@ function Flow({
 export default function EventFlow({
   event,
   location,
+  isEditable,
 }: {
   event: EventWithLocation;
   location: string;
+  isEditable: boolean;
 }) {
   return (
     <ReactFlowProvider>
-      <Flow event={event} location={location} />
+      <Flow event={event} location={location} isEditable={isEditable} />
     </ReactFlowProvider>
   );
 }
