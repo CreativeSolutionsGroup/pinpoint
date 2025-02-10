@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "../db";
+import * as Ably from "ably";
 
 export default async function SaveState(
   eventId: string,
@@ -17,5 +18,15 @@ export default async function SaveState(
     data: {
       state,
     },
+  });
+
+  const client = new Ably.Rest({
+    key: process.env.ABLY_API_KEY,
+  });
+
+  const channel = client.channels.get("event-updates");
+  await channel.publish(`subscribe`, {
+    eventId,
+    locationId,
   });
 }
