@@ -117,7 +117,8 @@ function Flow({
 
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
-      isEditable && setNodes((nds) => applyNodeChanges(changes, nds) as CustomNode[]);
+      isEditable &&
+        setNodes((nds) => applyNodeChanges(changes, nds) as CustomNode[]);
       clearTimeout(timeoutId.current);
       timeoutId.current = setTimeout(() => {
         rfInstance &&
@@ -129,7 +130,7 @@ function Flow({
           );
       }, 500);
     },
-    [event.id, eventLocation, rfInstance]
+    [event.id, eventLocation, rfInstance, isEditable]
   );
 
   // Color the most recently placed icon, if it hasn't been colored yet
@@ -311,17 +312,14 @@ function Flow({
         <Button
           onClick={() =>
             rfInstance &&
-           
-          eventLocation &&
+            eventLocation &&
             SaveState(
-              
-            event.id,
-             
-            eventLocation.locationId,
-             
-            JSON.stringify(rfInstance.toObject())
-            
-          )
+              event.id,
+
+              eventLocation.locationId,
+
+              JSON.stringify(rfInstance.toObject())
+            )
           }
           style={{ position: "fixed", top: "4rem", right: 16 }}
           variant="contained"
