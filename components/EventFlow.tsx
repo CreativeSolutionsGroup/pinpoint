@@ -43,9 +43,11 @@ interface EventWithLocation extends Event {
 function Flow({
   event,
   location,
+  isEditable,
 }: {
   event: EventWithLocation;
   location: string;
+  isEditable: boolean;
 }) {
   const timeoutId = useRef<NodeJS.Timeout>();
 
@@ -115,7 +117,8 @@ function Flow({
 
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
-      setNodes((nds) => applyNodeChanges(changes, nds) as CustomNode[]);
+      isEditable &&
+        setNodes((nds) => applyNodeChanges(changes, nds) as CustomNode[]);
       clearTimeout(timeoutId.current);
       timeoutId.current = setTimeout(() => {
         rfInstance &&
@@ -127,7 +130,7 @@ function Flow({
           );
       }, 500);
     },
-    [event.id, eventLocation, rfInstance]
+    [event.id, eventLocation, rfInstance, isEditable]
   );
 
   // Color the most recently placed icon, if it hasn't been colored yet
@@ -145,18 +148,22 @@ function Flow({
     setCurrentNodeId(null);
   }
 
-  // Update mouse position
+  // Update mouse position - only in edit mode
   useEffect(() => {
+    if (!isEditable) return;
+
     const handleMouseMove = (event: MouseEvent) => {
       setMousePosition({ x: event.clientX, y: event.clientY });
     };
 
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
+  }, [isEditable]);
 
-  // Handle keyboard shortcuts
+  // Handle keyboard shortcuts - only in edit mode
   useEffect(() => {
+    if (!isEditable) return;
+
     const handleKeyDown = async (event: KeyboardEvent) => {
       // Copy
       if (event.key === "c" && (event.ctrlKey || event.metaKey)) {
@@ -207,15 +214,24 @@ function Flow({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [nodes, mousePosition, screenToFlowPosition, setNodes]);
+  }, [nodes, mousePosition, screenToFlowPosition, setNodes, isEditable]);
 
-  const onDragOver = useCallback((event: React.DragEvent) => {
-    event.preventDefault();
-    event.dataTransfer.dropEffect = "move";
-  }, []);
+  const onDragOver = useCallback(
+    (event: React.DragEvent) => {
+      event.preventDefault();
+      // block drag overs on view mode
+      if (isEditable) {
+        event.dataTransfer.dropEffect = "move";
+      }
+    },
+    [isEditable]
+  );
 
   const onDrop = useCallback(
     (event: React.DragEvent<HTMLDivElement>) => {
+      // block drag and drops on view mode
+      if (!isEditable) return;
+
       event.preventDefault();
 
       const jsonData = event.dataTransfer.getData("application/reactflow");
@@ -261,7 +277,7 @@ function Flow({
 
       setDropPosition({ x: event.clientX, y: event.clientY });
     },
-    [screenToFlowPosition, setNodes]
+    [screenToFlowPosition, setNodes, isEditable]
   );
 
   return (
@@ -275,32 +291,42 @@ function Flow({
         onDragOver={onDragOver}
         onInit={setRfInstance}
         nodeTypes={nodeTypes}
+        nodesDraggable={isEditable}
+        elementsSelectable={isEditable}
         className="touch-none"
       >
         <Controls position="bottom-right" />
         <MiniMap position="bottom-left" pannable zoomable />
-        <Legend />
+
+        {/* Hide legend on view only mode */}
+        {isEditable && <Legend />}
         <EventMapSelect
           eventId={event.id}
           locations={event.locations.map((l) => l.location)}
         />
         <NavButtons />
       </ReactFlow>
-      <Button
-        onClick={() =>
-          rfInstance &&
-          eventLocation &&
-          SaveState(
-            event.id,
-            eventLocation.locationId,
-            JSON.stringify(rfInstance.toObject())
-          )
-        }
-        style={{ position: "fixed", top: "4rem", right: 16 }}
-        variant="contained"
-      >
-        Save
-      </Button>
+
+      {/* Hide save button in view mode */}
+      {isEditable && (
+        <Button
+          onClick={() =>
+            rfInstance &&
+            eventLocation &&
+            SaveState(
+              event.id,
+
+              eventLocation.locationId,
+
+              JSON.stringify(rfInstance.toObject())
+            )
+          }
+          style={{ position: "fixed", top: "4rem", right: 16 }}
+          variant="contained"
+        >
+          Save
+        </Button>
+      )}
 
       {menuVisible ? (
         <ColorMenu
@@ -316,14 +342,16 @@ function Flow({
 export default function EventFlow({
   event,
   location,
+  isEditable,
 }: {
   event: EventWithLocation;
   location: string;
+  isEditable: boolean;
 }) {
   return (
     <ReactFlowProvider>
       <ChannelProvider channelName="event-updates">
-        <Flow event={event} location={location} />
+        <Flow event={event} location={location} isEditable={isEditable} />
       </ChannelProvider>
     </ReactFlowProvider>
   );
