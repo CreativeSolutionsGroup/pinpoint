@@ -24,7 +24,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import NavButtons from "./navButtons";
 import { ChannelProvider, useChannel } from "ably/react";
 import { GetEventLocationInfo } from "@/lib/api/save/GetEventLocationInfo";
-import ColorMenu from "./ColorMenu";
 
 const getId = () => createId();
 
@@ -71,10 +70,6 @@ function Flow({
     JSON.parse(eventLocation?.state ?? "{}")?.nodes || []
   );
 
-  const [menuVisible, setMenuVisible] = useState(false);
-
-  const [currentNodeId, setCurrentNodeId] = useState<string | null>(null); // tracking most recent icon
-
   const { screenToFlowPosition } = useReactFlow();
 
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -113,8 +108,6 @@ function Flow({
     Edge
   > | null>(null);
 
-  const [dropPosition, setDropPosition] = useState({ x: 0, y: 0 });
-
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
       isEditable &&
@@ -132,21 +125,6 @@ function Flow({
     },
     [event.id, eventLocation, rfInstance, isEditable]
   );
-
-  // Color the most recently placed icon, if it hasn't been colored yet
-  function changeColor(colorSelected: string) {
-    if (!currentNodeId) return;
-
-    setNodes((nds) =>
-      nds.map((node) =>
-        node.id === currentNodeId
-          ? { ...node, data: { ...node.data, color: colorSelected } }
-          : node
-      )
-    );
-    setMenuVisible(false);
-    setCurrentNodeId(null);
-  }
 
   // Update mouse position - only in edit mode
   useEffect(() => {
@@ -270,12 +248,6 @@ function Flow({
       };
 
       setNodes((nds) => [...nds, newNode]);
-
-      // prepare to color the new icon
-      setCurrentNodeId(newNode.id); // Track new node ID
-      setMenuVisible(true);
-
-      setDropPosition({ x: event.clientX, y: event.clientY });
     },
     [screenToFlowPosition, setNodes, isEditable]
   );
