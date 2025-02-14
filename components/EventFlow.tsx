@@ -327,14 +327,6 @@ function Flow({
           Save
         </Button>
       )}
-
-      {menuVisible ? (
-        <ColorMenu
-          x={dropPosition.x}
-          y={dropPosition.y}
-          changeColor={changeColor}
-        />
-      ) : null}
     </div>
   );
 }

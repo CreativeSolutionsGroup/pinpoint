@@ -1,12 +1,13 @@
 "use client";
-import { Button, Card, Chip, ChipPropsColorOverrides } from "@mui/material";
+import { Button, Chip, ChipPropsColorOverrides, Paper } from "@mui/material";
 
 export default function ColorMenu(props: {
+  fixedPos?: boolean;
   x: number;
   y: number;
   changeColor: (colorSelected: string) => void;
 }) {
-  const mainStyle = `fixed z-10 bg-white shadow-md rounded-md`;
+  const mainStyle = `z-10 bg-white shadow-md rounded-md flex items-center`;
   const colorArray = [
     "lightblue",
     "navy",
@@ -31,11 +32,11 @@ export default function ColorMenu(props: {
   ));
 
   return (
-    <Card
-      className={mainStyle}
+    <Paper
+      className={'fixed' + mainStyle}
       style={{ left: props.x + 25, top: props.y + 25 }}
     >
       {buttons}
-    </Card>
+    </Paper>
   );
 }
