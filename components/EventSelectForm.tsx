@@ -3,8 +3,8 @@
  * @author Isaac Lloyd
  * @author Chase Evans
  * @param {Event[]} events - List of events to select from
+ * @param {boolean} isEditable - Does the user have edit permissions?
  * @returns {JSX.Element} - Event select form
- * Event Select Form component to enable select button when an event is selected
  */
 
 "use client";
@@ -19,7 +19,6 @@ import {
   SelectChangeEvent,
 } from "@mui/material";
 import { useState } from "react";
-
 import { Event } from "@prisma/client";
 import { useRouter } from "next/navigation";
 
@@ -34,6 +33,12 @@ export default function EventSelectForm({
   const handleChange = (e: SelectChangeEvent) => {
     setSelected(false);
     setEventId(e.target.value);
+  };
+
+  const handleClick = () => {
+    // always push to /edit, it'll auto redirect
+    // if user doesn't have permission
+    router.push(`/event/edit/${eventId}`);
   };
 
   return (
@@ -65,7 +70,7 @@ export default function EventSelectForm({
         disabled={notSelected}
         variant="contained"
         sx={{ mt: 2, maxWidth: "fit-content", alignSelf: "end" }}
-        onClick={() => router.push(`/event/${eventId}`)}
+        onClick={handleClick}
       >
         Select
       </Button>

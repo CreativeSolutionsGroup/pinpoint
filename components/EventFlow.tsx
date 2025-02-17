@@ -20,8 +20,11 @@ import {
   useReactFlow,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import NavButtons from "./navButtons";
+import { ChannelProvider, useChannel } from "ably/react";
+import { GetEventLocationInfo } from "@/lib/api/save/GetEventLocationInfo";
+import ColorMenu from "./ColorMenu";
 
 const getId = () => createId();
 
@@ -40,14 +43,37 @@ interface EventWithLocation extends Event {
 function Flow({
   event,
   location,
+  isEditable,
 }: {
   event: EventWithLocation;
   location: string;
+  isEditable: boolean;
 }) {
+  const timeoutId = useRef<NodeJS.Timeout>();
+
+  useChannel("event-updates", "subscribe", (message) => {
+    const { eventId, locationId } = message.data;
+
+    if (eventId !== event.id || locationId !== eventLocation?.locationId)
+      return;
+
+    GetEventLocationInfo(eventId, locationId).then((eventLocationInfo) => {
+      if (!eventLocationInfo?.state) return;
+
+      const state = JSON.parse(eventLocationInfo.state);
+
+      setNodes(state.nodes);
+    });
+  });
+
   const eventLocation = event.locations.find((l) => l.locationId === location);
   const [nodes, setNodes] = useState<CustomNode[]>(
     JSON.parse(eventLocation?.state ?? "{}")?.nodes || []
   );
+
+  const [menuVisible, setMenuVisible] = useState(false);
+
+  const [currentNodeId, setCurrentNodeId] = useState<string | null>(null); // tracking most recent icon
 
   const { screenToFlowPosition } = useReactFlow();
 
@@ -64,7 +90,7 @@ function Flow({
 
   const onUndo = useCallback(() => {
     if (undoStack.length === 0) return;
-    
+
     // Save current state to redo stack
     if (rfInstance) {
       const currentState = JSON.stringify(rfInstance.toObject());
@@ -73,15 +99,15 @@ function Flow({
 
     // Get and remove last state from undo stack
     const previousState = undoStack[undoStack.length - 1];
-    setUndoStack((stack) => stack.slice(0, -1));
+    setUndoStack((stack) => (stack.length > 1 ? stack.slice(0, -1) : stack));
 
     // Restore the previous state
     if (previousState) {
       const parsedState = JSON.parse(previousState);
       setNodes(parsedState.nodes || []);
     }
-    console.log(undoStack);
-  }, [undoStack, rfInstance, setNodes, setRedoStack]);
+    console.log("Undo stack", undoStack);
+  }, [undoStack, rfInstance]);
 
   // Redo function
   const onRedo = useCallback(() => {
@@ -102,7 +128,8 @@ function Flow({
       const parsedState = JSON.parse(nextState);
       setNodes(parsedState.nodes || []);
     }
-}, [redoStack, rfInstance, setNodes, setUndoStack]);
+    console.log("Redo stack", redoStack);
+  }, [redoStack, rfInstance, setNodes, setUndoStack]);
 
   useEffect(() => {
     if (nodes.length > 0) return;
@@ -133,38 +160,39 @@ function Flow({
     setNodes(initialNodes);
   }, [location, event.locations, nodes]);
 
+  const [dropPosition, setDropPosition] = useState({ x: 0, y: 0 });
+
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
-      // Only save state for non-selection changes
-      const hasNonSelectionChange = changes.some(
-        change => change.type !== 'select' && change.type !== 'position'
-      );
-  
-      if (!hasNonSelectionChange) {
-        // Just apply the changes without saving state
-        setNodes((nds) => applyNodeChanges(changes, nds) as CustomNode[]);
-        return;
-      }
-  
+      clearTimeout(timeoutId.current);
+      timeoutId.current = setTimeout(() => {
+        rfInstance &&
+          eventLocation &&
+          SaveState(
+            event.id,
+            eventLocation.locationId,
+            JSON.stringify(rfInstance.toObject())
+          );
+
+        if (rfInstance) {
+          const currentState = JSON.stringify(rfInstance.toObject());
+          if (currentState !== undoStack[undoStack.length - 1]) {
+            setUndoStack((stack) => [...stack, currentState]);
+            setRedoStack([]); // Clear redo stack when new changes occur
+          }
+        }
+      }, 500);
+
+      console.log("Node changes", undoStack);
+
       // For meaningful changes, update nodes and save state
       setNodes((nds) => {
         const newNodes = applyNodeChanges(changes, nds) as CustomNode[];
-        
-        // Save state only after ensuring nodes have been updated
-        setTimeout(() => {
-          if (rfInstance) {
-            const currentState = JSON.stringify(rfInstance.toObject());
-            if (currentState !== undoStack[undoStack.length-1]) {
-              setUndoStack((stack) => [...stack, currentState]);
-              setRedoStack([]); // Clear redo stack when new changes occur
-            }
-          }
-        }, 0);
-        
+
         return newNodes;
       });
     },
-    [setNodes, rfInstance, setUndoStack, setRedoStack, undoStack]
+    [rfInstance, undoStack, eventLocation, event.id]
   );
 
   //history management
@@ -173,7 +201,7 @@ function Flow({
 
   // const onUndo = useCallback(() => {
   //   if (undoStack.length === 0) return;
-    
+
   //   //save current state to redo stack
   //   const currentState = JSON.stringify(rfInstance?.toObject());
   //   if (currentState) {
@@ -211,18 +239,37 @@ function Flow({
   //   }
   // }, [redoStack, setNodes, rfInstance]);
 
-  // Update mouse position
+  // Color the most recently placed icon, if it hasn't been colored yet
+  function changeColor(colorSelected: string) {
+    if (!currentNodeId) return;
+
+    setNodes((nds) =>
+      nds.map((node) =>
+        node.id === currentNodeId
+          ? { ...node, data: { ...node.data, color: colorSelected } }
+          : node
+      )
+    );
+    setMenuVisible(false);
+    setCurrentNodeId(null);
+  }
+
+  // Update mouse position - only in edit mode
   useEffect(() => {
+    if (!isEditable) return;
+
     const handleMouseMove = (event: MouseEvent) => {
       setMousePosition({ x: event.clientX, y: event.clientY });
     };
 
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
+  }, [isEditable]);
 
-  // Handle keyboard shortcuts
+  // Handle keyboard shortcuts - only in edit mode
   useEffect(() => {
+    if (!isEditable) return;
+
     const handleKeyDown = async (event: KeyboardEvent) => {
       // Copy
       if (event.key === "c" && (event.ctrlKey || event.metaKey)) {
@@ -273,15 +320,24 @@ function Flow({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [nodes, mousePosition, screenToFlowPosition, setNodes]);
+  }, [nodes, mousePosition, screenToFlowPosition, setNodes, isEditable]);
 
-  const onDragOver = useCallback((event: React.DragEvent) => {
-    event.preventDefault();
-    event.dataTransfer.dropEffect = "move";
-  }, []);
+  const onDragOver = useCallback(
+    (event: React.DragEvent) => {
+      event.preventDefault();
+      // block drag overs on view mode
+      if (isEditable) {
+        event.dataTransfer.dropEffect = "move";
+      }
+    },
+    [isEditable]
+  );
 
   const onDrop = useCallback(
     (event: React.DragEvent<HTMLDivElement>) => {
+      // block drag and drops on view mode
+      if (!isEditable) return;
+
       event.preventDefault();
 
       const jsonData = event.dataTransfer.getData("application/reactflow");
@@ -304,6 +360,7 @@ function Flow({
         data: {
           label,
           iconName,
+          color: "white",
         },
         draggable: true,
         deletable: true,
@@ -319,8 +376,14 @@ function Flow({
       };
 
       setNodes((nds) => [...nds, newNode]);
+
+      // prepare to color the new icon
+      setCurrentNodeId(newNode.id); // Track new node ID
+      setMenuVisible(true);
+
+      setDropPosition({ x: event.clientX, y: event.clientY });
     },
-    [screenToFlowPosition, setNodes]
+    [screenToFlowPosition, setNodes, isEditable]
   );
 
   return (
@@ -334,27 +397,50 @@ function Flow({
         onDragOver={onDragOver}
         onInit={setRfInstance}
         nodeTypes={nodeTypes}
+        nodesDraggable={isEditable}
+        elementsSelectable={isEditable}
         className="touch-none"
       >
         <Controls position="bottom-right" />
         <MiniMap position="bottom-left" pannable zoomable />
-        <Legend />
+
+        {/* Hide legend on view only mode */}
+        {isEditable && <Legend />}
         <EventMapSelect
           eventId={event.id}
           locations={event.locations.map((l) => l.location)}
         />
         <NavButtons />
       </ReactFlow>
-      <Button
-        onClick={() =>
-          rfInstance && eventLocation &&
-          SaveState(event.id, eventLocation.locationId, JSON.stringify(rfInstance.toObject()))
-        }
-        style={{ position: "fixed", top: "4rem", right: 16 }}
-        variant="contained"
-      >
-        Save
-      </Button>
+
+      {/* Hide save button in view mode */}
+      {isEditable && (
+        <Button
+          onClick={() =>
+            rfInstance &&
+            eventLocation &&
+            SaveState(
+              event.id,
+
+              eventLocation.locationId,
+
+              JSON.stringify(rfInstance.toObject())
+            )
+          }
+          style={{ position: "fixed", top: "4rem", right: 16 }}
+          variant="contained"
+        >
+          Save
+        </Button>
+      )}
+
+      {menuVisible ? (
+        <ColorMenu
+          x={dropPosition.x}
+          y={dropPosition.y}
+          changeColor={changeColor}
+        />
+      ) : null}
       <Button
         onClick={onUndo}
         style={{ position: "fixed", top: "7rem", right: 16 }}
@@ -369,7 +455,6 @@ function Flow({
       >
         Redo
       </Button>
-
     </div>
   );
 }
@@ -377,13 +462,17 @@ function Flow({
 export default function EventFlow({
   event,
   location,
+  isEditable,
 }: {
   event: EventWithLocation;
   location: string;
+  isEditable: boolean;
 }) {
   return (
     <ReactFlowProvider>
-      <Flow event={event} location={location} />
+      <ChannelProvider channelName="event-updates">
+        <Flow event={event} location={location} isEditable={isEditable} />
+      </ChannelProvider>
     </ReactFlowProvider>
   );
 }

@@ -9,17 +9,17 @@
  * 3. Renders the eventSelectForm with the events retrieved from the database
  */
 
-import { Box, Typography } from "@mui/material";
-import Heading from "@/components/Heading";
-import EventSelectForm from "@/components/EventSelectForm";
-import { prisma } from "@/lib/api/db";
 import ErrorToast from "@/components/ErrorToast";
+import EventSelectForm from "@/components/EventSelectForm";
+import Heading from "@/components/Heading";
+import { prisma } from "@/lib/api/db";
+import { Box, Typography } from "@mui/material";
 import { Suspense } from "react";
 
 // Collect all events from doradev database
 export default async function EventSelect() {
   const events = await prisma.event.findMany({
-    select: { id: true, name: true },
+    select: { id: true, name: true, locations: true },
   });
 
   return (
@@ -38,7 +38,6 @@ export default async function EventSelect() {
       >
         Select an Event
       </Typography>
-
       <EventSelectForm events={events} />
       <Suspense>
         <ErrorToast />
