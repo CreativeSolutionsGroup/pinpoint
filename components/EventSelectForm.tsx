@@ -21,14 +21,16 @@ import {
 import { useState } from "react";
 import { Event } from "@prisma/client";
 import { useRouter } from "next/navigation";
+import LocationCreator from "./LocationCreator";
 
 export default function EventSelectForm({
   events,
 }: {
-  events: Pick<Event, "id" | "name">[];
+  events: (Pick<Event, "id" | "name"> & { locations: { id: string }[] })[];
 }) {
   const router = useRouter();
   const [notSelected, setSelected] = useState(true);
+  const [isOpenLocationCreator, setIsOpenLocationCreator] = useState(false);
   const [eventId, setEventId] = useState("");
   const handleChange = (e: SelectChangeEvent) => {
     setSelected(false);
@@ -36,9 +38,13 @@ export default function EventSelectForm({
   };
 
   const handleClick = () => {
-    // always push to /edit, it'll auto redirect
-    // if user doesn't have permission
-    router.push(`/event/edit/${eventId}`);
+    const selectedEvent = events.find((event) => event.id === eventId);
+
+    if (selectedEvent && selectedEvent.locations.length === 0) {
+      setIsOpenLocationCreator(true);
+    } else {
+      router.push(`/event/edit/${eventId}`);
+    }
   };
 
   return (
@@ -74,6 +80,12 @@ export default function EventSelectForm({
       >
         Select
       </Button>
+
+      <LocationCreator
+        eventId={eventId}
+        isOpen={isOpenLocationCreator}
+        onClose={() => setIsOpenLocationCreator(false)}
+      />
     </>
   );
 }

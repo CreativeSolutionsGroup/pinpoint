@@ -10,16 +10,23 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Location } from "@prisma/client";
+import { useState } from "react";
+import LocationCreator from "./LocationCreator";
 
 interface EventMapsSelectProps {
   eventId: string;
   locations: Location[];
 }
 
-export default function EventMapsSelect({ eventId, locations }: EventMapsSelectProps) {
+export default function EventMapsSelect({
+  eventId,
+  locations,
+}: EventMapsSelectProps) {
   const router = useRouter();
   const params = useParams();
-  
+
+  const [isOpenLocationCreator, setIsOpenLocationCreator] = useState(false);
+
   return (
     <Panel
       position="bottom-center"
@@ -28,19 +35,28 @@ export default function EventMapsSelect({ eventId, locations }: EventMapsSelectP
       <Dialog>
         <DialogTrigger>Maps</DialogTrigger>
         <DialogContent className="max-w-64">
-          <DialogHeader>
-            <DialogTitle>Choose a map location</DialogTitle>
-            {locations.map((location) => (
-              <Button
-                key={location.id}
-                onClick={() => router.push(`/event/${params.mode}/${eventId}/${location.id}`)}
-              >
-                {location.name}
-              </Button>
-            ))}
-          </DialogHeader>
+          <DialogTitle>Choose a Map Location</DialogTitle>
+          {locations.map((location) => (
+            <Button
+              key={location.id}
+              onClick={() =>
+                router.push(`/event/${params.mode}/${eventId}/${location.id}`)
+              }
+            >
+              {location.name}
+            </Button>
+          ))}
+          <Button onClick={() => setIsOpenLocationCreator(true)}>
+            Create Location
+          </Button>
         </DialogContent>
       </Dialog>
+
+      <LocationCreator
+        eventId={eventId}
+        isOpen={isOpenLocationCreator}
+        onClose={() => setIsOpenLocationCreator(false)}
+      />
     </Panel>
   );
 }
