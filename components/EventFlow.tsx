@@ -1,5 +1,5 @@
 "use client";
-import SaveState from "@/lib/api/save/ReactFlowSave";
+import SaveState from "@/lib/api/update/ReactFlowSave";
 import { CustomNode } from "@/types/CustomNode";
 import { CustomImageNode } from "@components/CustomImageNode";
 import EventMapSelect from "@components/EventMapSelect";
@@ -23,7 +23,7 @@ import "@xyflow/react/dist/style.css";
 import { useCallback, useEffect, useRef, useState } from "react";
 import NavButtons from "./navButtons";
 import { ChannelProvider, useChannel } from "ably/react";
-import { GetEventLocationInfo } from "@/lib/api/save/GetEventLocationInfo";
+import { GetEventLocationInfo } from "@/lib/api/read/GetEventLocationInfo";
 
 const getId = () => createId();
 

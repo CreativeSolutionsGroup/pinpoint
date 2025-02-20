@@ -5,12 +5,12 @@ import { useParams, useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Location } from "@prisma/client";
 import { useState } from "react";
+import { Divider } from "@mui/material";
 import LocationCreator from "./LocationCreator";
 
 interface EventMapsSelectProps {
@@ -46,9 +46,13 @@ export default function EventMapsSelect({
               {location.name}
             </Button>
           ))}
-          <Button onClick={() => setIsOpenLocationCreator(true)}>
+          <Divider>OR</Divider>
+          <button
+            onClick={() => setIsOpenLocationCreator(true)}
+            className="w-full p-2 text-white bg-blue-500 rounded"
+          >
             Create Location
-          </Button>
+          </button>
         </DialogContent>
       </Dialog>
 
