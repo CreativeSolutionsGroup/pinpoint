@@ -195,54 +195,18 @@ function Flow({
     [rfInstance, undoStack, eventLocation, event.id]
   );
 
-  //history management
-  // const [undoStack, setUndoStack] = useState<string[]>([]);
-  // const [redoStack, setRedoStack] = useState<string[]>([]);
-
-  // const onUndo = useCallback(() => {
-  //   if (undoStack.length === 0) return;
-
-  //   //save current state to redo stack
-  //   const currentState = JSON.stringify(rfInstance?.toObject());
-  //   if (currentState) {
-  //     setRedoStack((stack) => [...stack, currentState])
-  //   }
-
-  //   //pop state from undo stack and restore it
-  //   const previousState = undoStack[undoStack.length - 1];
-  //   setUndoStack((stack) => stack.slice(0, -1));
-
-  //   if (previousState) {
-  //     const { nodes: prevNodes } = JSON.parse(previousState);
-  //     setNodes(prevNodes || []);
-  //   }
-  // }, [undoStack, setNodes, rfInstance]);
-
-  // // Redo function
-  // const onRedo = useCallback(() => {
-  //   if (redoStack.length === 0) return;
-
-  //   // Save current state to undo stack
-  //   const currentState = JSON.stringify(rfInstance?.toObject());
-  //   if (currentState) {
-  //     setUndoStack((stack) => [...stack, currentState]);
-  //   }
-
-  //   // Pop state from redo stack and restore it
-  //   const nextState = redoStack[redoStack.length - 1];
-  //   setRedoStack((stack) => stack.slice(0, -1));
-
-  //   // Restore the next state
-  //   if (nextState) {
-  //     const { nodes: nextNodes } = JSON.parse(nextState);
-  //     setNodes(nextNodes || []);
-  //   }
-  // }, [redoStack, setNodes, rfInstance]);
-
   // Color the most recently placed icon, if it hasn't been colored yet
   function changeColor(colorSelected: string) {
     if (!currentNodeId) return;
 
+    // Create a NodeChange object for the color update
+    const colorChange: NodeChange = {
+      type: "select", // Using 'select' type as we're modifying node data
+      id: currentNodeId,
+      selected: false, // We're not actually changing selection state
+    };
+
+    // First update the nodes state
     setNodes((nds) =>
       nds.map((node) =>
         node.id === currentNodeId
@@ -250,8 +214,10 @@ function Flow({
           : node
       )
     );
-    setMenuVisible(false);
-    setCurrentNodeId(null);
+
+    onNodesChange([colorChange]); // Apply the change to the nodes
+    setMenuVisible(false); // Hide the color menu
+    setCurrentNodeId(null); // Reset current node ID
   }
 
   // Update mouse position - only in edit mode
