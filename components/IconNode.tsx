@@ -47,8 +47,8 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
   );
 
   const handleResize = useCallback(
-    (size: number) => {
-      setCurrentSize(size);
+    (selectedSize: number) => {
+      setCurrentSize(selectedSize);
       setNodes((nds) =>
         nds.map((node) => {
           if (node.id === id) {
@@ -56,7 +56,7 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
               ...node,
               data: {
                 ...node.data,
-                size: size,
+                size: selectedSize,
               },
             };
           }
