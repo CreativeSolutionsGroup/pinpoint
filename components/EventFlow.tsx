@@ -24,7 +24,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import NavButtons from "./navButtons";
 import { ChannelProvider, useChannel } from "ably/react";
 import { GetEventLocationInfo } from "@/lib/api/save/GetEventLocationInfo";
-import ColorMenu from "./ColorMenu";
 
 const getId = () => createId();
 
@@ -70,10 +69,6 @@ function Flow({
   const [nodes, setNodes] = useState<CustomNode[]>(
     JSON.parse(eventLocation?.state ?? "{}")?.nodes || []
   );
-
-  const [menuVisible, setMenuVisible] = useState(false);
-
-  const [currentNodeId, setCurrentNodeId] = useState<string | null>(null); // tracking most recent icon
 
   const { screenToFlowPosition } = useReactFlow();
 
@@ -160,10 +155,10 @@ function Flow({
     setNodes(initialNodes);
   }, [location, event.locations, nodes]);
 
-  const [dropPosition, setDropPosition] = useState({ x: 0, y: 0 });
-
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
+      isEditable &&
+        setNodes((nds) => applyNodeChanges(changes, nds) as CustomNode[]);
       clearTimeout(timeoutId.current);
       timeoutId.current = setTimeout(() => {
         rfInstance &&
@@ -192,33 +187,8 @@ function Flow({
         return newNodes;
       });
     },
-    [rfInstance, undoStack, eventLocation, event.id]
+    [rfInstance, undoStack, eventLocation, event.id, isEditable]
   );
-
-  // Color the most recently placed icon, if it hasn't been colored yet
-  function changeColor(colorSelected: string) {
-    if (!currentNodeId) return;
-
-    // Create a NodeChange object for the color update
-    const colorChange: NodeChange = {
-      type: "select", // Using 'select' type as we're modifying node data
-      id: currentNodeId,
-      selected: false, // We're not actually changing selection state
-    };
-
-    // First update the nodes state
-    setNodes((nds) =>
-      nds.map((node) =>
-        node.id === currentNodeId
-          ? { ...node, data: { ...node.data, color: colorSelected } }
-          : node
-      )
-    );
-
-    onNodesChange([colorChange]); // Apply the change to the nodes
-    setMenuVisible(false); // Hide the color menu
-    setCurrentNodeId(null); // Reset current node ID
-  }
 
   // Update mouse position - only in edit mode
   useEffect(() => {
@@ -342,12 +312,6 @@ function Flow({
       };
 
       setNodes((nds) => [...nds, newNode]);
-
-      // prepare to color the new icon
-      setCurrentNodeId(newNode.id); // Track new node ID
-      setMenuVisible(true);
-
-      setDropPosition({ x: event.clientX, y: event.clientY });
     },
     [screenToFlowPosition, setNodes, isEditable]
   );
@@ -399,14 +363,6 @@ function Flow({
           Save
         </Button>
       )}
-
-      {menuVisible ? (
-        <ColorMenu
-          x={dropPosition.x}
-          y={dropPosition.y}
-          changeColor={changeColor}
-        />
-      ) : null}
       <Button
         onClick={onUndo}
         style={{ position: "fixed", top: "7rem", right: 16 }}
