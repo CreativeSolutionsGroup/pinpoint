@@ -15,7 +15,7 @@ export default function ResizeMenu({
           onResize(currentSize + 1 <= 5 ? currentSize + 1 : currentSize)
         }
       >
-      <PlusIcon />
+        <PlusIcon />
       </IconButton>
       <IconButton
         onClick={() =>

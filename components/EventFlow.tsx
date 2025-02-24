@@ -121,7 +121,7 @@ function Flow({
             eventLocation.locationId,
             JSON.stringify(rfInstance.toObject())
           );
-      }, 500);
+      }, 200);
     },
     [event.id, eventLocation, rfInstance, isEditable]
   );

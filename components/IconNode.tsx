@@ -10,14 +10,12 @@ import { Box, Button } from "@mui/material";
 import { NodeProps, useReactFlow } from "@xyflow/react";
 import { CustomNode } from "@/types/CustomNode";
 import ColorMenu from "./ColorMenu";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import ResizeMenu from "./ResizeMenu";
 // import { Box } from "@mui/system";
 
 export function IconNode({ data, id }: NodeProps<CustomNode>) {
-  console.log("IconNode", data, id);
   const { deleteElements, setNodes } = useReactFlow();
-  const [currentSize, setCurrentSize] = useState(data.size ?? 2);
   // Get the icon component from the Lucide icons
   const IconComponent = Icons[data.iconName as keyof typeof Icons.icons];
 
@@ -48,7 +46,6 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
 
   const handleResize = useCallback(
     (selectedSize: number) => {
-      setCurrentSize(selectedSize);
       setNodes((nds) =>
         nds.map((node) => {
           if (node.id === id) {
@@ -74,8 +71,8 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
           <IconComponent
             style={{
               color: data.color,
-              width: `${currentSize}rem`,
-              height: `${currentSize}rem`,
+              width: `${data.size ?? 2}rem`,
+              height: `${data.size ?? 2}rem`,
             }}
             className="text-gray-700"
           />
@@ -84,7 +81,7 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
           <div className="grid gap-4">
             Place content for the popover here.
             <Box className="flex place-content-between">
-              <ResizeMenu onResize={handleResize} currentSize={currentSize} />
+              <ResizeMenu onResize={handleResize} currentSize={data.size ?? 2} />
               <Button onClick={handleDelete} color="warning">
                 Delete
               </Button>

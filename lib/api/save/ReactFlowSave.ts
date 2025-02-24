@@ -8,7 +8,6 @@ export default async function SaveState(
   locationId: string,
   state: string
 ) {
-  console.log(JSON.stringify(JSON.parse(state)));
   await prisma.eventToLocation.update({
     where: {
       eventId_locationId: {
