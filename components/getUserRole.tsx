@@ -1,5 +1,3 @@
-"use server";
-
 import { prisma } from "@/lib/api/db";
 import { getSession } from "next-auth/react";
 import { useEffect, useState } from "react";
