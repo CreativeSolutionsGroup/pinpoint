@@ -22,7 +22,7 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
 
   // Make the text field only editable if the user is the correct role
   const role = useUserRole();
-  const isDisabled = role === "ADMIN" || role === "EDITOR" ? true : false;
+  const isDisabled = role === "ADMIN" || role === "EDITOR" ? false : true;
 
   const handleDelete = () => {
     deleteElements({ nodes: [{ id }] });
