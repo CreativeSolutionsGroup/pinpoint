@@ -11,7 +11,7 @@ import {
 import { Location } from "@prisma/client";
 import { useState } from "react";
 import { Divider } from "@mui/material";
-import LocationCreator from "./LocationCreator";
+import LocationAdder from "./LocationCreator";
 
 interface EventMapsSelectProps {
   eventId: string;
@@ -25,41 +25,46 @@ export default function EventMapsSelect({
   const router = useRouter();
   const params = useParams();
 
-  const [isOpenLocationCreator, setIsOpenLocationCreator] = useState(false);
+  const [isOpenLocationAdder, setIsOpenLocationAdder] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <Panel
       position="bottom-center"
       className="bg-white text-black p-5 border-2 flex flex-col w-36"
     >
-      <Dialog>
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger>Maps</DialogTrigger>
         <DialogContent className="max-w-64">
           <DialogTitle>Choose a Map Location</DialogTitle>
           {locations.map((location) => (
             <Button
               key={location.id}
-              onClick={() =>
-                router.push(`/event/${params.mode}/${eventId}/${location.id}`)
-              }
+              onClick={() => {
+                setIsOpen(false);
+                router.push(`/event/${params.mode}/${eventId}/${location.id}`);
+              }}
             >
               {location.name}
             </Button>
           ))}
           <Divider>OR</Divider>
           <button
-            onClick={() => setIsOpenLocationCreator(true)}
+            onClick={() => {
+              setIsOpen(false);
+              setTimeout(() => setIsOpenLocationAdder(true), 300);
+            }}
             className="w-full p-2 text-white bg-blue-500 rounded"
           >
-            Create Location
+            Add Location
           </button>
         </DialogContent>
       </Dialog>
 
-      <LocationCreator
+      <LocationAdder
         eventId={eventId}
-        isOpen={isOpenLocationCreator}
-        onClose={() => setIsOpenLocationCreator(false)}
+        isOpen={isOpenLocationAdder}
+        onClose={() => setIsOpenLocationAdder(false)}
       />
     </Panel>
   );

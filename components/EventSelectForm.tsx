@@ -21,7 +21,7 @@ import {
 import { useState } from "react";
 import { Event } from "@prisma/client";
 import { useRouter } from "next/navigation";
-import LocationCreator from "./LocationCreator";
+import LocationAdder from "./LocationCreator";
 
 export default function EventSelectForm({
   events,
@@ -81,7 +81,7 @@ export default function EventSelectForm({
         Select
       </Button>
 
-      <LocationCreator
+      <LocationAdder
         eventId={eventId}
         isOpen={isOpenLocationCreator}
         onClose={() => setIsOpenLocationCreator(false)}

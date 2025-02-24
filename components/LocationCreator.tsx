@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Select,
   SelectContent,
@@ -6,12 +8,18 @@ import {
   SelectValue,
 } from "./ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
-import { CreateLocation } from "@/lib/api/create/CreateLocation";
+import {
+  AddLocationToEvent,
+  CreateNewLocation,
+} from "@/lib/api/create/CreateLocation";
 import { GetAllLocations } from "@/lib/api/read/GetAllLocations";
 import { Location } from "@prisma/client";
 import { useEffect, useState } from "react";
+import { Divider } from "@mui/material";
+import { Input } from "./ui/input";
+import { useRouter } from "next/navigation";
 
-export default function LocationCreator({
+export default function LocationAdder({
   eventId,
   isOpen,
   onClose,
@@ -23,9 +31,11 @@ export default function LocationCreator({
   const [locations, setLocations] = useState<Location[]>([]);
   const [locationId, setLocationId] = useState<string>("");
 
+  const router = useRouter();
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    await CreateLocation({ eventId, locationId });
+    await AddLocationToEvent({ eventId, locationId });
     onClose();
   }
 
@@ -56,7 +66,38 @@ export default function LocationCreator({
             type="submit"
             className="w-full p-2 mt-4 text-white bg-blue-500 rounded"
           >
-            Create Location
+            Add Location
+          </button>
+        </form>
+        <Divider className="my-4">OR</Divider>
+        <form
+          action={async (data) => {
+            const locationName = data.get("locationName")?.toString();
+            const imageURL = data.get("imageURL")?.toString();
+            if (locationName && imageURL) {
+              const newLocation = await CreateNewLocation(locationName, imageURL);
+              router.push(newLocation.id);
+            }
+          }}
+        >
+          <Input
+            className="mb-2"
+            placeholder="Location Name"
+            name="locationName"
+            required
+          />
+          <Input
+            className="mb-2"
+            placeholder="Image URL"
+            name="imageURL"
+            required
+          />
+          <button
+            type="submit"
+            className="w-full p-2 text-white bg-blue-500 rounded"
+            onClick={onClose}
+          >
+            Create New Location
           </button>
         </form>
       </DialogContent>

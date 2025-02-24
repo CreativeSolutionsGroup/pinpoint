@@ -77,10 +77,9 @@ function Flow({
   useEffect(() => {
     if (nodes.length > 0) return;
 
-    const imageURL = `/maps/${
+    const imageURL =
       event.locations.find((loc) => loc.locationId == location)?.location
-        .imageURL || event.locations[0].location.imageURL
-    }`;
+        .imageURL || event.locations[0].location.imageURL;
 
     const initialNodes: CustomNode[] = [
       {
