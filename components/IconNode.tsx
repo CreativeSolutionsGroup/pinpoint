@@ -12,6 +12,7 @@ import { NodeProps, useReactFlow } from "@xyflow/react";
 import * as Icons from "lucide-react";
 import { useCallback } from "react";
 import ColorMenu from "./ColorMenu";
+import { useUserRole } from "./getUserRole";
 
 
 export function IconNode({ data, id }: NodeProps<CustomNode>) {
@@ -19,7 +20,9 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
   // Get the icon component from the Lucide icons
   const IconComponent = Icons[data.iconName as keyof typeof Icons.icons];
 
-  
+  // Make the text field only editable if the user is the correct role
+  const role = useUserRole();
+  const isDisabled = role === "ADMIN" || role === "EDITOR" ? true : false;
 
   const handleDelete = () => {
     deleteElements({ nodes: [{ id }] });
@@ -55,7 +58,7 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
         <PopoverContent className="w-fit">
           <div className="grid gap-4">
             Notes:
-            <Textarea />
+            <Textarea disabled={isDisabled} />
             <Button onClick={handleDelete} color="warning">
               Delete
             </Button>

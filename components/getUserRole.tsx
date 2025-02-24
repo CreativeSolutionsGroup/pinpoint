@@ -4,8 +4,6 @@ import { prisma } from "@/lib/api/db";
 import { getSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
-
-
 export const useUserRole = () => {
   const [role, setRole] = useState<string | null>(null);
 
