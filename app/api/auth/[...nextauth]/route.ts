@@ -8,6 +8,7 @@ declare module "next-auth" {
   interface Session {
     id_token: unknown;
     isAdmin: boolean;
+    role: string;
   }
 }
 
@@ -40,6 +41,7 @@ const defaultOptions: NextAuthOptions = {
         });
 
       token.isAdmin = user?.role === Roles.ADMIN;
+      token.role = user?.role;
 
       return token;
     },
@@ -49,6 +51,7 @@ const defaultOptions: NextAuthOptions = {
 
       // session.roles = token.roles;
       session.isAdmin = token.isAdmin as boolean;
+      session.role = token.role as string;
 
       return session;
     },

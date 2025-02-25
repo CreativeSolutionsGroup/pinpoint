@@ -74,6 +74,58 @@ function Flow({
 
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
+  const [rfInstance, setRfInstance] = useState<ReactFlowInstance<
+    CustomNode,
+    Edge
+  > | null>(null);
+
+  //history management
+  const [undoStack, setUndoStack] = useState<string[]>([]);
+  const [redoStack, setRedoStack] = useState<string[]>([]);
+
+  const onUndo = useCallback(() => {
+    if (undoStack.length === 0) return;
+
+    // Save current state to redo stack
+    if (rfInstance) {
+      const currentState = JSON.stringify(rfInstance.toObject());
+      setRedoStack((stack) => [...stack, currentState]);
+    }
+
+    // Get and remove last state from undo stack
+    const previousState = undoStack[undoStack.length - 1];
+    setUndoStack((stack) => (stack.length > 1 ? stack.slice(0, -1) : stack));
+
+    // Restore the previous state
+    if (previousState) {
+      const parsedState = JSON.parse(previousState);
+      setNodes(parsedState.nodes || []);
+    }
+    console.log("Undo stack", undoStack);
+  }, [undoStack, rfInstance]);
+
+  // Redo function
+  const onRedo = useCallback(() => {
+    if (redoStack.length === 0) return;
+
+    // Save current state to undo stack
+    if (rfInstance) {
+      const currentState = JSON.stringify(rfInstance.toObject());
+      setUndoStack((stack) => [...stack, currentState]);
+    }
+
+    // Get and remove last state from redo stack
+    const nextState = redoStack[redoStack.length - 1];
+    setRedoStack((stack) => stack.slice(0, -1));
+
+    // Restore the next state
+    if (nextState) {
+      const parsedState = JSON.parse(nextState);
+      setNodes(parsedState.nodes || []);
+    }
+    console.log("Redo stack", redoStack);
+  }, [redoStack, rfInstance, setNodes, setUndoStack]);
+
   useEffect(() => {
     if (nodes.length > 0) return;
 
@@ -103,11 +155,6 @@ function Flow({
     setNodes(initialNodes);
   }, [location, event.locations, nodes]);
 
-  const [rfInstance, setRfInstance] = useState<ReactFlowInstance<
-    CustomNode,
-    Edge
-  > | null>(null);
-
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
       isEditable &&
@@ -121,9 +168,24 @@ function Flow({
             eventLocation.locationId,
             JSON.stringify(rfInstance.toObject())
           );
+
+        if (rfInstance) {
+          const currentState = JSON.stringify(rfInstance.toObject());
+          if (currentState !== undoStack[undoStack.length - 1]) {
+            setUndoStack((stack) => [...stack, currentState]);
+            setRedoStack([]); // Clear redo stack when new changes occur
+          }
+        }
       }, 200);
+
+      // For meaningful changes, update nodes and save state
+      setNodes((nds) => {
+        const newNodes = applyNodeChanges(changes, nds) as CustomNode[];
+
+        return newNodes;
+      });
     },
-    [event.id, eventLocation, rfInstance, isEditable]
+    [rfInstance, undoStack, eventLocation, event.id, isEditable]
   );
 
   // Update mouse position - only in edit mode
@@ -299,6 +361,20 @@ function Flow({
           Save
         </Button>
       )}
+      <Button
+        onClick={onUndo}
+        style={{ position: "fixed", top: "7rem", right: 16 }}
+        variant="contained"
+      >
+        Undo
+      </Button>
+      <Button
+        onClick={onRedo}
+        style={{ position: "fixed", top: "10rem", right: 16 }}
+        variant="contained"
+      >
+        Redo
+      </Button>
     </div>
   );
 }

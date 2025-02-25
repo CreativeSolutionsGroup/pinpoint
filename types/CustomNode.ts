@@ -7,6 +7,7 @@ export interface CustomNode extends NodeProps {
     imageURL?: string;
     color?: string;
     size?: number;
+    notes?: string;
   };
   position: { x: number; y: number; z?: number };
   extent?: "parent";
