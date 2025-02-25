@@ -178,9 +178,7 @@ function Flow({
             setRedoStack([]); // Clear redo stack when new changes occur
           }
         }
-      }, 500);
-
-      console.log("Node changes", undoStack);
+      }, 200);
 
       // For meaningful changes, update nodes and save state
       setNodes((nds) => {

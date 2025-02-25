@@ -8,11 +8,12 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { CustomNode } from "@/types/CustomNode";
 import ColorMenu from "@components/ColorMenu";
-import { Button } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import { NodeProps, useReactFlow } from "@xyflow/react";
 import * as Icons from "lucide-react";
 import { useCallback } from "react";
 import { useParams } from "next/navigation";
+import ResizeMenu from "./ResizeMenu";
 
 export function IconNode({ data, id }: NodeProps<CustomNode>) {
   const { deleteElements, setNodes } = useReactFlow();
@@ -49,6 +50,27 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
     [id, setNodes]
   );
 
+  const handleResize = useCallback(
+    (selectedSize: number) => {
+      setNodes((nds) =>
+        nds.map((node) => {
+          if (node.id === id) {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                size: selectedSize,
+              },
+            };
+          }
+          return node;
+        })
+      );
+    },
+
+    [id, setNodes]
+  );
+
   const handleNotesChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       const newValue = e.target.value;
@@ -75,8 +97,12 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
       <Popover>
         <PopoverTrigger>
           <IconComponent
-            style={{ color: data.color }}
-            className="w-6 h-6 text-gray-700"
+            style={{
+              color: data.color,
+              width: `${data.size ?? 2}rem`,
+              height: `${data.size ?? 2}rem`,
+            }}
+            className="text-gray-700"
           />
         </PopoverTrigger>
         <PopoverContent className="w-fit">
@@ -87,11 +113,15 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
               onBlur={handleNotesChange}
               disabled={!isEditable}
             />
-            {isEditable && (
+            {isEditable && <Box className="flex place-content-between">
+              <ResizeMenu
+                onResize={handleResize}
+                currentSize={data.size ?? 2}
+              />
               <Button onClick={handleDelete} color="warning">
                 Delete
               </Button>
-            )}
+            </Box>}
             {isEditable && <ColorMenu x={0} y={0} changeColor={colorChange} />}
           </div>
         </PopoverContent>
