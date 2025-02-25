@@ -106,7 +106,12 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
         </PopoverTrigger>
         <PopoverContent className="w-fit">
           <div className="grid gap-4">
-            Place content for the popover here.
+            Notes:
+            <Textarea
+              defaultValue={data.notes}
+              onBlur={handleNotesChange}
+              disabled={!canEdit}
+            />
             <Box className="flex place-content-between">
               <ResizeMenu
                 onResize={handleResize}
@@ -116,26 +121,6 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
                 Delete
               </Button>
             </Box>
-            <ColorMenu x={0} y={0} changeColor={colorChange} />
-          </div>
-        </PopoverContent>
-        <PopoverTrigger>
-          <IconComponent
-            style={{ color: data.color }}
-            className="w-6 h-6 text-gray-700"
-          />
-        </PopoverTrigger>
-        <PopoverContent className="w-fit">
-          <div className="grid gap-4">
-            Notes:
-            <Textarea
-              defaultValue={data.notes}
-              onBlur={handleNotesChange}
-              disabled={!canEdit}
-            />
-            <Button onClick={handleDelete} color="warning">
-              Delete
-            </Button>
             <ColorMenu x={0} y={0} changeColor={colorChange} />
           </div>
         </PopoverContent>
