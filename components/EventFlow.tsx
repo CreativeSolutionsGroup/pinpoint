@@ -1,4 +1,5 @@
 "use client";
+import { GetEventLocationInfo } from "@/lib/api/save/GetEventLocationInfo";
 import SaveState from "@/lib/api/save/ReactFlowSave";
 import { CustomNode } from "@/types/CustomNode";
 import { CustomImageNode } from "@components/CustomImageNode";
@@ -20,10 +21,9 @@ import {
   useReactFlow,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
+import { ChannelProvider, useChannel } from "ably/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import NavButtons from "./navButtons";
-import { ChannelProvider, useChannel } from "ably/react";
-import { GetEventLocationInfo } from "@/lib/api/save/GetEventLocationInfo";
 
 const getId = () => createId();
 
@@ -49,6 +49,13 @@ function Flow({
   isEditable: boolean;
 }) {
   const timeoutId = useRef<NodeJS.Timeout>();
+  const [nodesLoaded, setNodesLoaded] = useState(false);
+  const { fitView } = useReactFlow(); // Get the fitView method from useReactFlow
+
+  const [rfInstance, setRfInstance] = useState<ReactFlowInstance<
+    CustomNode,
+    Edge
+  > | null>(null);
 
   useChannel("event-updates", "subscribe", (message) => {
     const { eventId, locationId } = message.data;
@@ -102,11 +109,6 @@ function Flow({
 
     setNodes(initialNodes);
   }, [location, event.locations, nodes]);
-
-  const [rfInstance, setRfInstance] = useState<ReactFlowInstance<
-    CustomNode,
-    Edge
-  > | null>(null);
 
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
@@ -252,6 +254,25 @@ function Flow({
     [screenToFlowPosition, setNodes, isEditable]
   );
 
+  // Call fit view after nodes have been loaded
+  useEffect(() => {
+    if (nodesLoaded) {
+      // Use requestAnimationFrame to ensure the nodes are rendered
+      requestAnimationFrame(() => {
+        fitView({
+          includeHiddenNodes: false,
+        });
+      });
+    }
+  }, [nodesLoaded, fitView]);
+
+  // Set nodes and mark them as loaded
+  useEffect(() => {
+    if (nodes.length > 0) {
+      setNodesLoaded(true);
+    }
+  }, [nodes]);
+
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
       <ReactFlow
@@ -287,9 +308,7 @@ function Flow({
             eventLocation &&
             SaveState(
               event.id,
-
               eventLocation.locationId,
-
               JSON.stringify(rfInstance.toObject())
             )
           }
