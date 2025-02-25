@@ -6,6 +6,7 @@ export interface CustomNode extends NodeProps {
     iconName?: string;
     imageURL?: string;
     color?: string;
+    size?: number;
     notes?: string;
   };
   position: { x: number; y: number; z?: number };

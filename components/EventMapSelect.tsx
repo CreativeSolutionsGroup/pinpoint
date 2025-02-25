@@ -16,10 +16,13 @@ interface EventMapsSelectProps {
   locations: Location[];
 }
 
-export default function EventMapsSelect({ eventId, locations }: EventMapsSelectProps) {
+export default function EventMapsSelect({
+  eventId,
+  locations,
+}: EventMapsSelectProps) {
   const router = useRouter();
   const params = useParams();
-  
+
   return (
     <Panel
       position="bottom-center"
@@ -33,7 +36,9 @@ export default function EventMapsSelect({ eventId, locations }: EventMapsSelectP
             {locations.map((location) => (
               <Button
                 key={location.id}
-                onClick={() => router.push(`/event/${params.mode}/${eventId}/${location.id}`)}
+                onClick={() =>
+                  router.push(`/event/${params.mode}/${eventId}/${location.id}`)
+                }
               >
                 {location.name}
               </Button>
