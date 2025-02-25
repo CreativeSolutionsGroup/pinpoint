@@ -11,17 +11,18 @@ import ColorMenu from "@components/ColorMenu";
 import { Button } from "@mui/material";
 import { NodeProps, useReactFlow } from "@xyflow/react";
 import * as Icons from "lucide-react";
-import { useSession } from "next-auth/react";
 import { useCallback } from "react";
+import { useParams } from "next/navigation";
 
 export function IconNode({ data, id }: NodeProps<CustomNode>) {
   const { deleteElements, setNodes } = useReactFlow();
+
+  const params = useParams<{ mode: string }>();
+
+  const isEditable = params.mode == "edit";
+
   // Get the icon component from the Lucide icons
   const IconComponent = Icons[data.iconName as keyof typeof Icons.icons];
-
-  // Make the text field only editable if the user is the correct role
-  const { data: session } = useSession();
-  const canEdit = session?.role === "ADMIN" || session?.role === "EDITOR";
 
   const handleDelete = () => {
     deleteElements({ nodes: [{ id }] });
@@ -72,26 +73,28 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
   return (
     <>
       <Popover>
-      <PopoverTrigger>
-        <IconComponent
-        style={{ color: data.color }}
-        className="w-6 h-6 text-gray-700"
-        />
-      </PopoverTrigger>
-      <PopoverContent className="w-fit">
-        <div className="grid gap-4">
-        Notes:
-        <Textarea
-          defaultValue={data.notes}
-          onBlur={handleNotesChange}
-          disabled={!canEdit}
-        />
-        <Button onClick={handleDelete} color="warning">
-          Delete
-        </Button>
-        <ColorMenu x={0} y={0} changeColor={colorChange} />
-        </div>
-      </PopoverContent>
+        <PopoverTrigger>
+          <IconComponent
+            style={{ color: data.color }}
+            className="w-6 h-6 text-gray-700"
+          />
+        </PopoverTrigger>
+        <PopoverContent className="w-fit">
+          <div className="grid gap-4">
+            Notes:
+            <Textarea
+              defaultValue={data.notes}
+              onBlur={handleNotesChange}
+              disabled={!isEditable}
+            />
+            {isEditable && (
+              <Button onClick={handleDelete} color="warning">
+                Delete
+              </Button>
+            )}
+            {isEditable && <ColorMenu x={0} y={0} changeColor={colorChange} />}
+          </div>
+        </PopoverContent>
       </Popover>
     </>
   );

@@ -382,20 +382,24 @@ function Flow({
           Save
         </Button>
       )}
-      <Button
-        onClick={onUndo}
-        style={{ position: "fixed", top: "7rem", right: 16 }}
-        variant="contained"
-      >
-        Undo
-      </Button>
-      <Button
-        onClick={onRedo}
-        style={{ position: "fixed", top: "10rem", right: 16 }}
-        variant="contained"
-      >
-        Redo
-      </Button>
+      {isEditable && (
+        <Button
+          onClick={onUndo}
+          style={{ position: "fixed", top: "7rem", right: 16 }}
+          variant="contained"
+        >
+          Undo
+        </Button>
+      )}
+      {isEditable && (
+        <Button
+          onClick={onRedo}
+          style={{ position: "fixed", top: "10rem", right: 16 }}
+          variant="contained"
+        >
+          Redo
+        </Button>
+      )}
     </div>
   );
 }
