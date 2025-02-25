@@ -52,11 +52,6 @@ function Flow({
   const [nodesLoaded, setNodesLoaded] = useState(false);
   const { fitView } = useReactFlow(); // Get the fitView method from useReactFlow
 
-  const [rfInstance, setRfInstance] = useState<ReactFlowInstance<
-    CustomNode,
-    Edge
-  > | null>(null);
-
   useChannel("event-updates", "subscribe", (message) => {
     const { eventId, locationId } = message.data;
 
