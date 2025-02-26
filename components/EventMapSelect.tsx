@@ -2,6 +2,7 @@
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -44,6 +45,7 @@ export default function EventMapsSelect({
               </Button>
             ))}
           </DialogHeader>
+          <DialogDescription></DialogDescription>
         </DialogContent>
       </Dialog>
     </Panel>
