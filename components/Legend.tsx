@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Panel } from "@xyflow/react";
 import {
   Accordion,
@@ -29,7 +29,6 @@ import {
   Armchair,
   LucideIcon,
 } from "lucide-react";
-import { PinLeftIcon } from "@radix-ui/react-icons";
 
 const IconItem = ({
   icon: Icon,

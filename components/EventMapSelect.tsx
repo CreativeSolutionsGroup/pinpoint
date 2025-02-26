@@ -1,7 +1,4 @@
 "use client";
-import { Panel } from "@xyflow/react";
-import { Button } from "@components/ui/button";
-import { useParams, useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
@@ -9,21 +6,26 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Button } from "@components/ui/button";
 import { Location } from "@prisma/client";
 import { Card, CardContent } from "./ui/card";
 import NavButtons from "./navButtons";
+import { Panel } from "@xyflow/react";
+import { useParams, useRouter } from "next/navigation";
 
 interface EventMapsSelectProps {
   eventId: string;
   locations: Location[];
 }
 
-export default function EventMapsSelect({ eventId, locations }: EventMapsSelectProps) {
+export default function EventMapsSelect({
+  eventId,
+  locations,
+}: EventMapsSelectProps) {
   const router = useRouter();
   const params = useParams();
-  
+
   return (
-    
       <Panel
       position="bottom-left"
       className=""
