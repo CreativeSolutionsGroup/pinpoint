@@ -6,14 +6,12 @@ import { CustomImageNode } from "@components/CustomImageNode";
 import EventMapSelect from "@components/EventMapSelect";
 import { IconNode } from "@components/IconNode";
 import Legend from "@components/Legend";
-import { Button } from "@mui/material";
 import { createId } from "@paralleldrive/cuid2";
 import { Event, EventToLocation, Location } from "@prisma/client";
 import {
   applyNodeChanges,
   Controls,
   Edge,
-  MiniMap,
   NodeChange,
   ReactFlow,
   ReactFlowInstance,
@@ -23,7 +21,7 @@ import {
 import "@xyflow/react/dist/style.css";
 import { ChannelProvider, useChannel } from "ably/react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import NavButtons from "./navButtons";
+import StateButtons from "./stateButtons";
 
 const getId = () => createId();
 
@@ -351,19 +349,23 @@ function Flow({
         className="touch-none"
       >
         <Controls position="bottom-right" />
-        <MiniMap position="bottom-left" pannable zoomable />
 
         {/* Hide legend on view only mode */}
         {isEditable && <Legend />}
-        <EventMapSelect
+        {isEditable && <StateButtons undo={onUndo} redo={onRedo} />}
+
+      <EventMapSelect
           eventId={event.id}
           locations={event.locations.map((l) => l.location)}
         />
-        <NavButtons />
+
+        
+        
       </ReactFlow>
 
-      {/* Hide save button in view mode */}
+      {/* Hide save button in view mode
       {isEditable && (
+        
         <Button
           onClick={() =>
             rfInstance &&
@@ -375,25 +377,12 @@ function Flow({
             )
           }
           style={{ position: "fixed", top: "4rem", right: 16 }}
-          variant="contained"
+          variant="default"
         >
           Save
         </Button>
       )}
-      <Button
-        onClick={onUndo}
-        style={{ position: "fixed", top: "7rem", right: 16 }}
-        variant="contained"
-      >
-        Undo
-      </Button>
-      <Button
-        onClick={onRedo}
-        style={{ position: "fixed", top: "10rem", right: 16 }}
-        variant="contained"
-      >
-        Redo
-      </Button>
+        */}
     </div>
   );
 }
