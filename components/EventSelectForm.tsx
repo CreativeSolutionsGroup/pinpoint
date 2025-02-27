@@ -11,13 +11,13 @@
 
 import {
   Typography,
-  Button,
   Select,
   MenuItem,
   InputLabel,
   FormControl,
   SelectChangeEvent,
 } from "@mui/material";
+import { Button } from "./ui/button";
 import { useState } from "react";
 import { Event } from "@prisma/client";
 import { useRouter } from "next/navigation";
@@ -48,7 +48,7 @@ export default function EventSelectForm({
   };
 
   return (
-    <>
+    <div className="m-8 flex flex-col">
       <FormControl required fullWidth>
         <InputLabel id="selectEvent">Event</InputLabel>
         <Select
@@ -74,8 +74,8 @@ export default function EventSelectForm({
       </FormControl>
       <Button
         disabled={notSelected}
-        variant="contained"
-        sx={{ mt: 2, maxWidth: "fit-content", alignSelf: "end" }}
+        variant="default"
+        className="mt-3 max-w-fit self-end"
         onClick={handleClick}
       >
         Select
@@ -86,6 +86,6 @@ export default function EventSelectForm({
         isOpen={isOpenLocationCreator}
         onClose={() => setIsOpenLocationCreator(false)}
       />
-    </>
+    </div>
   );
 }

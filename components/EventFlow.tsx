@@ -1,18 +1,17 @@
 "use client";
+import { GetEventLocationInfo } from "@/lib/api/read/GetEventLocationInfo";
 import SaveState from "@/lib/api/update/ReactFlowSave";
 import { CustomNode } from "@/types/CustomNode";
 import { CustomImageNode } from "@components/CustomImageNode";
 import EventMapSelect from "@components/EventMapSelect";
 import { IconNode } from "@components/IconNode";
 import Legend from "@components/Legend";
-import { Button } from "@mui/material";
 import { createId } from "@paralleldrive/cuid2";
 import { Event, EventToLocation, Location } from "@prisma/client";
 import {
   applyNodeChanges,
   Controls,
   Edge,
-  MiniMap,
   NodeChange,
   ReactFlow,
   ReactFlowInstance,
@@ -20,10 +19,9 @@ import {
   useReactFlow,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { useCallback, useEffect, useRef, useState } from "react";
-import NavButtons from "./navButtons";
 import { ChannelProvider, useChannel } from "ably/react";
-import { GetEventLocationInfo } from "@/lib/api/read/GetEventLocationInfo";
+import { useCallback, useEffect, useRef, useState } from "react";
+import StateButtons from "./stateButtons";
 
 const getId = () => createId();
 
@@ -49,6 +47,8 @@ function Flow({
   isEditable: boolean;
 }) {
   const timeoutId = useRef<NodeJS.Timeout>();
+  const [nodesLoaded, setNodesLoaded] = useState(false);
+  const { fitView } = useReactFlow(); // Get the fitView method from useReactFlow
 
   useChannel("event-updates", "subscribe", (message) => {
     const { eventId, locationId } = message.data;
@@ -73,6 +73,58 @@ function Flow({
   const { screenToFlowPosition } = useReactFlow();
 
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  const [rfInstance, setRfInstance] = useState<ReactFlowInstance<
+    CustomNode,
+    Edge
+  > | null>(null);
+
+  //history management
+  const [undoStack, setUndoStack] = useState<string[]>([]);
+  const [redoStack, setRedoStack] = useState<string[]>([]);
+
+  const onUndo = useCallback(() => {
+    if (undoStack.length === 0) return;
+
+    // Save current state to redo stack
+    if (rfInstance) {
+      const currentState = JSON.stringify(rfInstance.toObject());
+      setRedoStack((stack) => [...stack, currentState]);
+    }
+
+    // Get and remove last state from undo stack
+    const previousState = undoStack[undoStack.length - 1];
+    setUndoStack((stack) => (stack.length > 1 ? stack.slice(0, -1) : stack));
+
+    // Restore the previous state
+    if (previousState) {
+      const parsedState = JSON.parse(previousState);
+      setNodes(parsedState.nodes || []);
+    }
+    console.log("Undo stack", undoStack);
+  }, [undoStack, rfInstance]);
+
+  // Redo function
+  const onRedo = useCallback(() => {
+    if (redoStack.length === 0) return;
+
+    // Save current state to undo stack
+    if (rfInstance) {
+      const currentState = JSON.stringify(rfInstance.toObject());
+      setUndoStack((stack) => [...stack, currentState]);
+    }
+
+    // Get and remove last state from redo stack
+    const nextState = redoStack[redoStack.length - 1];
+    setRedoStack((stack) => stack.slice(0, -1));
+
+    // Restore the next state
+    if (nextState) {
+      const parsedState = JSON.parse(nextState);
+      setNodes(parsedState.nodes || []);
+    }
+    console.log("Redo stack", redoStack);
+  }, [redoStack, rfInstance, setNodes, setUndoStack]);
 
   useEffect(() => {
     if (nodes.length > 0) return;
@@ -102,11 +154,6 @@ function Flow({
     setNodes(initialNodes);
   }, [location, event.locations, nodes]);
 
-  const [rfInstance, setRfInstance] = useState<ReactFlowInstance<
-    CustomNode,
-    Edge
-  > | null>(null);
-
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
       isEditable &&
@@ -120,9 +167,24 @@ function Flow({
             eventLocation.locationId,
             JSON.stringify(rfInstance.toObject())
           );
-      }, 500);
+
+        if (rfInstance) {
+          const currentState = JSON.stringify(rfInstance.toObject());
+          if (currentState !== undoStack[undoStack.length - 1]) {
+            setUndoStack((stack) => [...stack, currentState]);
+            setRedoStack([]); // Clear redo stack when new changes occur
+          }
+        }
+      }, 200);
+
+      // For meaningful changes, update nodes and save state
+      setNodes((nds) => {
+        const newNodes = applyNodeChanges(changes, nds) as CustomNode[];
+
+        return newNodes;
+      });
     },
-    [event.id, eventLocation, rfInstance, isEditable]
+    [rfInstance, undoStack, eventLocation, event.id, isEditable]
   );
 
   // Update mouse position - only in edit mode
@@ -251,6 +313,25 @@ function Flow({
     [screenToFlowPosition, setNodes, isEditable]
   );
 
+  // Call fit view after nodes have been loaded
+  useEffect(() => {
+    if (nodesLoaded) {
+      // Use requestAnimationFrame to ensure the nodes are rendered
+      requestAnimationFrame(() => {
+        fitView({
+          includeHiddenNodes: false,
+        });
+      });
+    }
+  }, [nodesLoaded, fitView]);
+
+  // Set nodes and mark them as loaded
+  useEffect(() => {
+    if (nodes.length > 0) {
+      setNodesLoaded(true);
+    }
+  }, [nodes]);
+
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
       <ReactFlow
@@ -267,37 +348,37 @@ function Flow({
         className="touch-none"
       >
         <Controls position="bottom-right" />
-        <MiniMap position="bottom-left" pannable zoomable />
 
         {/* Hide legend on view only mode */}
         {isEditable && <Legend />}
+        {isEditable && <StateButtons undo={onUndo} redo={onRedo} />}
+
         <EventMapSelect
           eventId={event.id}
           locations={event.locations.map((l) => l.location)}
         />
-        <NavButtons />
       </ReactFlow>
 
-      {/* Hide save button in view mode */}
+      {/* Hide save button in view mode
       {isEditable && (
+        
         <Button
           onClick={() =>
             rfInstance &&
             eventLocation &&
             SaveState(
               event.id,
-
               eventLocation.locationId,
-
               JSON.stringify(rfInstance.toObject())
             )
           }
           style={{ position: "fixed", top: "4rem", right: 16 }}
-          variant="contained"
+          variant="default"
         >
           Save
         </Button>
       )}
+        */}
     </div>
   );
 }

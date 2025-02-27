@@ -1,16 +1,16 @@
 "use client";
-import { Panel } from "@xyflow/react";
-import { Button } from "@components/ui/button";
-import { useParams, useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Location } from "@prisma/client";
-import { useState } from "react";
+import { Button } from "@components/ui/button";
 import { Divider } from "@mui/material";
+import { Location } from "@prisma/client";
+import { Panel } from "@xyflow/react";
+import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
 import LocationAdder from "./LocationCreator";
 
 interface EventMapsSelectProps {

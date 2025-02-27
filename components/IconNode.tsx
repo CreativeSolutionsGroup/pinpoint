@@ -1,72 +1,130 @@
 "use client";
 
-import * as Icons from "lucide-react";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Button } from "@mui/material";
-import { NodeProps, useReactFlow } from "@xyflow/react";
+import { Textarea } from "@/components/ui/textarea";
 import { CustomNode } from "@/types/CustomNode";
-import ColorMenu from "./ColorMenu";
+import ColorMenu from "@components/ColorMenu";
+import { Box, Button } from "@mui/material";
+import { NodeProps, useReactFlow } from "@xyflow/react";
+import * as Icons from "lucide-react";
+import { useSession } from "next-auth/react";
 import { useCallback } from "react";
+import ResizeMenu from "./ResizeMenu";
 
 export function IconNode({ data, id }: NodeProps<CustomNode>) {
   const { deleteElements, setNodes } = useReactFlow();
   // Get the icon component from the Lucide icons
   const IconComponent = Icons[data.iconName as keyof typeof Icons.icons];
 
+  // Make the text field only editable if the user is the correct role
+  const { data: session } = useSession();
+  const canEdit = session?.role === "ADMIN" || session?.role === "EDITOR";
+
   const handleDelete = () => {
     deleteElements({ nodes: [{ id }] });
   };
 
-  const colorChange = useCallback((colorSelected: string) => {
-    // Update the node data and trigger a re-render
-    setNodes((nodes) =>
-      nodes.map((node) => {
-        if (node.id === id) {
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              color: colorSelected,
-            },
-          };
-        }
-        return node;
-      })
-    );
-  }, [id, setNodes]);
+  const colorChange = useCallback(
+    (colorSelected: string) => {
+      // Update the node data and trigger a re-render
+      setNodes((nodes) =>
+        nodes.map((node) => {
+          if (node.id === id) {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                color: colorSelected,
+              },
+            };
+          }
+          return node;
+        })
+      );
+    },
+    [id, setNodes]
+  );
+
+  const handleResize = useCallback(
+    (selectedSize: number) => {
+      setNodes((nds) =>
+        nds.map((node) => {
+          if (node.id === id) {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                size: selectedSize,
+              },
+            };
+          }
+          return node;
+        })
+      );
+    },
+
+    [id, setNodes]
+  );
+
+  const handleNotesChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      const newValue = e.target.value;
+      setNodes((nodes) =>
+        nodes.map((node) => {
+          if (node.id === id) {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                notes: newValue,
+              },
+            };
+          }
+          return node;
+        })
+      );
+    },
+    [id, setNodes]
+  );
 
   return (
     <>
       <Popover>
         <PopoverTrigger>
           <IconComponent
-            style={{ color: data.color }}
-            className="w-6 h-6 text-gray-700"
+            style={{
+              color: data.color,
+              width: `${data.size ?? 2}rem`,
+              height: `${data.size ?? 2}rem`,
+            }}
+            className="text-gray-700"
           />
         </PopoverTrigger>
         <PopoverContent className="w-fit">
           <div className="grid gap-4">
-            Place content for the popover here.
-            <Button onClick={handleDelete} color="warning">
-              Delete
-            </Button>
-            <ColorMenu x={0} y={0} changeColor={colorChange}  />
+            Notes:
+            <Textarea
+              defaultValue={data.notes}
+              onBlur={handleNotesChange}
+              disabled={!canEdit}
+            />
+            <Box className="flex place-content-between">
+              <ResizeMenu
+                onResize={handleResize}
+                currentSize={data.size ?? 2}
+              />
+              <Button onClick={handleDelete} color="warning">
+                Delete
+              </Button>
+            </Box>
+            <ColorMenu x={0} y={0} changeColor={colorChange} />
           </div>
         </PopoverContent>
       </Popover>
     </>
   );
-
-  /* return (
-    <div className="bg-white border-2 border-gray-200 rounded-lg p-2 shadow-sm">
-      <div className="flex flex-col items-center gap-1">
-        {IconComponent && <IconComponent className="w-6 h-6 text-gray-700" />}
-        <span className="text-xs text-gray-600">{data.label}</span>
-      </div>
-    </div>
-  ); */
 }
