@@ -2,14 +2,14 @@
 
 import {
   Button,
-  Select,
-  MenuItem,
-  InputLabel,
   FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
   SelectChangeEvent,
   Typography,
 } from "@mui/material";
-import { Button} from "./ui/button";
+//import { Button } from "./ui/button.tsx";
 import { Event } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -62,7 +62,6 @@ export default function EventSelectForm({
 
   async function createEvent(name: string) {
     const event = await CreateEvent(name);
-    console.log(event.name);
     setInsertDialogOpen(false);
     setDropdownEvents([...dropdownEvents, event]);
     setEventId(event.id);
@@ -91,9 +90,9 @@ export default function EventSelectForm({
           sx={{ width: "100%" }}
           renderValue={(selected) => {
             const event = dropdownEvents.find((e) => e.id === selected);
-            return event ? (
-              <Typography fontSize={15}>{event.name}</Typography>
-            ) : null;
+            return event
+              ? <Typography fontSize={15}>{event.name}</Typography>
+              : null;
           }}
         >
           {dropdownEvents
@@ -150,14 +149,15 @@ export default function EventSelectForm({
           )}
         </Select>
       </FormControl>
-      <Button
-        disabled={notSelected}
-        variant="default"
-        className="mt-3 max-w-fit self-end"
-        onClick={handleClick}
-      >
-        Select
-      </Button>
+      <div className="mt-3 max-w-fit self-end">
+        <Button
+          disabled={notSelected}
+          variant="contained"
+          onClick={handleClick}
+        >
+          Select
+        </Button>
+      </div>
       {/* Delete Event Dialog */}
       <AlertDialog open={deleteDialogOpen}>
         <AlertDialogContent>
@@ -196,7 +196,6 @@ export default function EventSelectForm({
               <Input
                 autoFocus
                 onChange={(e) => {
-                  console.log(e.target.value);
                   setEventToCreate(e.target.value);
                 }}
               />
@@ -215,7 +214,6 @@ export default function EventSelectForm({
           </form>
         </AlertDialogContent>
       </AlertDialog>
-    </>
     </div>
   );
 }

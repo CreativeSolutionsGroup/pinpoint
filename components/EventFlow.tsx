@@ -53,8 +53,9 @@ function Flow({
   useChannel("event-updates", "subscribe", (message) => {
     const { eventId, locationId } = message.data;
 
-    if (eventId !== event.id || locationId !== eventLocation?.locationId)
+    if (eventId !== event.id || locationId !== eventLocation?.locationId) {
       return;
+    }
 
     GetEventLocationInfo(eventId, locationId).then((eventLocationInfo) => {
       if (!eventLocationInfo?.state) return;
@@ -67,17 +68,19 @@ function Flow({
 
   const eventLocation = event.locations.find((l) => l.locationId === location);
   const [nodes, setNodes] = useState<CustomNode[]>(
-    JSON.parse(eventLocation?.state ?? "{}")?.nodes || []
+    JSON.parse(eventLocation?.state ?? "{}")?.nodes || [],
   );
 
   const { screenToFlowPosition } = useReactFlow();
 
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
-  const [rfInstance, setRfInstance] = useState<ReactFlowInstance<
-    CustomNode,
-    Edge
-  > | null>(null);
+  const [rfInstance, setRfInstance] = useState<
+    ReactFlowInstance<
+      CustomNode,
+      Edge
+    > | null
+  >(null);
 
   //history management
   const [undoStack, setUndoStack] = useState<string[]>([]);
@@ -166,7 +169,7 @@ function Flow({
           SaveState(
             event.id,
             eventLocation.locationId,
-            JSON.stringify(rfInstance.toObject())
+            JSON.stringify(rfInstance.toObject()),
           );
 
         if (rfInstance) {
@@ -185,7 +188,7 @@ function Flow({
         return newNodes;
       });
     },
-    [rfInstance, undoStack, eventLocation, event.id, isEditable]
+    [rfInstance, undoStack, eventLocation, event.id, isEditable],
   );
 
   // Update mouse position - only in edit mode
@@ -264,7 +267,7 @@ function Flow({
         event.dataTransfer.dropEffect = "move";
       }
     },
-    [isEditable]
+    [isEditable],
   );
 
   const onDrop = useCallback(
@@ -311,7 +314,7 @@ function Flow({
 
       setNodes((nds) => [...nds, newNode]);
     },
-    [screenToFlowPosition, setNodes, isEditable]
+    [screenToFlowPosition, setNodes, isEditable],
   );
 
   // Call fit view after nodes have been loaded
@@ -354,16 +357,14 @@ function Flow({
         {isEditable && <Legend />}
         {isEditable && <StateButtons undo={onUndo} redo={onRedo} />}
 
-      <EventMapSelect
+        <EventMapSelect
           eventId={event.id}
           locations={event.locations.map((l) => l.location)}
         />
-
-        
-        
       </ReactFlow>
 
-      
+      {
+        /* Hide save button in view mode
       {isEditable && (
         <Button
           onClick={() =>
@@ -372,9 +373,8 @@ function Flow({
             SaveState(
               event.id,
               eventLocation.locationId,
-              JSON.stringify(rfInstance.toObject())
-            )
-          }
+              JSON.stringify(rfInstance.toObject()),
+            )}
           style={{ position: "fixed", top: "4rem", right: 16 }}
           variant="default"
         >
@@ -398,7 +398,9 @@ function Flow({
         >
           Redo
         </Button>
-      )}     
+      )}
+      */
+      }
     </div>
   );
 }
