@@ -3,6 +3,11 @@
 import { prisma } from "../db";
 
 export default async function DeleteEvent(eventId: string) {
-  await prisma.event.delete({ where: { id: eventId } });
-  console.log(eventId + " deleted");
+  await prisma.eventToLocation.deleteMany({
+    where: { eventId },
+  });
+
+  await prisma.event.delete({
+    where: { id: eventId },
+  });
 }
