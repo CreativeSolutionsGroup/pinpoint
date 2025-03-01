@@ -2,13 +2,14 @@
 
 import {
   Button,
-  FormControl,
-  InputLabel,
-  MenuItem,
   Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
   SelectChangeEvent,
   Typography,
 } from "@mui/material";
+import { Button} from "./ui/button";
 import { Event } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -77,7 +78,7 @@ export default function EventSelectForm({
   const canEdit = session?.role === "ADMIN" || session?.role === "EDITOR";
 
   return (
-    <>
+    <div className="m-8 flex flex-col">
       <FormControl required fullWidth>
         <InputLabel id="selectEvent">Event</InputLabel>
         <Select
@@ -151,13 +152,12 @@ export default function EventSelectForm({
       </FormControl>
       <Button
         disabled={notSelected}
-        variant="contained"
-        sx={{ mt: 2, maxWidth: "fit-content", alignSelf: "end" }}
+        variant="default"
+        className="mt-3 max-w-fit self-end"
         onClick={handleClick}
       >
         Select
       </Button>
-
       {/* Delete Event Dialog */}
       <AlertDialog open={deleteDialogOpen}>
         <AlertDialogContent>
@@ -216,5 +216,6 @@ export default function EventSelectForm({
         </AlertDialogContent>
       </AlertDialog>
     </>
+    </div>
   );
 }
