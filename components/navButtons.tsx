@@ -31,15 +31,15 @@ export default function NavButtons({ locations }: { locations: Location[] }) {
 
   return (
     <div className="flex flex-row justify-center">
-      <IconButton onClick={() => nextLocation("backward")}>
+      <IconButton onClick={() => nextLocation("backward")} style={{color: 'black'}}>
         <ArrowBackIcon />
       </IconButton>
       
-      <IconButton onClick={() => router.push("/home")}>
+      <IconButton onClick={() => router.push("/home")} style={{color: 'black'}}>
         <HomeIcon />
       </IconButton>
 
-      <IconButton onClick={() => nextLocation("forward")}>
+      <IconButton onClick={() => nextLocation("forward")} style={{color: 'black'}}>
         <ArrowForwardIcon />
       </IconButton>
     </div>

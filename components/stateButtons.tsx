@@ -12,15 +12,15 @@ export default function StateButtons(props: {undo: () => void, redo: () => void}
   return (
     <Panel position="top-right">
       <Card className={`flex flex-${isMobile ? "col" : "row"} justify-center`}>
-        <IconButton onClick={ props.undo }>
+        <IconButton onClick={ props.undo } style={{color: 'black'}}>
           <UndoIcon />
         </IconButton>
 
-        <IconButton onClick={ props.redo }>
+        <IconButton onClick={ props.redo } style={{color: 'black'}}>
           <RedoIcon />
         </IconButton>
 
-        <IconButton onClick={() => console.log("Saved")}>
+        <IconButton onClick={() => console.log("Saved")} style={{color: 'black'}}>
           <SaveIcon />
         </IconButton>
       </Card>
