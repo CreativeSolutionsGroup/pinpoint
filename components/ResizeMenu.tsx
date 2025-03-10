@@ -15,14 +15,18 @@ export default function ResizeMenu({
           onResize(currentSize + 1 <= 5 ? currentSize + 1 : currentSize)
         }
       >
-        <PlusIcon />
+        <Box style={{borderRadius: '50%', border: '2px solid gray', padding: '3px' }}>
+          <PlusIcon/>
+        </Box>
       </IconButton>
       <IconButton
         onClick={() =>
           onResize(currentSize - 1 >= 1 ? currentSize - 1 : currentSize)
         }
       >
-        <MinusIcon />
+        <Box style={{borderRadius: '50%', border: '2px solid gray', padding: '3px'}}>
+         <MinusIcon/>
+        </Box>
       </IconButton>
     </Box>
   );

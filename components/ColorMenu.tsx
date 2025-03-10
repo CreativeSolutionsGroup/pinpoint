@@ -9,12 +9,12 @@ export default function ColorMenu(props: {
 }) {
   const mainStyle = `z-10 bg-white shadow-md rounded-md flex items-center`;
   const colorArray = [
-    "lightblue",
-    "navy",
-    "purple",
+    "white",
     "yellow",
     "orange",
-    "white",
+    "purple",
+    "lightblue",
+    "navy",
   ];
 
   function onColorClick(color: string) {

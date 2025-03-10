@@ -14,6 +14,7 @@ import * as Icons from "lucide-react";
 import { useCallback } from "react";
 import { useParams } from "next/navigation";
 import ResizeMenu from "./ResizeMenu";
+import { Trash2 } from "lucide-react";
 
 export function IconNode({ data, id }: NodeProps<CustomNode>) {
   const { deleteElements, setNodes } = useReactFlow();
@@ -107,7 +108,6 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
         </PopoverTrigger>
         <PopoverContent className="w-fit">
           <div className="grid gap-4">
-            Notes:
             <Textarea
               defaultValue={data.notes}
               onBlur={handleNotesChange}
@@ -119,7 +119,7 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
                 currentSize={data.size ?? 2}
               />
               <Button onClick={handleDelete} color="warning">
-                Delete
+                <Trash2/>
               </Button>
             </Box>}
             {isEditable && <ColorMenu x={0} y={0} changeColor={colorChange} />}

@@ -14,7 +14,7 @@ import { Event } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-
+import { themeOptions } from "@/theme";
 import { Input } from "@mui/material";
 
 import {
@@ -125,13 +125,13 @@ export default function EventSelectForm({
               sx={{
                 backgroundColor: "#fafafa",
                 "&:hover": {
-                  backgroundColor: "rgba(76, 175, 80, 0.08)",
+                  backgroundColor: "rgba(4, 135, 217, 0.3)",
                 },
                 "&.Mui-selected": {
                   backgroundColor: "#fafafa",
                 },
                 "&.Mui-selected:hover": {
-                  backgroundColor: "rgba(76, 175, 80, 0.08)",
+                  backgroundColor: "rgba(4, 135, 217, 0.3)",
                 },
                 // border: "1px dashed #ccc",
                 // borderRadius: "4px",
@@ -141,8 +141,8 @@ export default function EventSelectForm({
                 <Typography fontSize={15} fontWeight="bold">
                   Add Event
                 </Typography>
-                <Button color="success" size="small" className="ml-2">
-                  <AddIcon />
+                <Button size="small" className="ml-2" sx={{ color: themeOptions.palette.lightblue.main}}>
+                  <AddIcon/>
                 </Button>
               </div>
             </MenuItem>
