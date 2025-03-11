@@ -50,7 +50,7 @@ export default async function EventPage({
         include: {
           location: true,
         },
-        orderBy: {locationId: "asc"},
+        orderBy: { locationId: "asc" },
       },
     },
   });
@@ -58,7 +58,7 @@ export default async function EventPage({
   if (!event) {
     redirect("/home?error=Event not found");
   }
-  
+
   if (event.locations.length === 0) {
     redirect(`/home?error=Event has no locations`);
   }
@@ -69,12 +69,12 @@ export default async function EventPage({
   }
 
   // so now we know this event exists and has a location,
-  // this user exists, and we can tell eventFlow if the user can edit or not 
+  // this user exists, and we can tell eventFlow if the user can edit or not
   return (
     <EventFlow
-    event={event}
-    location={p.locationId?.[0] ?? event.locations[0].locationId}
-    isEditable={p.mode === "edit" && canEditContent}
+      event={event}
+      location={p.locationId?.[0] ?? event.locations[0].locationId}
+      isEditable={p.mode === "edit" && canEditContent}
     />
   );
 }
