@@ -1,21 +1,20 @@
 "use client";
 
+import { muiTheme } from "@/theme";
 import {
   Button,
   FormControl,
+  Input,
   InputLabel,
   MenuItem,
   Select,
   SelectChangeEvent,
   Typography,
 } from "@mui/material";
-//import { Button } from "./ui/button.tsx";
 import { Event } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { themeOptions } from "@/theme";
-import { Input } from "@mui/material";
 
 import {
   AlertDialog,
@@ -90,9 +89,9 @@ export default function EventSelectForm({
           sx={{ width: "100%" }}
           renderValue={(selected) => {
             const event = dropdownEvents.find((e) => e.id === selected);
-            return event
-              ? <Typography fontSize={15}>{event.name}</Typography>
-              : null;
+            return event ? (
+              <Typography fontSize={15}>{event.name}</Typography>
+            ) : null;
           }}
         >
           {dropdownEvents
@@ -141,8 +140,12 @@ export default function EventSelectForm({
                 <Typography fontSize={15} fontWeight="bold">
                   Add Event
                 </Typography>
-                <Button size="small" className="ml-2" sx={{ color: themeOptions.palette.lightblue.main}}>
-                  <AddIcon/>
+                <Button
+                  size="small"
+                  className="ml-2"
+                  sx={{ color: muiTheme.palette.lightblue.main }}
+                >
+                  <AddIcon />
                 </Button>
               </div>
             </MenuItem>
@@ -214,9 +217,6 @@ export default function EventSelectForm({
           </form>
         </AlertDialogContent>
       </AlertDialog>
-      <div>
-        test text
-      </div>
     </div>
   );
 }
