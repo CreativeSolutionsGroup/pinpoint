@@ -113,15 +113,17 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
               onBlur={handleNotesChange}
               disabled={!isEditable}
             />
-            {isEditable && <Box className="flex place-content-between">
-              <ResizeMenu
-                onResize={handleResize}
-                currentSize={data.size ?? 2}
-              />
-              <Button onClick={handleDelete} color="warning">
-                <Trash2/>
-              </Button>
-            </Box>}
+            {isEditable && (
+              <Box className="flex place-content-between">
+                <ResizeMenu
+                  onResize={handleResize}
+                  currentSize={data.size ?? 2}
+                />
+                <Button onClick={handleDelete} sx={{ color: "red" }}>
+                  <Trash2 />
+                </Button>
+              </Box>
+            )}
             {isEditable && <ColorMenu x={0} y={0} changeColor={colorChange} />}
           </div>
         </PopoverContent>

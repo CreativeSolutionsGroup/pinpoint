@@ -1,5 +1,6 @@
 import { Box, IconButton } from "@mui/material";
-import { MinusIcon, PlusIcon } from "lucide-react";
+import AddCircleIcon from "@mui/icons-material/AddCircle";
+import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
 
 export default function ResizeMenu({
   onResize,
@@ -14,19 +15,17 @@ export default function ResizeMenu({
         onClick={() =>
           onResize(currentSize + 1 <= 5 ? currentSize + 1 : currentSize)
         }
+        sx={{ color: "black" }}
       >
-        <Box style={{borderRadius: '50%', border: '2px solid gray', padding: '3px' }}>
-          <PlusIcon/>
-        </Box>
+        <AddCircleIcon />
       </IconButton>
       <IconButton
         onClick={() =>
           onResize(currentSize - 1 >= 1 ? currentSize - 1 : currentSize)
         }
+        sx={{ color: "black" }}
       >
-        <Box style={{borderRadius: '50%', border: '2px solid gray', padding: '3px'}}>
-         <MinusIcon/>
-        </Box>
+        <RemoveCircleIcon />
       </IconButton>
     </Box>
   );

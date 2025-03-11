@@ -45,7 +45,7 @@ export default async function EventSelect() {
           <ErrorToast />
         </Suspense>
       </Box>
-      <Box width="75%">
+      <Box sx={{ width: "75%", position: "fixed" }}>
         <HomepageArrow />
       </Box>
     </>

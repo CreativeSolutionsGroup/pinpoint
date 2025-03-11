@@ -14,12 +14,13 @@ export default function NavButtons({ locations }: { locations: Location[] }) {
 
   function nextLocation(direction: "forward" | "backward") {
     // get the current location (with a lot of error protection)
-    const currId    = (params.locationId || locationIds[0]).toString();
+    const currId = (params.locationId || locationIds[0]).toString();
     const currIndex = locationIds.indexOf(currId) || 0;
 
     // handle wrap around
-    const offset   = direction === "forward" ? 1 : -1;
-    const newIndex = (currIndex + offset + locationIds.length) % locationIds.length;
+    const offset = direction === "forward" ? 1 : -1;
+    const newIndex =
+      (currIndex + offset + locationIds.length) % locationIds.length;
 
     // checking the current url gave us the values we need
     if (params.mode && params.eventId && locationIds[newIndex]) {
@@ -31,15 +32,24 @@ export default function NavButtons({ locations }: { locations: Location[] }) {
 
   return (
     <div className="flex flex-row justify-center">
-      <IconButton onClick={() => nextLocation("backward")} style={{color: 'black'}}>
+      <IconButton
+        onClick={() => nextLocation("backward")}
+        style={{ color: "black" }}
+      >
         <ArrowBackIcon />
       </IconButton>
-      
-      <IconButton onClick={() => router.push("/home")} style={{color: 'black'}}>
+
+      <IconButton
+        onClick={() => router.push("/home")}
+        style={{ color: "black" }}
+      >
         <HomeIcon />
       </IconButton>
 
-      <IconButton onClick={() => nextLocation("forward")} style={{color: 'black'}}>
+      <IconButton
+        onClick={() => nextLocation("forward")}
+        style={{ color: "black" }}
+      >
         <ArrowForwardIcon />
       </IconButton>
     </div>
