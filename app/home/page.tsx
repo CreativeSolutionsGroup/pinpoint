@@ -45,7 +45,7 @@ export default async function EventSelect() {
           <ErrorToast />
         </Suspense>
       </Box>
-      <Box className="mt-10" width="70%">
+      <Box width="75%">
         <HomepageArrow />
       </Box>
     </>
