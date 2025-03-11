@@ -34,10 +34,10 @@ export default function EventMapsSelect({
       className="bg-white text-black p-5 border-2 flex flex-col w-36"
     >
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogTrigger>Maps</DialogTrigger>
+        <DialogTrigger>Switch Map</DialogTrigger>
         <DialogContent className="max-w-64">
-          <DialogTitle>Choose a Map Location</DialogTitle>
-          {locations.map((location) => (
+          <DialogTitle>Choose a Different Map</DialogTitle>
+          {locations.filter(v => v.id !== (params.locationId?.[0])).map((location) => (
             <Button
               key={location.id}
               onClick={() => {
@@ -63,6 +63,7 @@ export default function EventMapsSelect({
 
       <LocationAdder
         eventId={eventId}
+        currentLocations={locations}
         isOpen={isOpenLocationAdder}
         onClose={() => setIsOpenLocationAdder(false)}
       />

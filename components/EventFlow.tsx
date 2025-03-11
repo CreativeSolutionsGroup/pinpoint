@@ -66,6 +66,9 @@ function Flow({
   });
 
   const eventLocation = event.locations.find((l) => l.locationId === location);
+  const [eventLocations, setEventLocations] = useState<Array<Location>>(
+    event.locations.map((l) => l.location)
+  );
   const [nodes, setNodes] = useState<CustomNode[]>(
     JSON.parse(eventLocation?.state ?? "{}")?.nodes || []
   );
@@ -175,6 +178,8 @@ function Flow({
             setRedoStack([]); // Clear redo stack when new changes occur
           }
         }
+
+        setEventLocations(event.locations.map((l) => l.location));
       }, 200);
 
       // For meaningful changes, update nodes and save state
@@ -184,7 +189,14 @@ function Flow({
         return newNodes;
       });
     },
-    [rfInstance, undoStack, eventLocation, event.id, isEditable]
+    [
+      isEditable,
+      rfInstance,
+      eventLocation,
+      event.id,
+      event.locations,
+      undoStack,
+    ]
   );
 
   // Update mouse position - only in edit mode
@@ -353,10 +365,7 @@ function Flow({
         {isEditable && <Legend />}
         {isEditable && <StateButtons undo={onUndo} redo={onRedo} />}
 
-        <EventMapSelect
-          eventId={event.id}
-          locations={event.locations.map((l) => l.location)}
-        />
+        <EventMapSelect eventId={event.id} locations={eventLocations} />
       </ReactFlow>
 
       {/* Hide save button in view mode

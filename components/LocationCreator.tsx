@@ -21,10 +21,12 @@ import { useRouter } from "next/navigation";
 
 export default function LocationAdder({
   eventId,
+  currentLocations,
   isOpen,
   onClose,
 }: {
   eventId: string;
+  currentLocations: Location[];
   isOpen: boolean;
   onClose: () => void;
 }) {
@@ -35,13 +37,17 @@ export default function LocationAdder({
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    await AddLocationToEvent({ eventId, locationId });
-    onClose();
+    const newEventLocation = await AddLocationToEvent({ eventId, locationId });
+    router.push(`/event/edit/${eventId}/${newEventLocation.id}`);
   }
 
   useEffect(() => {
-    GetAllLocations().then((locations) => setLocations(locations ?? []));
-  }, []);
+    GetAllLocations().then((locations) =>
+      setLocations(
+        locations?.filter((v) => !currentLocations?.find((x => x.id === v.id))) ?? []
+      )
+    );
+  }, [currentLocations]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -75,8 +81,15 @@ export default function LocationAdder({
             const locationName = data.get("locationName")?.toString();
             const imageURL = data.get("imageURL")?.toString();
             if (locationName && imageURL) {
-              const newLocation = await CreateNewLocation(locationName, imageURL);
-              router.push(newLocation.id);
+              const newLocation = await CreateNewLocation(
+                locationName,
+                imageURL
+              );
+              const eventLocationLink = await AddLocationToEvent({
+                eventId,
+                locationId: newLocation.id,
+              });
+              router.push(eventLocationLink.id);
             }
           }}
         >
