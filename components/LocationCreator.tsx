@@ -44,9 +44,11 @@ export default function LocationAdder({
   useEffect(() => {
     GetAllLocations().then((locations) =>
       setLocations(
-        locations?.filter(
-          (v) => !currentLocations?.find((x) => x.id === v.id)
-        ) ?? []
+        (
+          locations?.filter(
+            (v) => !currentLocations?.find((x) => x.id === v.id)
+          ) ?? []
+        ).sort((a, b) => a.name.localeCompare(b.name))
       )
     );
   }, [currentLocations]);
