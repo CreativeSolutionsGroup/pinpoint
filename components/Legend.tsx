@@ -149,7 +149,7 @@ export default function Legend() {
     <Panel
       id="icon-legend-panel"
       position="top-left"
-      className={`bg-white text-black p-5 border-2 flex flex-col w-72 ${
+      className={`bg-white text-black p-5 flex flex-col w-72 rounded-xl border bg-card text-card-foreground shadow ${
         isMobile &&
         "absolute left-0 transform -translate-x-full hover:translate-x-0"
       } transition-transform duration-700 ease-in-out`}

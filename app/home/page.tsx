@@ -12,6 +12,7 @@
 import ErrorToast from "@/components/ErrorToast";
 import EventSelectForm from "@/components/EventSelectForm";
 import Heading from "@/components/Heading";
+import HomepageArrow from "@/components/svg/HomepageArrow";
 import { prisma } from "@/lib/api/db";
 import { Box, Typography } from "@mui/material";
 import { Suspense } from "react";
@@ -31,24 +32,30 @@ export default async function EventSelect() {
   });
 
   return (
-    <Box width="45rem" mx="auto" display="flex" flexDirection="column">
-      <Box mt={5}>
-        <Heading />
+    <>
+      <Box width="45rem" mx="auto" display="flex" flexDirection="column">
+        <Box mt={5}>
+          <Heading />
+        </Box>
+
+        <Typography
+          mx="auto"
+          variant="h6"
+          align="center"
+          mt={0.5}
+          mb={1}
+          color="primary.main"
+        >
+          Select an Event
+        </Typography>
+        <EventSelectForm events={events} />
+        <Suspense>
+          <ErrorToast />
+        </Suspense>
       </Box>
-      <Typography
-        mx="auto"
-        variant="h6"
-        align="center"
-        mt={0.5}
-        mb={1}
-        color="primary.main"
-      >
-        Select an Event
-      </Typography>
-      <EventSelectForm events={events} />
-      <Suspense>
-        <ErrorToast />
-      </Suspense>
-    </Box>
+      <Box sx={{ width: "75%", position: "fixed" }}>
+        <HomepageArrow />
+      </Box>
+    </>
   );
 }

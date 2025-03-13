@@ -38,13 +38,15 @@ export default function LocationAdder({
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const newEventLocation = await AddLocationToEvent({ eventId, locationId });
-    router.push(`/event/edit/${eventId}/${newEventLocation.id}`);
+    router.push(`/event/edit/${eventId}/${newEventLocation.locationId}`);
   }
 
   useEffect(() => {
     GetAllLocations().then((locations) =>
       setLocations(
-        locations?.filter((v) => !currentLocations?.find((x => x.id === v.id))) ?? []
+        locations?.filter(
+          (v) => !currentLocations?.find((x) => x.id === v.id)
+        ) ?? []
       )
     );
   }, [currentLocations]);

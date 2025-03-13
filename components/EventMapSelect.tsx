@@ -30,6 +30,8 @@ export default function EventMapsSelect({
   const [isOpenLocationAdder, setIsOpenLocationAdder] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
+  console.log(params);
+  console.log(locations);
   return (
     <Panel position="bottom-left" className="">
       <Card>

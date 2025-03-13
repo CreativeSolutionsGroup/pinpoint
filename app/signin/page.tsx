@@ -1,7 +1,7 @@
 "use client";
 import { Stack, Button } from "@mui/material";
 import { signIn } from "next-auth/react";
-import MicrosoftIcon from "@/components/MicrosoftIcon";
+import MicrosoftIcon from "@/components/svg/MicrosoftIcon";
 
 export default function SignIn() {
   return (
