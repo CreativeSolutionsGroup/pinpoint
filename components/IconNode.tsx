@@ -11,18 +11,19 @@ import ColorMenu from "@components/ColorMenu";
 import { Box, Button } from "@mui/material";
 import { NodeProps, useReactFlow } from "@xyflow/react";
 import * as Icons from "lucide-react";
-import { useSession } from "next-auth/react";
 import { useCallback } from "react";
+import { useParams } from "next/navigation";
 import ResizeMenu from "./ResizeMenu";
 
 export function IconNode({ data, id }: NodeProps<CustomNode>) {
   const { deleteElements, setNodes } = useReactFlow();
+
+  const params = useParams<{ mode: string }>();
+
+  const isEditable = params.mode == "edit";
+
   // Get the icon component from the Lucide icons
   const IconComponent = Icons[data.iconName as keyof typeof Icons.icons];
-
-  // Make the text field only editable if the user is the correct role
-  const { data: session } = useSession();
-  const canEdit = session?.role === "ADMIN" || session?.role === "EDITOR";
 
   const handleDelete = () => {
     deleteElements({ nodes: [{ id }] });
@@ -110,9 +111,9 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
             <Textarea
               defaultValue={data.notes}
               onBlur={handleNotesChange}
-              disabled={!canEdit}
+              disabled={!isEditable}
             />
-            <Box className="flex place-content-between">
+            {isEditable && <Box className="flex place-content-between">
               <ResizeMenu
                 onResize={handleResize}
                 currentSize={data.size ?? 2}
@@ -120,8 +121,8 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
               <Button onClick={handleDelete} color="warning">
                 Delete
               </Button>
-            </Box>
-            <ColorMenu x={0} y={0} changeColor={colorChange} />
+            </Box>}
+            {isEditable && <ColorMenu x={0} y={0} changeColor={colorChange} />}
           </div>
         </PopoverContent>
       </Popover>

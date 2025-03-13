@@ -1,27 +1,38 @@
-/**
- * @file EventSelectForm.tsx
- * @author Isaac Lloyd
- * @author Chase Evans
- * @param {Event[]} events - List of events to select from
- * @param {boolean} isEditable - Does the user have edit permissions?
- * @returns {JSX.Element} - Event select form
- */
-
 "use client";
 
 import {
-  Typography,
-  Select,
-  MenuItem,
-  InputLabel,
+  Button,
   FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
   SelectChangeEvent,
+  Typography,
 } from "@mui/material";
-import { Button } from "./ui/button";
-import { useState } from "react";
 import { Event } from "@prisma/client";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import LocationAdder from "./LocationCreator";
+import { useState } from "react";
+
+import { Input } from "@mui/material";
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
+import CreateEvent from "@/lib/api/create/createEvent";
+import DeleteEvent from "@/lib/api/delete/deleteEvent";
+import AddIcon from "@mui/icons-material/Add";
+import RemoveIcon from "@mui/icons-material/Remove";
+import { GetEvent } from "@/lib/api/read/GetEvent";
 
 export default function EventSelectForm({
   events,
@@ -37,8 +48,29 @@ export default function EventSelectForm({
     setEventId(e.target.value);
   };
 
-  const handleClick = () => {
-    const selectedEvent = events.find((event) => event.id === eventId);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [eventToDelete, setEventToDelete] = useState<Event>();
+
+  const [insertDialogOpen, setInsertDialogOpen] = useState(false);
+  const [eventToCreate, setEventToCreate] = useState<string>("");
+
+  const [dropdownEvents, setDropdownEvents] = useState<Event[]>(events);
+
+  function deleteEvent(id: string) {
+    DeleteEvent(id);
+    setDeleteDialogOpen(false);
+    setDropdownEvents(dropdownEvents.filter((e) => e.id != id));
+  }
+
+  async function createEvent(name: string) {
+    const event = await CreateEvent(name);
+    setInsertDialogOpen(false);
+    setDropdownEvents([...dropdownEvents, event]);
+    setEventId(event.id);
+  }
+
+  const handleClick = async () => {
+    const selectedEvent = await GetEvent(eventId);
 
     if (selectedEvent && selectedEvent.locations.length === 0) {
       setIsOpenLocationCreator(true);
@@ -47,45 +79,154 @@ export default function EventSelectForm({
     }
   };
 
+  const { data: session } = useSession();
+  const canEdit = session?.role === "ADMIN" || session?.role === "EDITOR";
+
   return (
     <div className="m-8 flex flex-col">
       <FormControl required fullWidth>
         <InputLabel id="selectEvent">Event</InputLabel>
         <Select
+          value={eventId}
           defaultValue=""
           labelId="selectEvent"
           label="Event"
           name="eventSelected"
           onChange={handleChange}
           sx={{ width: "100%" }}
+          renderValue={(selected) => {
+            const event = dropdownEvents.find((e) => e.id === selected);
+            return event ? (
+              <Typography fontSize={15}>{event.name}</Typography>
+            ) : null;
+          }}
         >
-          {events.length !== 0 ? (
-            events.map((event) => (
+          {dropdownEvents
+            .map((event) => (
               <MenuItem key={event.id} value={event.id}>
-                <Typography fontSize={15}>{event.name}</Typography>
+                <div className="flex flex-row items-center justify-between w-full">
+                  <Typography fontSize={15}>{event.name}</Typography>
+                  {canEdit && (
+                    <Button
+                      color="warning"
+                      size="small"
+                      className="ml-2"
+                      onClick={() => {
+                        setDeleteDialogOpen(true);
+                        setEventToDelete(event);
+                      }}
+                    >
+                      <RemoveIcon />
+                    </Button>
+                  )}
+                </div>
               </MenuItem>
             ))
-          ) : (
-            <MenuItem key={1} value={"noEvent"}>
-              <Typography fontSize={15}>No events to select</Typography>
+            .reverse()}
+          {canEdit && (
+            <MenuItem
+              key={1}
+              value={"newEvent"}
+              onClick={() => setInsertDialogOpen(true)}
+              sx={{
+                backgroundColor: "#fafafa",
+                "&:hover": {
+                  backgroundColor: "rgba(76, 175, 80, 0.08)",
+                },
+                "&.Mui-selected": {
+                  backgroundColor: "#fafafa",
+                },
+                "&.Mui-selected:hover": {
+                  backgroundColor: "rgba(76, 175, 80, 0.08)",
+                },
+                // border: "1px dashed #ccc",
+                // borderRadius: "4px",
+              }}
+            >
+              <div className="flex flex-row items-center justify-between w-full">
+                <Typography fontSize={15} fontWeight="bold">
+                  Add Event
+                </Typography>
+                <Button color="success" size="small" className="ml-2">
+                  <AddIcon />
+                </Button>
+              </div>
             </MenuItem>
           )}
         </Select>
       </FormControl>
-      <Button
-        disabled={notSelected}
-        variant="default"
-        className="mt-3 max-w-fit self-end"
-        onClick={handleClick}
-      >
-        Select
-      </Button>
+      <div className="mt-3 max-w-fit self-end">
+        <Button
+          disabled={notSelected}
+          variant="contained"
+          onClick={handleClick}
+        >
+          Select
+        </Button>
 
-      <LocationAdder
-        eventId={eventId}
-        isOpen={isOpenLocationCreator}
-        onClose={() => setIsOpenLocationCreator(false)}
-      />
+        <LocationAdder
+          eventId={eventId}
+          currentLocations={[]}
+          isOpen={isOpenLocationCreator}
+          onClose={() => setIsOpenLocationCreator(false)}
+        />
+      </div>
+      {/* Delete Event Dialog */}
+      <AlertDialog open={deleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Event</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete {eventToDelete?.name || ""}?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteDialogOpen(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={() => deleteEvent(eventToDelete!.id)}>
+              Confirm
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={insertDialogOpen}>
+        <AlertDialogContent>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (eventToCreate) {
+                createEvent(eventToCreate);
+              }
+            }}
+          >
+            <AlertDialogHeader>
+              <AlertDialogTitle>Add New Event</AlertDialogTitle>
+              <AlertDialogDescription>
+                Enter the name of an event you would like to add:
+              </AlertDialogDescription>
+              <Input
+                autoFocus
+                onChange={(e) => {
+                  setEventToCreate(e.target.value);
+                }}
+              />
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel
+                onClick={() => setInsertDialogOpen(false)}
+                type="button"
+              >
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction disabled={eventToCreate == ""} type="submit">
+                Confirm
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </form>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
