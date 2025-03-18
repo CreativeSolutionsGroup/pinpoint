@@ -7,12 +7,14 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@components/ui/button";
+import { Card, CardContent, Divider } from "@mui/material";
 import { Location } from "@prisma/client";
-import { Card, CardContent } from "./ui/card";
-import NavButtons from "./navButtons";
 import { Panel } from "@xyflow/react";
 import { useParams, useRouter } from "next/navigation";
 import { DialogDescription } from "@radix-ui/react-dialog";
+import { useState } from "react";
+import LocationAdder from "./LocationCreator";
+import NavButtons from "./navButtons";
 
 interface EventMapsSelectProps {
   eventId: string;
@@ -26,34 +28,59 @@ export default function EventMapsSelect({
   const router = useRouter();
   const params = useParams();
 
+  const [isOpenLocationAdder, setIsOpenLocationAdder] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  
   return (
-      <Panel
-      position="bottom-left"
-      className=""
-      >
-        <Card>
+    <Panel position="bottom-left" className="">
+      <Card>
         <CardContent className="p-4 flex flex-col">
           <NavButtons locations={locations} />
-          <Dialog>
-            <DialogTrigger asChild><Button>Change Location</Button></DialogTrigger>
-              <DialogContent className="max-w-64">
-                <DialogHeader>
-                  <DialogTitle className="pb-1">Change Location</DialogTitle>
-                  {locations.map((location) => (
-                    <Button
-                    key={location.id}
-                    onClick={() => router.push(`/event/${params.mode}/${eventId}/${location.id}`)}
-                    >
-                    {location.name}
-                    </Button>
-                ))}
+          <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>
+              <Button>Change Location</Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-64">
+              <DialogHeader>
+                <DialogTitle>Choose a Different Map</DialogTitle>
               </DialogHeader>
+              {locations
+                .filter((v) => v.id !== params.locationId?.[0])
+                .map((location) => (
+                  <Button
+                    key={location.id}
+                    onClick={() => {
+                      setIsOpen(false);
+                      router.push(
+                        `/event/${params.mode}/${eventId}/${location.id}`
+                      );
+                    }}
+                  >
+                    {location.name}
+                  </Button>
+                ))}
+              {locations.length > 1 && <Divider>OR</Divider>}
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  setTimeout(() => setIsOpenLocationAdder(true), 300);
+                }}
+                className="w-full p-2 text-white bg-blue-500 rounded"
+              >
+                Add Location
+              </button>
               <DialogDescription></DialogDescription>
             </DialogContent>
           </Dialog>
-          </CardContent>
-        </Card>
-      </Panel>
-    
+        </CardContent>
+      </Card>
+
+      <LocationAdder
+        eventId={eventId}
+        currentLocations={locations}
+        isOpen={isOpenLocationAdder}
+        onClose={() => setIsOpenLocationAdder(false)}
+      />
+    </Panel>
   );
 }

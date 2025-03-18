@@ -14,6 +14,7 @@ import {
 import { Event } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import LocationAdder from "./LocationCreator";
 import { useState } from "react";
 
 import {
@@ -31,14 +32,16 @@ import CreateEvent from "@/lib/api/create/createEvent";
 import DeleteEvent from "@/lib/api/delete/deleteEvent";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
+import { GetEvent } from "@/lib/api/read/GetEvent";
 
 export default function EventSelectForm({
   events,
 }: {
-  events: Pick<Event, "id" | "name">[];
+  events: (Pick<Event, "id" | "name"> & { locations: { id: string }[] })[];
 }) {
   const router = useRouter();
   const [notSelected, setSelected] = useState(true);
+  const [isOpenLocationCreator, setIsOpenLocationCreator] = useState(false);
   const [eventId, setEventId] = useState("");
   const handleChange = (e: SelectChangeEvent) => {
     setSelected(false);
@@ -67,10 +70,14 @@ export default function EventSelectForm({
     setEventId(event.id);
   }
 
-  const handleClick = () => {
-    // always push to /edit, it'll auto redirect
-    // if user doesn't have permission
-    router.push(`/event/edit/${eventId}`);
+  const handleClick = async () => {
+    const selectedEvent = await GetEvent(eventId);
+
+    if (selectedEvent && selectedEvent.locations.length === 0) {
+      setIsOpenLocationCreator(true);
+    } else {
+      router.push(`/event/edit/${eventId}`);
+    }
   };
 
   const { data: session } = useSession();
@@ -161,6 +168,13 @@ export default function EventSelectForm({
         >
           Select
         </Button>
+
+        <LocationAdder
+          eventId={eventId}
+          currentLocations={[]}
+          isOpen={isOpenLocationCreator}
+          onClose={() => setIsOpenLocationCreator(false)}
+        />
       </div>
       {/* Delete Event Dialog */}
       <AlertDialog open={deleteDialogOpen}>
