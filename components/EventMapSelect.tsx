@@ -11,6 +11,7 @@ import { Card, CardContent, Divider } from "@mui/material";
 import { Location } from "@prisma/client";
 import { Panel } from "@xyflow/react";
 import { useParams, useRouter } from "next/navigation";
+import { DialogDescription } from "@radix-ui/react-dialog";
 import { useState } from "react";
 import LocationAdder from "./LocationCreator";
 import NavButtons from "./navButtons";
@@ -68,6 +69,7 @@ export default function EventMapsSelect({
               >
                 Add Location
               </button>
+              <DialogDescription></DialogDescription>
             </DialogContent>
           </Dialog>
         </CardContent>
