@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { prisma } from "../db";
 
 export default async function CreateEvent(eventName: string) {
@@ -8,6 +9,8 @@ export default async function CreateEvent(eventName: string) {
       name: eventName,
     },
   });
+
+  revalidatePath('/home');
 
   return event;
 }
