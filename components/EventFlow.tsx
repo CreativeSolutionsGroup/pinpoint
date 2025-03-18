@@ -1,6 +1,6 @@
 "use client";
-import { GetEventLocationInfo } from "@/lib/api/save/GetEventLocationInfo";
-import SaveState from "@/lib/api/save/ReactFlowSave";
+import { GetEventLocationInfo } from "@/lib/api/read/GetEventLocationInfo";
+import SaveState from "@/lib/api/update/ReactFlowSave";
 import { CustomNode } from "@/types/CustomNode";
 import { CustomImageNode } from "@components/CustomImageNode";
 import EventMapSelect from "@components/EventMapSelect";
@@ -67,20 +67,21 @@ function Flow({
   });
 
   const eventLocation = event.locations.find((l) => l.locationId === location);
+  const [eventLocations, setEventLocations] = useState<Array<Location>>(
+    event.locations.map((l) => l.location)
+  );
   const [nodes, setNodes] = useState<CustomNode[]>(
-    JSON.parse(eventLocation?.state ?? "{}")?.nodes || [],
+    JSON.parse(eventLocation?.state ?? "{}")?.nodes || []
   );
 
   const { screenToFlowPosition } = useReactFlow();
 
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
-  const [rfInstance, setRfInstance] = useState<
-    ReactFlowInstance<
-      CustomNode,
-      Edge
-    > | null
-  >(null);
+  const [rfInstance, setRfInstance] = useState<ReactFlowInstance<
+    CustomNode,
+    Edge
+  > | null>(null);
 
   //history management
   const [undoStack, setUndoStack] = useState<string[]>([]);
@@ -104,7 +105,6 @@ function Flow({
       const parsedState = JSON.parse(previousState);
       setNodes(parsedState.nodes || []);
     }
-    console.log("Undo stack", undoStack);
   }, [undoStack, rfInstance]);
 
   // Redo function
@@ -126,16 +126,14 @@ function Flow({
       const parsedState = JSON.parse(nextState);
       setNodes(parsedState.nodes || []);
     }
-    console.log("Redo stack", redoStack);
   }, [redoStack, rfInstance, setNodes, setUndoStack]);
 
   useEffect(() => {
     if (nodes.length > 0) return;
 
-    const imageURL = `/maps/${
+    const imageURL =
       event.locations.find((loc) => loc.locationId == location)?.location
-        .imageURL || event.locations[0].location.imageURL
-    }`;
+        .imageURL || event.locations[0].location.imageURL;
 
     const initialNodes: CustomNode[] = [
       {
@@ -169,7 +167,7 @@ function Flow({
           SaveState(
             event.id,
             eventLocation.locationId,
-            JSON.stringify(rfInstance.toObject()),
+            JSON.stringify(rfInstance.toObject())
           );
 
         if (rfInstance) {
@@ -179,6 +177,8 @@ function Flow({
             setRedoStack([]); // Clear redo stack when new changes occur
           }
         }
+
+        setEventLocations(event.locations.map((l) => l.location));
       }, 200);
 
       // For meaningful changes, update nodes and save state
@@ -188,7 +188,14 @@ function Flow({
         return newNodes;
       });
     },
-    [rfInstance, undoStack, eventLocation, event.id, isEditable],
+    [
+      isEditable,
+      rfInstance,
+      eventLocation,
+      event.id,
+      event.locations,
+      undoStack,
+    ]
   );
 
   // Update mouse position - only in edit mode
@@ -267,7 +274,7 @@ function Flow({
         event.dataTransfer.dropEffect = "move";
       }
     },
-    [isEditable],
+    [isEditable]
   );
 
   const onDrop = useCallback(
@@ -314,7 +321,7 @@ function Flow({
 
       setNodes((nds) => [...nds, newNode]);
     },
-    [screenToFlowPosition, setNodes, isEditable],
+    [screenToFlowPosition, setNodes, isEditable]
   );
 
   // Call fit view after nodes have been loaded
@@ -357,14 +364,10 @@ function Flow({
         {isEditable && <Legend />}
         {isEditable && <StateButtons undo={onUndo} redo={onRedo} />}
 
-        <EventMapSelect
-          eventId={event.id}
-          locations={event.locations.map((l) => l.location)}
-        />
+        <EventMapSelect eventId={event.id} locations={eventLocations} />
       </ReactFlow>
 
-      {
-        /* Hide save button in view mode
+      {/* Hide save button in view mode
       {isEditable && (
         <Button
           onClick={() =>
@@ -399,8 +402,7 @@ function Flow({
           Redo
         </Button>
       )}
-      */
-      }
+      */}
     </div>
   );
 }

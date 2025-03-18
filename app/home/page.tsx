@@ -20,7 +20,15 @@ import { Suspense } from "react";
 // Collect all events from doradev database
 export default async function EventSelect() {
   const events = await prisma.event.findMany({
-    select: { id: true, name: true, locations: true },
+    select: {
+      id: true,
+      name: true,
+      locations: {
+        select: {
+          id: true,
+        },
+      },
+    },
   });
 
   return (
