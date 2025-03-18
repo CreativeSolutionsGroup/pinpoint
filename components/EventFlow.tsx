@@ -105,7 +105,6 @@ function Flow({
       const parsedState = JSON.parse(previousState);
       setNodes(parsedState.nodes || []);
     }
-    console.log("Undo stack", undoStack);
   }, [undoStack, rfInstance]);
 
   // Redo function
@@ -127,7 +126,6 @@ function Flow({
       const parsedState = JSON.parse(nextState);
       setNodes(parsedState.nodes || []);
     }
-    console.log("Redo stack", redoStack);
   }, [redoStack, rfInstance, setNodes, setUndoStack]);
 
   useEffect(() => {

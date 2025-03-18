@@ -24,7 +24,6 @@ export default function StateButtons(props: {
         </IconButton>
 
         <IconButton
-          onClick={() => console.log("Saved")}
           style={{ color: "black" }}
         >
           <SaveIcon />
