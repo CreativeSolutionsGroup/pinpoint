@@ -51,6 +51,7 @@ export function CustomImageNode ({ data }: NodeProps<CustomNode>) {
         src={data.imageURL ?? "/maps/campus.png"}
         alt={data.label}
         fill
+        sizes={`${dimensions.width}px`}
         style={{
           objectFit: "cover",
         }}

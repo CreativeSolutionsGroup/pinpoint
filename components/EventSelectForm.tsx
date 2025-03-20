@@ -60,6 +60,7 @@ export default function EventSelectForm({
     DeleteEvent(id);
     setDeleteDialogOpen(false);
     setDropdownEvents(dropdownEvents.filter((e) => e.id != id));
+    setEventId("");
   }
 
   async function createEvent(name: string) {
