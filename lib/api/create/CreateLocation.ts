@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { prisma } from "../db";
 
 export async function AddLocationToEvent({
@@ -9,6 +10,8 @@ export async function AddLocationToEvent({
   eventId: string;
   locationId: string;
 }) {
+  // Invalidate the cache of the route to force new content to be fetched.
+  revalidatePath('event/');
   return await prisma.eventToLocation.create({
     data: {
       eventId,
