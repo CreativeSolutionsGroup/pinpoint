@@ -1,5 +1,5 @@
 "use client";
-import { Button, Paper, Box, IconButton } from "@mui/material";
+import { Box, IconButton } from "@mui/material";
 
 export default function ColorMenu(props: {
   fixedPos?: boolean;
