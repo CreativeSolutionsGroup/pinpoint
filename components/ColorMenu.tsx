@@ -1,5 +1,5 @@
 "use client";
-import { Button, Chip, ChipPropsColorOverrides, Paper } from "@mui/material";
+import { Button, Paper, Box, IconButton } from "@mui/material";
 
 export default function ColorMenu(props: {
   fixedPos?: boolean;
@@ -7,14 +7,20 @@ export default function ColorMenu(props: {
   y: number;
   changeColor: (colorSelected: string) => void;
 }) {
-  const mainStyle = `z-10 bg-white shadow-md rounded-md flex items-center`;
   const colorArray = [
-    "white",
-    "yellow",
-    "orange",
-    "purple",
-    "lightblue",
-    "navy",
+    // Cool colors (blues, purples)
+    "#6C8EAD",
+    "#add8e6",
+    "#9370db",
+    "#800080",
+    // Neutral colors
+    "#ffffff",
+    "#000000",
+    // Warm colors (yellows, oranges, reds)
+    "#ffd700",
+    "#FF8C42",
+    "#FF3C38",
+    "#A23E48",
   ];
 
   function onColorClick(color: string) {
@@ -22,21 +28,25 @@ export default function ColorMenu(props: {
   }
 
   const buttons = colorArray.map((label, index) => (
-    <Button key={index} onClick={() => onColorClick(label)}>
-      <Chip
-        className="w-8 h-8"
-        color={label as keyof ChipPropsColorOverrides}
-        sx={{ border: 2, borderColor: "grey.300" }}
-      />
-    </Button>
+    <IconButton
+      key={index}
+      onClick={() => onColorClick(label)}
+      className="w-8 h-8 rounded-full shadow-lg"
+      sx={{
+        backgroundColor: label,
+        mx: "0.25rem",
+        border: "1px solid #ddd",
+        ":hover": { backgroundColor: label, opacity: 0.8 },
+      }}
+    ></IconButton>
   ));
 
   return (
-    <Paper
-      className={"fixed" + mainStyle}
+    <Box
+      className={"z-10 bg-white rounded-md"}
       style={{ left: props.x + 25, top: props.y + 25 }}
     >
       {buttons}
-    </Paper>
+    </Box>
   );
 }
