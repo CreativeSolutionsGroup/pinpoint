@@ -304,7 +304,7 @@ function Flow({
         data: {
           label,
           iconName,
-          color: "white",
+          color: "#57B9FF",
         },
         draggable: true,
         deletable: true,
