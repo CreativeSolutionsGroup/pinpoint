@@ -215,18 +215,6 @@ function Flow({
     if (!isEditable) return;
 
     const handleKeyDown = async (event: KeyboardEvent) => {
-      // Copy
-      if (event.key === "c" && (event.ctrlKey || event.metaKey)) {
-        const selectedNodes = nodes.filter((node) => node.selected);
-        if (selectedNodes.length === 0) return;
-
-        try {
-          await navigator.clipboard.writeText(JSON.stringify(selectedNodes));
-        } catch (err) {
-          console.error("Failed to copy:", err);
-        }
-      }
-
       // Paste
       if (event.key === "v" && (event.ctrlKey || event.metaKey)) {
         try {
@@ -256,9 +244,8 @@ function Flow({
           }));
 
           setNodes((nds) => [...nds, ...newNodes]);
-        } catch (err) {
-          console.error("Failed to paste:", err);
-        }
+
+        } catch (err) {/* Default to normal paste operations */}
       }
     };
 
