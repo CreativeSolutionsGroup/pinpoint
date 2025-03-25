@@ -8,16 +8,20 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { CustomNode } from "@/types/CustomNode";
 import ColorMenu from "@components/ColorMenu";
-import { Box, Button } from "@mui/material";
+import { Box, IconButton, Paper } from "@mui/material";
 import { NodeProps, useReactFlow } from "@xyflow/react";
 import * as Icons from "lucide-react";
 import { useCallback } from "react";
 import { useParams } from "next/navigation";
 import ResizeMenu from "./ResizeMenu";
 import { Trash2 } from "lucide-react";
+import QueueIcon from '@mui/icons-material/Queue';
+import ContentPasteIcon from '@mui/icons-material/ContentPaste';
+import { createId } from "@paralleldrive/cuid2";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@radix-ui/react-tooltip";
 
 export function IconNode({ data, id }: NodeProps<CustomNode>) {
-  const { deleteElements, setNodes } = useReactFlow();
+  const { deleteElements, setNodes, getNode } = useReactFlow();
 
   const params = useParams<{ mode: string }>();
 
@@ -25,6 +29,31 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
 
   // Get the icon component from the Lucide icons
   const IconComponent = Icons[data.iconName as keyof typeof Icons.icons];
+
+  const handleCopy = () => {
+    const node = getNode(id);
+    navigator.clipboard.writeText(JSON.stringify([node]));
+  };
+ 
+  const handleDup = () => {
+    const node = getNode(id);
+    if (!node) return;
+
+    const xOffset = (node?.position?.x ?? 0) + 50;
+    const yOffset = (node?.position?.y ?? 0) - 50;
+    
+    const newNode = {
+      ...node,
+      id: createId(),
+      position: {
+      x: xOffset,
+      y: yOffset,
+      },
+      selected: false,
+    };
+
+    setNodes((nds) => [...nds, newNode]);
+  };
 
   const handleDelete = () => {
     deleteElements({ nodes: [{ id }] });
@@ -119,9 +148,39 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
                   onResize={handleResize}
                   currentSize={data.size ?? 2}
                 />
-                <Button onClick={handleDelete} sx={{ color: "red" }}>
-                  <Trash2 />
-                </Button>
+                <Box>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <IconButton onClick={() => handleCopy()} sx={{ color: "black" }}>
+                          <ContentPasteIcon />
+                        </IconButton>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <Paper className="p-1">
+                          Copy Node
+                        </Paper>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <IconButton onClick={() => handleDup()} sx={{ color: "black" }}>
+                          <QueueIcon />
+                        </IconButton>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <Paper className="p-1">
+                          Duplicate Node
+                        </Paper>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <IconButton onClick={handleDelete} sx={{ color: "red" }}>
+                    <Trash2 />
+                  </IconButton>
+                </Box>
               </Box>
             )}
             {isEditable && <ColorMenu x={0} y={0} changeColor={colorChange} />}
