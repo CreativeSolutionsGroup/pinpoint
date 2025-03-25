@@ -331,6 +331,7 @@ function Flow({
       requestAnimationFrame(() => {
         fitView({
           includeHiddenNodes: false,
+          minZoom: 0.05, // Zoom on larger nodes
         });
       });
     }
@@ -358,7 +359,7 @@ function Flow({
         elementsSelectable={isEditable}
         className="touch-none"
       >
-        <Controls position="bottom-right" />
+        <Controls position="bottom-right" fitViewOptions={{ minZoom: 0.05 }}/>
 
         {/* Hide legend on view only mode */}
         {isEditable && <Legend />}
@@ -406,7 +407,6 @@ function Flow({
     </div>
   );
 }
-
 export default function EventFlow({
   event,
   location,
@@ -416,7 +416,7 @@ export default function EventFlow({
   location: string;
   isEditable: boolean;
 }) {
-  return (
+  return (  
     <ReactFlowProvider>
       <ChannelProvider channelName="event-updates">
         <Flow event={event} location={location} isEditable={isEditable} />
