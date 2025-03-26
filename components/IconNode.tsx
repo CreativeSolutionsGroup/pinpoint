@@ -6,9 +6,10 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { CustomNode } from "@/types/CustomNode";
 import ColorMenu from "@components/ColorMenu";
-import { Box, Button } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 import { NodeProps, useReactFlow } from "@xyflow/react";
 import * as Icons from "lucide-react";
 import { useCallback } from "react";
@@ -93,22 +94,63 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
     [id, setNodes]
   );
 
+  const handleLabelChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newValue = e.target.value;
+      setNodes((nodes) =>
+        nodes.map((node) => {
+          if (node.id === id) {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                label: newValue,
+              },
+            };
+          }
+          return node;
+        })
+      );
+    },
+    [id, setNodes]
+  );
   return (
     <>
       <Popover>
-        <PopoverTrigger>
+        <PopoverTrigger
+          style={{ borderColor: data.color }}
+          className="flex flex-col items-center justify-center cursor-move border rounded-lg p-1"
+        >
           <IconComponent
             style={{
               color: data.color,
-              width: `${data.size ?? 2}rem`,
-              height: `${data.size ?? 2}rem`,
+              width: `${data.size ?? 3}rem`,
+              height: `${data.size ?? 3}rem`,
             }}
             className="text-gray-700"
           />
+          <Typography
+            style={{
+              color: data.color,
+              width: "100%",
+              fontSize: `${(data.size ?? 3) / 3}rem`,
+              lineHeight: `${(data.size ?? 3) / 3}rem`,
+              textWrap: "wrap",
+            }}
+            className="text-center text-wrap"
+          >
+            {data.label}
+          </Typography>
         </PopoverTrigger>
         <PopoverContent className="w-fit">
           <div className="grid gap-4">
+            {isEditable && (
+              <div className="justify-center">
+                <Input placeholder="Change icon label" onChange={handleLabelChange} />
+              </div>
+            )}
             <Textarea
+              placeholder="Add notes"
               defaultValue={data.notes}
               onBlur={handleNotesChange}
               disabled={!isEditable}
