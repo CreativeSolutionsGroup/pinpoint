@@ -11,20 +11,10 @@ import { createTheme, ThemeOptions } from "@mui/material/styles";
 
 declare module '@mui/material/styles' {
   interface Palette {
-    yellow: Palette["primary"];
     lightblue: Palette["primary"];
-    white: Palette["primary"];
-    navy: Palette["primary"];
-    orange: Palette["primary"];
-    purple: Palette["primary"];
   }
   interface PaletteOptions {
-    yellow?: PaletteOptions['primary'];
     lightblue?: PaletteOptions['primary'];
-    white?: PaletteOptions['primary'];
-    navy?: PaletteOptions['primary'];
-    orange?: PaletteOptions['primary'];
-    purple?: PaletteOptions['primary'];
   }
 };
 
@@ -37,42 +27,12 @@ export const themeOptions: ThemeOptions = {
     secondary: {
       main: "#04D99D",
     },
-    yellow: {
-      main: "#F2D600",
-      light: "#fff7cc",
-      dark: "#ccb100",
-      contrastText: "#000000"
-    },
     lightblue: {
       main: "#0487D9",
       light: "#7abaff",
       dark: "#005fa3",
       contrastText: "#ffffff"
     },
-    white: {
-      main: "#FFFFFF",
-      light: "#FFFFFF",
-      dark: "#CCCCCC",
-      contrastText: "#000000"
-    },
-    navy: {
-      main: "#001F3F",
-      light: "#334f7f",
-      dark: "#00001a",
-      contrastText: "#ffffff"
-    },
-    orange: {
-      main: "#FF851B",
-      light: "#ffb14d",
-      dark: "#c55e00",
-      contrastText: "#000000"
-    },
-    purple: {
-      main: "#B10DC9",
-      light: "#e14dff",
-      dark: "#7a0096",
-      contrastText: "#ffffff"
-    }
   },
   typography: {},
   components: {

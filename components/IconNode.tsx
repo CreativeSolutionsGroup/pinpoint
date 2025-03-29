@@ -124,7 +124,7 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
                 </Button>
               </Box>
             )}
-            {isEditable && <ColorMenu x={0} y={0} changeColor={colorChange} />}
+            {isEditable && <ColorMenu x={0} y={0} currentColor={data.color ?? "#000000"} changeColor={colorChange} />}
           </div>
         </PopoverContent>
       </Popover>
