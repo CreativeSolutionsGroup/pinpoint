@@ -215,6 +215,22 @@ function Flow({
     if (!isEditable) return;
 
     const handleKeyDown = async (event: KeyboardEvent) => {
+      // Copy
+      // if (event.key === "c" && (event.ctrlKey || event.metaKey)) {
+      //   // Use rfInstance to get the current nodes with their selection state
+      //   const selectedNodes = rfInstance?.getNodes().filter(node => node.selected);
+      //   console.log("Selected nodes:", selectedNodes?.length);
+        
+      //   if (!selectedNodes || selectedNodes.length === 0) return;
+        
+      //   try {
+      //     await navigator.clipboard.writeText(JSON.stringify(selectedNodes));
+      //     console.log("Copied nodes:", selectedNodes.length);
+      //   } catch (err) {
+      //     console.error("Failed to copy:", err);
+      //   }
+      // }
+
       // Paste
       if (event.key === "v" && (event.ctrlKey || event.metaKey)) {
         try {
@@ -244,6 +260,7 @@ function Flow({
           }));
 
           setNodes((nds) => [...nds, ...newNodes]);
+          console.log("I pasted")
 
         } catch (err) {/* Default to normal paste operations */}
       }
@@ -299,7 +316,7 @@ function Flow({
         extent: "parent",
         dragging: false,
         zIndex: 0,
-        selectable: false,
+        selectable: true,
         selected: false,
         isConnectable: false,
         positionAbsoluteX: 0,
@@ -342,6 +359,7 @@ function Flow({
         onInit={setRfInstance}
         nodeTypes={nodeTypes}
         nodesDraggable={isEditable}
+        selectNodesOnDrag={isEditable}
         elementsSelectable={isEditable}
         className="touch-none"
       >

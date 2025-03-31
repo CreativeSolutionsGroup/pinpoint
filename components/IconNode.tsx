@@ -11,7 +11,7 @@ import ColorMenu from "@components/ColorMenu";
 import { Box, IconButton, Paper } from "@mui/material";
 import { NodeProps, useReactFlow } from "@xyflow/react";
 import * as Icons from "lucide-react";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { useParams } from "next/navigation";
 import ResizeMenu from "./ResizeMenu";
 import { Trash2 } from "lucide-react";
@@ -29,6 +29,27 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
 
   // Get the icon component from the Lucide icons
   const IconComponent = Icons[data.iconName as keyof typeof Icons.icons];
+
+
+  // handle copying specific nodes
+  useEffect(() => {
+    const handleKeyDown = async (event: KeyboardEvent) => {
+      // Copy
+      if (event.key === "c" && (event.ctrlKey || event.metaKey)) {
+        // Use rfInstance to get the current nodes with their selection state
+        const selectedNodes = getNode(id);
+        
+        try {
+          await navigator.clipboard.writeText(JSON.stringify([selectedNodes]));
+          console.log("Copied nodes:", selectedNodes);
+        } catch (err) {
+          console.error("Failed to copy:", err);
+        }
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  });
 
   const handleCopy = () => {
     const node = getNode(id);
@@ -138,6 +159,8 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
         <PopoverContent className="w-fit">
           <div className="grid gap-4">
             <Textarea
+              autoFocus={false}
+              tabIndex={-1}
               defaultValue={data.notes}
               onBlur={handleNotesChange}
               disabled={!isEditable}
