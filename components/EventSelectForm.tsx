@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { muiTheme } from "@/theme";
 import {
   Button,
@@ -15,7 +14,7 @@ import {
 import { Event, Location } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import LocationAdder from "./LocationCreator";
+import { useState } from "react";
 
 import {
   AlertDialog,
@@ -30,22 +29,25 @@ import {
 
 import CreateEvent from "@/lib/api/create/createEvent";
 import DeleteEvent from "@/lib/api/delete/deleteEvent";
+import { GetEvent } from "@/lib/api/read/GetEvent";
+import { GetLocationInfo } from "@/lib/api/read/GetLocationInfo";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
-import { GetEvent } from "@/lib/api/read/GetEvent";
-import { GetEventLocationInfo } from "@/lib/api/read/GetEventLocationInfo";
-import { GetEventLocations, GetLocationInfo } from "@/lib/api/read/GetEventLocations";
 
 export default function EventSelectForm({
   events,
 }: {
-  events: (Pick<Event, "id" | "name"> & { locations: { id: string; name: string }[] })[];
+  events: (Pick<Event, "id" | "name"> & {
+    locations: { id: string; name: string }[];
+  })[];
 }) {
   const router = useRouter();
   const [notSelected, setSelected] = useState(true);
   const [isOpenLocationCreator, setIsOpenLocationCreator] = useState(false);
   const [eventId, setEventId] = useState("");
-  const [selectedEventLocations, setSelectedEventLocations] = useState<{ id: string; eventId: string; locationId: string; state: string; name: string }[]>([]);
+  const [selectedEventLocations, setSelectedEventLocations] = useState<
+    Location[]
+  >([]);
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [eventToDelete, setEventToDelete] = useState<Event>();
@@ -54,7 +56,6 @@ export default function EventSelectForm({
   const [eventToCreate, setEventToCreate] = useState<string>("");
 
   const [dropdownEvents, setDropdownEvents] = useState<Event[]>(events);
-
 
   function deleteEvent(id: string) {
     DeleteEvent(id);
@@ -75,10 +76,20 @@ export default function EventSelectForm({
     const selectedEventId = e.target.value;
     setEventId(selectedEventId);
 
-    const selectedEvent = dropdownEvents.find((event) => event.id === selectedEventId);
+    const selectedEvent = dropdownEvents.find(
+      (event) => event.id === selectedEventId
+    );
     if (selectedEvent) {
-      const locations = GetEventLocations(eventId);
-      setSelectedEventLocations(locations);
+      const info = await GetEvent(selectedEventId);
+
+      setSelectedEventLocations([]); // Clear the div by resetting the state
+      info?.locations.forEach(async (location) => {
+        const locationInfo = await GetLocationInfo(location.locationId);
+        console.log(locationInfo);
+        if (locationInfo) {
+          setSelectedEventLocations((prev) => [...prev, locationInfo]);
+        }
+      });
     }
   };
 
@@ -176,11 +187,8 @@ export default function EventSelectForm({
             <Button
               key={location.id}
               variant="outlined"
-              onClick={async () => {
-          const locationInfo = await GetLocationInfo(location.locationId);
-          if (locationInfo && 'id' in locationInfo && 'name' in locationInfo) {
-            router.push(`/event/edit/${eventId}/${locationInfo.id}`);
-          }
+              onClick={() => {
+                router.push(`/event/edit/${eventId}/${location.id}`);
               }}
             >
               {location.name}

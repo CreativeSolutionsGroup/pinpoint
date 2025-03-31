@@ -359,7 +359,7 @@ function Flow({
         elementsSelectable={isEditable}
         className="touch-none"
       >
-        <Controls position="bottom-right" fitViewOptions={{ minZoom: 0.05 }}/>
+        <Controls position="bottom-right"/>
 
         {/* Hide legend on view only mode */}
         {isEditable && <Legend />}
@@ -367,43 +367,6 @@ function Flow({
 
         <EventMapSelect eventId={event.id} locations={eventLocations} />
       </ReactFlow>
-
-      {/* Hide save button in view mode
-      {isEditable && (
-        <Button
-          onClick={() =>
-            rfInstance &&
-            eventLocation &&
-            SaveState(
-              event.id,
-              eventLocation.locationId,
-              JSON.stringify(rfInstance.toObject()),
-            )}
-          style={{ position: "fixed", top: "4rem", right: 16 }}
-          variant="default"
-        >
-          Save
-        </Button>
-      )}
-      {isEditable && (
-        <Button
-          onClick={onUndo}
-          style={{ position: "fixed", top: "7rem", right: 16 }}
-          variant="contained"
-        >
-          Undo
-        </Button>
-      )}
-      {isEditable && (
-        <Button
-          onClick={onRedo}
-          style={{ position: "fixed", top: "10rem", right: 16 }}
-          variant="contained"
-        >
-          Redo
-        </Button>
-      )}
-      */}
     </div>
   );
 }
