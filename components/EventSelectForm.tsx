@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { muiTheme } from "@/theme";
 import {
   Button,
@@ -11,11 +12,10 @@ import {
   SelectChangeEvent,
   Typography,
 } from "@mui/material";
-import { Event } from "@prisma/client";
+import { Event, Location } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import LocationAdder from "./LocationCreator";
-import { useState } from "react";
 
 import {
   AlertDialog,
@@ -33,20 +33,19 @@ import DeleteEvent from "@/lib/api/delete/deleteEvent";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import { GetEvent } from "@/lib/api/read/GetEvent";
+import { GetEventLocationInfo } from "@/lib/api/read/GetEventLocationInfo";
+import { GetEventLocations, GetLocationInfo } from "@/lib/api/read/GetEventLocations";
 
 export default function EventSelectForm({
   events,
 }: {
-  events: (Pick<Event, "id" | "name"> & { locations: { id: string }[] })[];
+  events: (Pick<Event, "id" | "name"> & { locations: { id: string; name: string }[] })[];
 }) {
   const router = useRouter();
   const [notSelected, setSelected] = useState(true);
   const [isOpenLocationCreator, setIsOpenLocationCreator] = useState(false);
   const [eventId, setEventId] = useState("");
-  const handleChange = (e: SelectChangeEvent) => {
-    setSelected(false);
-    setEventId(e.target.value);
-  };
+  const [selectedEventLocations, setSelectedEventLocations] = useState<{ id: string; eventId: string; locationId: string; state: string; name: string }[]>([]);
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [eventToDelete, setEventToDelete] = useState<Event>();
@@ -55,6 +54,7 @@ export default function EventSelectForm({
   const [eventToCreate, setEventToCreate] = useState<string>("");
 
   const [dropdownEvents, setDropdownEvents] = useState<Event[]>(events);
+
 
   function deleteEvent(id: string) {
     DeleteEvent(id);
@@ -69,6 +69,18 @@ export default function EventSelectForm({
     setDropdownEvents([...dropdownEvents, event]);
     setEventId(event.id);
   }
+
+  const handleChange = async (e: SelectChangeEvent) => {
+    setSelected(false);
+    const selectedEventId = e.target.value;
+    setEventId(selectedEventId);
+
+    const selectedEvent = dropdownEvents.find((event) => event.id === selectedEventId);
+    if (selectedEvent) {
+      const locations = GetEventLocations(eventId);
+      setSelectedEventLocations(locations);
+    }
+  };
 
   const handleClick = async () => {
     const selectedEvent = await GetEvent(eventId);
@@ -140,8 +152,6 @@ export default function EventSelectForm({
                 "&.Mui-selected:hover": {
                   backgroundColor: "rgba(4, 135, 217, 0.3)",
                 },
-                // border: "1px dashed #ccc",
-                // borderRadius: "4px",
               }}
             >
               <div className="flex flex-row items-center justify-between w-full">
@@ -160,7 +170,25 @@ export default function EventSelectForm({
           )}
         </Select>
       </FormControl>
-      <div className="mt-3 max-w-fit self-end">
+      {selectedEventLocations.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {selectedEventLocations.map((location) => (
+            <Button
+              key={location.id}
+              variant="outlined"
+              onClick={async () => {
+          const locationInfo = await GetLocationInfo(location.locationId);
+          if (locationInfo && 'id' in locationInfo && 'name' in locationInfo) {
+            router.push(`/event/edit/${eventId}/${locationInfo.id}`);
+          }
+              }}
+            >
+              {location.name}
+            </Button>
+          ))}
+        </div>
+      )}
+      {/* <div className="mt-3 max-w-fit self-end">
         <Button
           disabled={notSelected}
           variant="contained"
@@ -175,7 +203,7 @@ export default function EventSelectForm({
           isOpen={isOpenLocationCreator}
           onClose={() => setIsOpenLocationCreator(false)}
         />
-      </div>
+      </div> */}
       {/* Delete Event Dialog */}
       <AlertDialog open={deleteDialogOpen}>
         <AlertDialogContent>
