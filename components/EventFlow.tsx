@@ -22,6 +22,7 @@ import "@xyflow/react/dist/style.css";
 import { ChannelProvider, useChannel } from "ably/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import StateButtons from "./stateButtons";
+import EventSettings from "./EventSettings";
 
 const getId = () => createId();
 
@@ -359,51 +360,14 @@ function Flow({
         elementsSelectable={isEditable}
         className="touch-none"
       >
-        <Controls position="bottom-right" fitViewOptions={{ minZoom: 0.05 }}/>
+        <Controls position="bottom-right" fitViewOptions={{ minZoom: 0.05 }} />
 
-        {/* Hide legend on view only mode */}
         {isEditable && <Legend />}
         {isEditable && <StateButtons undo={onUndo} redo={onRedo} />}
 
         <EventMapSelect eventId={event.id} locations={eventLocations} />
+        <EventSettings event={event} locations={eventLocations} />
       </ReactFlow>
-
-      {/* Hide save button in view mode
-      {isEditable && (
-        <Button
-          onClick={() =>
-            rfInstance &&
-            eventLocation &&
-            SaveState(
-              event.id,
-              eventLocation.locationId,
-              JSON.stringify(rfInstance.toObject()),
-            )}
-          style={{ position: "fixed", top: "4rem", right: 16 }}
-          variant="default"
-        >
-          Save
-        </Button>
-      )}
-      {isEditable && (
-        <Button
-          onClick={onUndo}
-          style={{ position: "fixed", top: "7rem", right: 16 }}
-          variant="contained"
-        >
-          Undo
-        </Button>
-      )}
-      {isEditable && (
-        <Button
-          onClick={onRedo}
-          style={{ position: "fixed", top: "10rem", right: 16 }}
-          variant="contained"
-        >
-          Redo
-        </Button>
-      )}
-      */}
     </div>
   );
 }
@@ -416,7 +380,7 @@ export default function EventFlow({
   location: string;
   isEditable: boolean;
 }) {
-  return (  
+  return (
     <ReactFlowProvider>
       <ChannelProvider channelName="event-updates">
         <Flow event={event} location={location} isEditable={isEditable} />

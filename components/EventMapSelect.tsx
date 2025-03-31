@@ -30,7 +30,7 @@ export default function EventMapsSelect({
 
   const [isOpenLocationAdder, setIsOpenLocationAdder] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  
+
   return (
     <Panel position="bottom-left" className="">
       <Card>
@@ -80,6 +80,7 @@ export default function EventMapsSelect({
         currentLocations={locations}
         isOpen={isOpenLocationAdder}
         onClose={() => setIsOpenLocationAdder(false)}
+        shouldUpdateDB
       />
     </Panel>
   );
