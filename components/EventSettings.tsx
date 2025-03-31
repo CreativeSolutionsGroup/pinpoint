@@ -61,13 +61,15 @@ export default function EventSettings({
       "eventLocations",
       currentLocations.map((location) => location.id)
     );
-    setCurrentLocations(currentLocations.sort((a, b) => a.name.localeCompare(b.name)));
+    setCurrentLocations(
+      currentLocations.sort((a, b) => a.name.localeCompare(b.name))
+    );
   }, [currentLocations, form]);
 
   return (
-    <div className="fixed bottom-3 right-14 z-50">
+    <>
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogTrigger className="flex items-center justify-center h-10 w-10 bg-white rounded-full shadow-md hover:shadow-lg hover:bg-gray-100 transition-all duration-300">
+        <DialogTrigger className="flex items-center justify-center h-10 w-10 bg-white rounded-full hover:bg-gray-100 transition-all duration-300">
           <Settings />
         </DialogTrigger>
         <DialogContent>
@@ -81,7 +83,9 @@ export default function EventSettings({
                 name="eventName"
                 render={({ field }) => (
                   <div className="space-y-1">
-                    <Label htmlFor="eventName">Event Name</Label>
+                    <Label htmlFor="eventName" className="font-semibold">
+                      Event Name
+                    </Label>
                     <Input
                       id="eventName"
                       placeholder="Enter event name"
@@ -95,11 +99,24 @@ export default function EventSettings({
                 name="eventLocations"
                 render={({ field }) => (
                   <div>
-                    <Label htmlFor="eventLocations">Event Locations</Label>
+                    <Label htmlFor="eventLocations" className="font-semibold">
+                      Event Locations
+                    </Label>
                     <div
                       id="eventLocations"
-                      className="space-y-2 rounded-md border-gray-200 border-2 p-2 transition-all duration-300"
+                      className="space-y-2 rounded-md border-gray-200 border-2 p-2 pt-0 transition-all duration-300 max-h-[45vh] overflow-y-auto"
                     >
+                      <div
+                        className="flex items-center justify-center sticky top-0 bg-white z-10 mt-1"
+                        onClick={() => {
+                          setLocationAdderOpen(true);
+                        }}
+                      >
+                        <div className="flex items-center space-x-1 hover:bg-gray-100 p-1 rounded-md transition-all duration-300 text-sm text-gray-600 cursor-pointer pr-2">
+                          <Plus className="h-6 w-6 text-blue-500 cursor-pointer hover:text-blue-600 hover:bg-gray-100 rounded-full p-1 transition-all duration-300" />
+                          Add Location
+                        </div>
+                      </div>
                       {field.value?.map((location, index) => (
                         <div
                           key={`fields-${index}`}
@@ -120,17 +137,6 @@ export default function EventSettings({
                           />
                         </div>
                       ))}
-                      <div
-                        className="flex items-center justify-center"
-                        onClick={() => {
-                          setLocationAdderOpen(true);
-                        }}
-                      >
-                        <div className="flex items-center space-x-1 hover:bg-gray-100 p-1 rounded-md transition-all duration-300 text-sm text-gray-600 cursor-pointer pr-2">
-                          <Plus className="h-6 w-6 text-blue-500 cursor-pointer hover:text-blue-600 hover:bg-gray-100 rounded-full p-1 transition-all duration-300" />
-                          Add Location
-                        </div>
-                      </div>
                     </div>
                   </div>
                 )}
@@ -138,7 +144,7 @@ export default function EventSettings({
               <div className="flex space-x-2">
                 <button
                   type="button"
-                  className="w-full h-10 bg-red-500 text-white rounded-md hover:bg-red-600 transition-all duration-300"
+                  className="w-full h-10 bg-gray-700 text-white rounded-md hover:bg-gray-900 transition-all duration-300"
                   onClick={() => {
                     setLocationAdderOpen(false);
                     form.reset();
@@ -152,7 +158,7 @@ export default function EventSettings({
                   type="submit"
                   className="w-full h-10 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-all duration-300"
                 >
-                  Save Settings
+                  Save Changes
                 </button>
               </div>
             </form>
@@ -168,6 +174,6 @@ export default function EventSettings({
         isOpen={locationAdderOpen}
         onClose={() => setLocationAdderOpen(false)}
       />
-    </div>
+    </>
   );
 }
