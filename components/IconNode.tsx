@@ -119,7 +119,7 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
       <Popover>
         <PopoverTrigger
           style={{ borderColor: data.color }}
-          className="flex flex-col items-center justify-center cursor-move border rounded-lg p-1"
+          className="flex flex-col items-center justify-center cursor-move"
         >
           <IconComponent
             style={{
@@ -136,6 +136,9 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
               fontSize: `${(data.size ?? 3) / 3}rem`,
               lineHeight: `${(data.size ?? 3) / 3}rem`,
               textWrap: "wrap",
+              whiteSpace: "pre-wrap",
+              overflowWrap: "break-word",
+              maxWidth: `${(data.size ?? 3) * 3}rem`,
             }}
             className="text-center text-wrap"
           >
@@ -146,7 +149,7 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
           <div className="grid gap-4">
             {isEditable && (
               <div className="justify-center">
-                <Input placeholder="Change icon label" onChange={handleLabelChange} />
+                <Input placeholder={data.label} onChange={handleLabelChange} />
               </div>
             )}
             <Textarea
