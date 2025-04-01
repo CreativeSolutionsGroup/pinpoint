@@ -304,7 +304,7 @@ function Flow({
         data: {
           label,
           iconName,
-          color: "#FFFFFF",
+          color: "#57B9FF",
         },
         draggable: true,
         deletable: true,
@@ -331,7 +331,6 @@ function Flow({
       requestAnimationFrame(() => {
         fitView({
           includeHiddenNodes: false,
-          minZoom: 0.05, // Zoom on larger nodes
         });
       });
     }
@@ -358,6 +357,7 @@ function Flow({
         onDragOver={onDragOver}
         onInit={setRfInstance}
         nodeTypes={nodeTypes}
+        minZoom={0.1}
         nodesDraggable={isEditable}
         elementsSelectable={isEditable}
         className="touch-none"
