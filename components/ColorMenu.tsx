@@ -1,5 +1,5 @@
 "use client";
-import { Button, Paper } from "@mui/material";
+import { Paper } from "@mui/material";
 import { useState } from "react";
 
 export default function ColorMenu(props: {
@@ -34,7 +34,7 @@ export default function ColorMenu(props: {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const width = rect.width;
-    
+
     // Create hex colors directly along the spectrum
     const hexValues = [
       "#FF0000", // red
@@ -43,25 +43,25 @@ export default function ColorMenu(props: {
       "#00FF00", // green
       "#0000FF", // blue
       "#4B0082", // indigo
-      "#9400D3"  // violet
+      "#9400D3", // violet
     ];
-    
+
     // Calculate position in the spectrum
     const position = (x / width) * (hexValues.length - 1);
     const index = Math.floor(position);
     const remainder = position - index;
-    
+
     // Interpolate between adjacent hex colors
     if (index < hexValues.length - 1) {
       const color1 = hexToRgb(hexValues[index]);
       const color2 = hexToRgb(hexValues[index + 1]);
-      
+
       if (color1 && color2) {
         // Linear interpolation between colors
         const r = Math.round(color1.r + remainder * (color2.r - color1.r));
         const g = Math.round(color1.g + remainder * (color2.g - color1.g));
         const b = Math.round(color1.b + remainder * (color2.b - color1.b));
-        
+
         const newColor = rgbToHex(r, g, b);
         setCustomColor(newColor);
         props.changeColor(newColor);
@@ -75,16 +75,21 @@ export default function ColorMenu(props: {
   // Helper function to convert hex to rgb
   const hexToRgb = (hex: string) => {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? {
-      r: parseInt(result[1], 16),
-      g: parseInt(result[2], 16),
-      b: parseInt(result[3], 16)
-    } : null;
+    return result
+      ? {
+          r: parseInt(result[1], 16),
+          g: parseInt(result[2], 16),
+          b: parseInt(result[3], 16),
+        }
+      : null;
   };
 
   // Helper function to convert rgb to hex
   const rgbToHex = (r: number, g: number, b: number) => {
-    return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase()}`;
+    return `#${((1 << 24) + (r << 16) + (g << 8) + b)
+      .toString(16)
+      .slice(1)
+      .toUpperCase()}`;
   };
 
   // Create gradient background style using hex colors
@@ -97,10 +102,10 @@ export default function ColorMenu(props: {
   };
 
   const buttons = colorArray.map((color, index) => (
-    <div 
+    <div
       className="rounded-full m-1 border-2 border-gray min-h-8 min-w-8 p-0"
       style={{ backgroundColor: color }}
-      key={index} 
+      key={index}
       onClick={() => onColorClick(color)}
     ></div>
   ));
@@ -109,7 +114,7 @@ export default function ColorMenu(props: {
     <Paper className="z-10 bg-white rounded-md">
       <div className="flex flex-col gap-2 w-52">
         {/* Gradient color picker */}
-        <div className="mb-1">
+        <div className="px-2 py-1">
           <div
             className="w-full h-8 rounded cursor-pointer"
             style={renderGradient()}
@@ -139,7 +144,9 @@ export default function ColorMenu(props: {
         </div>
 
         {/* Preset colors */}
-        <div className="flex flex-wrap justify-center rounded-full">{buttons}</div>
+        <div className="flex flex-wrap justify-center rounded-full">
+          {buttons}
+        </div>
       </div>
     </Paper>
   );
