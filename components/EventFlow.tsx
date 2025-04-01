@@ -346,7 +346,7 @@ function Flow({
 
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
-      <h1 className="fixed left-[50vw] -translate-x-1/2 flex space-x-4 content-center items-center justify-center z-10 bg-white py-2 px-3 rounded-md shadow-md mt-3 text-2xl">
+      <h1 className="fixed left-[50vw] -translate-x-1/2 flex space-x-4 content-center items-center justify-center z-10 bg-white py-2 px-3 mt-3 text-2xl rounded-xl border bg-card text-card-foreground shadow">
         {event.name}
       </h1>
       <ReactFlow

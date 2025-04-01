@@ -144,7 +144,7 @@ export default function EventSettings({
               <div className="flex space-x-2">
                 <button
                   type="button"
-                  className="w-full h-10 bg-gray-700 text-white rounded-md hover:bg-gray-900 transition-all duration-300"
+                  className="w-full h-10 bg-gray-900 text-white rounded-md hover:bg-black transition-all duration-300"
                   onClick={() => {
                     setLocationAdderOpen(false);
                     form.reset();
