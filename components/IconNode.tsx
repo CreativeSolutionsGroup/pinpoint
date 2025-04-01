@@ -1,21 +1,20 @@
 "use client";
 
+import { Input } from "@/components/ui/input";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { CustomNode } from "@/types/CustomNode";
 import ColorMenu from "@components/ColorMenu";
 import { Box, Button, Typography } from "@mui/material";
 import { NodeProps, useReactFlow } from "@xyflow/react";
 import * as Icons from "lucide-react";
-import { useCallback } from "react";
 import { useParams } from "next/navigation";
+import { useCallback } from "react";
 import ResizeMenu from "./ResizeMenu";
-import { Trash2 } from "lucide-react";
 
 export function IconNode({ data, id }: NodeProps<CustomNode>) {
   const { deleteElements, setNodes } = useReactFlow();
@@ -165,7 +164,7 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
                   currentSize={data.size ?? 2}
                 />
                 <Button onClick={handleDelete} sx={{ color: "red" }}>
-                  <Trash2 />
+                  <Icons.Trash />
                 </Button>
               </Box>
             )}

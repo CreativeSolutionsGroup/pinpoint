@@ -345,6 +345,9 @@ function Flow({
 
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
+      <h1 className="fixed left-[50vw] -translate-x-1/2 flex space-x-4 content-center items-center justify-center z-10 bg-white py-2 px-3 mt-3 text-2xl rounded-xl border bg-card text-card-foreground shadow">
+        {event.name}
+      </h1>
       <ReactFlow
         nodes={nodes}
         onNodesChange={onNodesChange}
@@ -359,11 +362,21 @@ function Flow({
         elementsSelectable={isEditable}
         className="touch-none"
       >
-        <Controls position="bottom-right" />
+        <Controls
+          position="bottom-right"
+          fitViewOptions={{ minZoom: 0.05 }}
+          showInteractive={false}
+        />
 
-        {/* Hide legend on view only mode */}
         {isEditable && <Legend />}
-        {isEditable && <StateButtons undo={onUndo} redo={onRedo} />}
+        {isEditable && (
+          <StateButtons
+            undo={onUndo}
+            redo={onRedo}
+            event={event}
+            eventLocations={eventLocations}
+          />
+        )}
 
         <EventMapSelect eventId={event.id} locations={eventLocations} />
       </ReactFlow>
