@@ -41,9 +41,11 @@ import { GetAllLocations } from "@/lib/api/read/GetAllLocations";
 export default function EventSelectForm({
   events,
 }: {
-  events: (Pick<Event, "id" | "name"> & {
-    locations: { id: string; name: string }[];
-  })[];
+  events: {
+    id: string;
+    name: string;
+    locations: { id: string }[];
+  }[];
 }) {
   const router = useRouter();
   const [eventSelected, setEventSelected] = useState(false);
