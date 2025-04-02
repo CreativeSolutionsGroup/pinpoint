@@ -23,12 +23,16 @@ export default function LocationAdder({
   eventId,
   currentLocations,
   isOpen,
+  redirect = true,
   onClose,
+  onLocationChange,
 }: {
   eventId: string;
   currentLocations: Location[];
   isOpen: boolean;
+  redirect?: boolean;
   onClose: () => void;
+  onLocationChange?: (location: Location) => void; // Updated to pass the full location object
 }) {
   const [locations, setLocations] = useState<Location[]>([]);
   const [locationId, setLocationId] = useState<string>("");
@@ -38,7 +42,13 @@ export default function LocationAdder({
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const newEventLocation = await AddLocationToEvent({ eventId, locationId });
-    router.push(`/event/edit/${eventId}/${newEventLocation.locationId}`);
+    const selectedLocation = locations.find((loc) => loc.id === locationId);
+    if (onLocationChange && selectedLocation) {
+      onLocationChange(selectedLocation); // Pass the full location object
+    }
+    redirect
+      ? router.push(`/event/edit/${eventId}/${newEventLocation.locationId}`)
+      : onClose();
   }
 
   useEffect(() => {
@@ -93,7 +103,10 @@ export default function LocationAdder({
                 eventId,
                 locationId: newLocation.id,
               });
-              router.push(eventLocationLink.id);
+              if (onLocationChange) {
+                onLocationChange(newLocation); // Pass the new location object
+              }
+              redirect ? router.push(eventLocationLink.id) : onClose();
             }
           }}
         >

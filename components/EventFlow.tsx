@@ -331,7 +331,6 @@ function Flow({
       requestAnimationFrame(() => {
         fitView({
           includeHiddenNodes: false,
-          minZoom: 0.05, // Zoom on larger nodes
         });
       });
     }
@@ -358,6 +357,7 @@ function Flow({
         nodesDraggable={isEditable}
         elementsSelectable={isEditable}
         className="touch-none"
+        minZoom={0.1}
       >
         <Controls position="bottom-right"/>
 
