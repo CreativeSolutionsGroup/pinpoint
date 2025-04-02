@@ -22,17 +22,21 @@ import { useRouter } from "next/navigation";
 export default function LocationAdder({
   eventId,
   currentLocations,
+  setCurrentLocations,
   isOpen,
   redirect = true,
   onClose,
   onLocationChange,
+  shouldUpdateDB,
 }: {
   eventId: string;
   currentLocations: Location[];
+  setCurrentLocations?: (locations: Location[]) => void;
   isOpen: boolean;
   redirect?: boolean;
   onClose: () => void;
   onLocationChange?: (location: Location) => void; // Updated to pass the full location object
+  shouldUpdateDB?: boolean;
 }) {
   const [locations, setLocations] = useState<Location[]>([]);
   const [locationId, setLocationId] = useState<string>("");
@@ -41,14 +45,20 @@ export default function LocationAdder({
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const newEventLocation = await AddLocationToEvent({ eventId, locationId });
-    const selectedLocation = locations.find((loc) => loc.id === locationId);
-    if (onLocationChange && selectedLocation) {
-      onLocationChange(selectedLocation); // Pass the full location object
+    let newLocation = updateLocations(locations.find((v) => v.id === locationId) as Location);
+    if (shouldUpdateDB) {
+      const newEventLocation = await AddLocationToEvent({
+        eventId,
+        locationId,
+      });
+      if(onLocationChange && newLocation) {
+        onLocationChange(newLocation);
+      }
+      redirect
+        ? router.push(`/event/edit/${eventId}/${newEventLocation.locationId}`)
+        : onClose();
     }
-    redirect
-      ? router.push(`/event/edit/${eventId}/${newEventLocation.locationId}`)
-      : onClose();
+    onClose();
   }
 
   useEffect(() => {
@@ -62,6 +72,12 @@ export default function LocationAdder({
       )
     );
   }, [currentLocations]);
+
+  function updateLocations(newLocation: Location) {
+    setCurrentLocations &&
+      setCurrentLocations([...currentLocations, newLocation]);
+    return newLocation;
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -103,10 +119,10 @@ export default function LocationAdder({
                 eventId,
                 locationId: newLocation.id,
               });
-              if (onLocationChange) {
+              if (shouldUpdateDB && onLocationChange) {
                 onLocationChange(newLocation); // Pass the new location object
+                redirect ? router.push(eventLocationLink.id) : onClose();
               }
-              redirect ? router.push(eventLocationLink.id) : onClose();
             }
           }}
         >

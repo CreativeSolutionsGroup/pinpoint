@@ -47,7 +47,6 @@ function Flow({
   isEditable: boolean;
 }) {
   const timeoutId = useRef<NodeJS.Timeout>();
-  const [nodesLoaded, setNodesLoaded] = useState(false);
   const { fitView } = useReactFlow(); // Get the fitView method from useReactFlow
 
   useChannel("event-updates", "subscribe", (message) => {
@@ -304,7 +303,7 @@ function Flow({
         data: {
           label,
           iconName,
-          color: "#FFFFFF",
+          color: "#57B9FF",
         },
         draggable: true,
         deletable: true,
@@ -324,29 +323,27 @@ function Flow({
     [screenToFlowPosition, setNodes, isEditable]
   );
 
-  // Call fit view after nodes have been loaded
+  // Detect when the big map node is loaded
   useEffect(() => {
-    if (nodesLoaded) {
-      // Use requestAnimationFrame to ensure the nodes are rendered
+    const mapNode = nodes.find((node) => node.id === "map");
+    if (mapNode) {
+      // Use requestAnimationFrame to ensure the map node is rendered
       requestAnimationFrame(() => {
         fitView({
           includeHiddenNodes: false,
         });
       });
     }
-  }, [nodesLoaded, fitView]);
-
-  // Set nodes and mark them as loaded
-  useEffect(() => {
-    if (nodes.length > 0) {
-      setNodesLoaded(true);
-    }
-  }, [nodes]);
+  }, [nodes, fitView]);
 
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
+      <h1 className="fixed left-[50vw] -translate-x-1/2 flex space-x-4 content-center items-center justify-center z-10 bg-white py-2 px-3 mt-3 text-2xl rounded-xl border bg-card text-card-foreground shadow">
+        {event.name}
+      </h1>
       <ReactFlow
         nodes={nodes}
+        minZoom={0.1}
         onNodesChange={onNodesChange}
         zoomOnScroll={false}
         panOnScroll={false}
@@ -354,16 +351,23 @@ function Flow({
         onDragOver={onDragOver}
         onInit={setRfInstance}
         nodeTypes={nodeTypes}
+        minZoom={0.1}
         nodesDraggable={isEditable}
         elementsSelectable={isEditable}
         className="touch-none"
-        minZoom={0.1}
       >
-        <Controls position="bottom-right"/>
+        <Controls position="bottom-right" showInteractive={false} fitViewOptions={{ minZoom: 0.05 }}/>
 
         {/* Hide legend on view only mode */}
         {isEditable && <Legend />}
-        {isEditable && <StateButtons undo={onUndo} redo={onRedo} />}
+        {isEditable && (
+          <StateButtons
+            undo={onUndo}
+            redo={onRedo}
+            event={event}
+            eventLocations={eventLocations}
+          />
+        )}
 
         <EventMapSelect eventId={event.id} locations={eventLocations} />
       </ReactFlow>
@@ -379,7 +383,7 @@ export default function EventFlow({
   location: string;
   isEditable: boolean;
 }) {
-  return (  
+  return (
     <ReactFlowProvider>
       <ChannelProvider channelName="event-updates">
         <Flow event={event} location={location} isEditable={isEditable} />
