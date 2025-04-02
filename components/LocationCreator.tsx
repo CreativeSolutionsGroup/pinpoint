@@ -45,7 +45,7 @@ export default function LocationAdder({
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    let newLocation = updateLocations(locations.find((v) => v.id === locationId) as Location);
+    const newLocation = updateLocations(locations.find((v) => v.id === locationId) as Location);
     if (shouldUpdateDB) {
       const newEventLocation = await AddLocationToEvent({
         eventId,

@@ -34,9 +34,9 @@ import {
 import CreateEvent from "@/lib/api/create/createEvent";
 import DeleteEntity from "@/lib/api/delete/DeleteEntity";
 import { GetEvent } from "@/lib/api/read/GetEvent";
-import { GetLocationInfo } from "@/lib/api/read/GetLocationInfo";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
+import { GetAllLocations } from "@/lib/api/read/GetAllLocations";
 
 export default function EventSelectForm({
   events,
@@ -69,6 +69,7 @@ export default function EventSelectForm({
     setDeleteDialogOpen(false);
     setDropdownEvents(dropdownEvents.filter((e) => e.id != id));
     setEventId("");
+    setEventSelected(false);
   }
 
   async function createEvent(name: string) {
@@ -98,13 +99,15 @@ export default function EventSelectForm({
       const info = await GetEvent(selectedEventId);
 
       setSelectedEventLocations([]); // Clear the div by resetting the state
-      info?.locations.forEach(async (location) => {
-        const locationInfo = await GetLocationInfo(location.locationId);
-        console.log(locationInfo);
-        if (locationInfo) {
-          setSelectedEventLocations((prev) => [...prev, locationInfo]);
-        }
-      });
+
+      const allLocations = await GetAllLocations();
+      const updatedLocations = allLocations
+        ?.filter((location) =>
+          info?.locations.some((eventLocation) => eventLocation.locationId === location.id)
+        )
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+      setSelectedEventLocations(updatedLocations ?? []);
     }
   };
 
