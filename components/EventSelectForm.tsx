@@ -318,6 +318,7 @@ export default function EventSelectForm({
         currentLocations={selectedEventLocations}
         isOpen={locationAdderOpen}
         redirect={false}
+        shouldUpdateDB={true}
         onClose={() => {
           setLocationAdderOpen(false);
         }}

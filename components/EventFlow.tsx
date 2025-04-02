@@ -351,7 +351,6 @@ function Flow({
         onDragOver={onDragOver}
         onInit={setRfInstance}
         nodeTypes={nodeTypes}
-        minZoom={0.1}
         nodesDraggable={isEditable}
         elementsSelectable={isEditable}
         className="touch-none"
