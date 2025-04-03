@@ -13,15 +13,16 @@ import { Box, Button, Typography } from "@mui/material";
 import { NodeProps, useReactFlow } from "@xyflow/react";
 import * as Icons from "lucide-react";
 import { useParams } from "next/navigation";
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import ResizeMenu from "./ResizeMenu";
 
 export function IconNode({ data, id }: NodeProps<CustomNode>) {
   const { deleteElements, setNodes } = useReactFlow();
 
   const params = useParams<{ mode: string }>();
-
   const isEditable = params.mode == "edit";
+
+  const timeoutId = useRef<NodeJS.Timeout>();
 
   // Get the icon component from the Lucide icons
   const IconComponent = Icons[data.iconName as keyof typeof Icons.icons];
@@ -75,20 +76,25 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
   const handleNotesChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       const newValue = e.target.value;
-      setNodes((nodes) =>
-        nodes.map((node) => {
-          if (node.id === id) {
-            return {
-              ...node,
-              data: {
-                ...node.data,
-                notes: newValue,
-              },
-            };
-          }
-          return node;
-        })
-      );
+
+      if (timeoutId.current) clearTimeout(timeoutId.current);
+
+      timeoutId.current = setTimeout(() => {
+        setNodes((nodes) =>
+          nodes.map((node) => {
+            if (node.id === id) {
+              return {
+                ...node,
+                data: {
+                  ...node.data,
+                  notes: newValue,
+                },
+              };
+            }
+            return node;
+          })
+        );
+      }, 200);
     },
     [id, setNodes]
   );
@@ -154,7 +160,7 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
             <Textarea
               placeholder="Add notes"
               defaultValue={data.notes}
-              onBlur={handleNotesChange}
+              onChange={handleNotesChange}
               disabled={!isEditable}
             />
             {isEditable && (
@@ -168,7 +174,14 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
                 </Button>
               </Box>
             )}
-            {isEditable && <ColorMenu x={0} y={0} currentColor={data.color ?? "#000000"} changeColor={colorChange} />}
+            {isEditable && (
+              <ColorMenu
+                x={0}
+                y={0}
+                currentColor={data.color ?? "#000000"}
+                changeColor={colorChange}
+              />
+            )}
           </div>
         </PopoverContent>
       </Popover>
