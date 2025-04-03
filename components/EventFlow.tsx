@@ -1,29 +1,37 @@
 "use client";
-import { GetEventLocationInfo } from "@/lib/api/read/GetEventLocationInfo";
-import SaveState from "@/lib/api/update/ReactFlowSave";
-import { CustomNode } from "@/types/CustomNode";
-import { CustomImageNode } from "@components/CustomImageNode";
-import EventMapSelect from "@components/EventMapSelect";
-import { IconNode } from "@components/IconNode";
-import Legend from "@components/Legend";
+
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ChannelProvider, useChannel } from "ably/react";
 import { createId } from "@paralleldrive/cuid2";
-import { Event, EventToLocation, Location } from "@prisma/client";
 import {
-  applyNodeChanges,
-  Controls,
-  Edge,
-  NodeChange,
   ReactFlow,
-  ReactFlowInstance,
   ReactFlowProvider,
+  Controls,
   useReactFlow,
+  NodeChange,
+  applyNodeChanges,
+  Edge,
+  ReactFlowInstance,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { ChannelProvider, useChannel } from "ably/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Event, EventToLocation, Location } from "@prisma/client";
+
+// API imports
+import { GetEventLocationInfo } from "@/lib/api/read/GetEventLocationInfo";
+import SaveState from "@/lib/api/update/ReactFlowSave";
+
+// Component imports
+import { IconNode } from "@components/IconNode";
+import { CustomImageNode } from "@components/CustomImageNode";
+import Legend from "@components/Legend";
+import EventMapSelect from "@components/EventMapSelect";
 import StateButtons from "./stateButtons";
 
+// Types
+import { CustomNode } from "@/types/CustomNode";
+
 const getId = () => createId();
+const clientId = createId();
 
 // Define node types
 const nodeTypes = {
@@ -37,6 +45,9 @@ interface EventWithLocation extends Event {
   })[];
 }
 
+/**
+ * Main Flow component that handles the ReactFlow functionality
+ */
 function Flow({
   event,
   location,
@@ -46,14 +57,40 @@ function Flow({
   location: string;
   isEditable: boolean;
 }) {
+  // Refs
   const timeoutId = useRef<NodeJS.Timeout>();
+
+  // State
   const [nodesLoaded, setNodesLoaded] = useState(false);
-  const { fitView } = useReactFlow(); // Get the fitView method from useReactFlow
+  const eventLocation = event.locations.find((l) => l.locationId === location);
+  const eventLocations = useRef<Array<Location>>(
+    event.locations.map((l) => l.location)
+  ).current;
+  const [nodes, setNodes] = useState<CustomNode[]>(
+    JSON.parse(eventLocation?.state ?? "{}")?.nodes || []
+  );
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [rfInstance, setRfInstance] = useState<ReactFlowInstance<
+    CustomNode,
+    Edge
+  > | null>(null);
 
+  // History management
+  const [undoStack, setUndoStack] = useState<string[]>([]);
+  const [redoStack, setRedoStack] = useState<string[]>([]);
+
+  // Hooks
+  const { fitView, screenToFlowPosition } = useReactFlow();
+
+  // Subscribe to real-time updates
   useChannel("event-updates", "subscribe", (message) => {
-    const { eventId, locationId } = message.data;
+    const { eventId, locationId, senderClientId } = message.data;
 
-    if (eventId !== event.id || locationId !== eventLocation?.locationId) {
+    if (
+      eventId !== event.id ||
+      locationId !== eventLocation?.locationId ||
+      senderClientId === clientId
+    ) {
       return;
     }
 
@@ -61,73 +98,13 @@ function Flow({
       if (!eventLocationInfo?.state) return;
 
       const state = JSON.parse(eventLocationInfo.state);
-
       setNodes(state.nodes);
     });
   });
 
-  const eventLocation = event.locations.find((l) => l.locationId === location);
-  const [eventLocations, setEventLocations] = useState<Array<Location>>(
-    event.locations.map((l) => l.location)
-  );
-  const [nodes, setNodes] = useState<CustomNode[]>(
-    JSON.parse(eventLocation?.state ?? "{}")?.nodes || []
-  );
-
-  const { screenToFlowPosition } = useReactFlow();
-
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-
-  const [rfInstance, setRfInstance] = useState<ReactFlowInstance<
-    CustomNode,
-    Edge
-  > | null>(null);
-
-  //history management
-  const [undoStack, setUndoStack] = useState<string[]>([]);
-  const [redoStack, setRedoStack] = useState<string[]>([]);
-
-  const onUndo = useCallback(() => {
-    if (undoStack.length === 0) return;
-
-    // Save current state to redo stack
-    if (rfInstance) {
-      const currentState = JSON.stringify(rfInstance.toObject());
-      setRedoStack((stack) => [...stack, currentState]);
-    }
-
-    // Get and remove last state from undo stack
-    const previousState = undoStack[undoStack.length - 1];
-    setUndoStack((stack) => (stack.length > 1 ? stack.slice(0, -1) : stack));
-
-    // Restore the previous state
-    if (previousState) {
-      const parsedState = JSON.parse(previousState);
-      setNodes(parsedState.nodes || []);
-    }
-  }, [undoStack, rfInstance]);
-
-  // Redo function
-  const onRedo = useCallback(() => {
-    if (redoStack.length === 0) return;
-
-    // Save current state to undo stack
-    if (rfInstance) {
-      const currentState = JSON.stringify(rfInstance.toObject());
-      setUndoStack((stack) => [...stack, currentState]);
-    }
-
-    // Get and remove last state from redo stack
-    const nextState = redoStack[redoStack.length - 1];
-    setRedoStack((stack) => stack.slice(0, -1));
-
-    // Restore the next state
-    if (nextState) {
-      const parsedState = JSON.parse(nextState);
-      setNodes(parsedState.nodes || []);
-    }
-  }, [redoStack, rfInstance, setNodes, setUndoStack]);
-
+  /**
+   * Initialize nodes if none exist
+   */
   useEffect(() => {
     if (nodes.length > 0) return;
 
@@ -156,49 +133,31 @@ function Flow({
     setNodes(initialNodes);
   }, [location, event.locations, nodes]);
 
-  const onNodesChange = useCallback(
-    (changes: NodeChange[]) => {
-      isEditable &&
-        setNodes((nds) => applyNodeChanges(changes, nds) as CustomNode[]);
-      clearTimeout(timeoutId.current);
-      timeoutId.current = setTimeout(() => {
-        rfInstance &&
-          eventLocation &&
-          SaveState(
-            event.id,
-            eventLocation.locationId,
-            JSON.stringify(rfInstance.toObject())
-          );
-
-        if (rfInstance) {
-          const currentState = JSON.stringify(rfInstance.toObject());
-          if (currentState !== undoStack[undoStack.length - 1]) {
-            setUndoStack((stack) => [...stack, currentState]);
-            setRedoStack([]); // Clear redo stack when new changes occur
-          }
-        }
-
-        setEventLocations(event.locations.map((l) => l.location));
-      }, 200);
-
-      // For meaningful changes, update nodes and save state
-      setNodes((nds) => {
-        const newNodes = applyNodeChanges(changes, nds) as CustomNode[];
-
-        return newNodes;
+  /**
+   * Fit view to nodes once loaded
+   */
+  useEffect(() => {
+    if (nodesLoaded) {
+      requestAnimationFrame(() => {
+        fitView({
+          includeHiddenNodes: false,
+        });
       });
-    },
-    [
-      isEditable,
-      rfInstance,
-      eventLocation,
-      event.id,
-      event.locations,
-      undoStack,
-    ]
-  );
+    }
+  }, [nodesLoaded, fitView]);
 
-  // Update mouse position - only in edit mode
+  /**
+   * Mark nodes as loaded
+   */
+  useEffect(() => {
+    if (nodes.length > 0) {
+      setNodesLoaded(true);
+    }
+  }, [nodes]);
+
+  /**
+   * Track mouse position for paste operations (edit mode only)
+   */
   useEffect(() => {
     if (!isEditable) return;
 
@@ -210,7 +169,9 @@ function Flow({
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, [isEditable]);
 
-  // Handle keyboard shortcuts - only in edit mode
+  /**
+   * Handle keyboard shortcuts (edit mode only)
+   */
   useEffect(() => {
     if (!isEditable) return;
 
@@ -266,10 +227,116 @@ function Flow({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [nodes, mousePosition, screenToFlowPosition, setNodes, isEditable]);
 
+  /**
+   * Handle node changes and save state
+   */
+  const onNodesChange = useCallback(
+    (changes: NodeChange[]) => {
+      // Don't apply changes in view mode
+      if (!isEditable) return;
+
+      setNodes((nds) => applyNodeChanges(changes, nds) as CustomNode[]);
+
+      // Debounce save
+      clearTimeout(timeoutId.current);
+      timeoutId.current = setTimeout(() => {
+        if (!rfInstance || !eventLocation) return;
+
+        // Keep track of previous state before applying changes
+        if (rfInstance) {
+          const currentState = JSON.stringify(rfInstance.toObject());
+          // Only push to undo stack if we have changes and it's different from the last state
+          if (
+            changes.length > 0 &&
+            (undoStack.length === 0 ||
+              currentState !== undoStack[undoStack.length - 1])
+          ) {
+            setUndoStack((stack) => [...stack, currentState]);
+            setRedoStack([]); // Clear redo stack when new changes occur
+          }
+        }
+
+        // Save state to server
+        SaveState(
+          event.id,
+          eventLocation.locationId,
+          JSON.stringify(rfInstance.toObject()),
+          clientId
+        );
+      }, 200);
+    },
+    [
+      isEditable,
+      rfInstance,
+      eventLocation,
+      event.id,
+      undoStack,
+      setNodes,
+      setUndoStack,
+      setRedoStack,
+    ]
+  );
+
+  /**
+   * Handle undo action
+   */
+  const onUndo = useCallback(() => {
+    if (undoStack.length <= 1) return; // Need at least 2 states in the stack to undo
+
+    // Get previous state from undo stack (excluding the current state)
+    const previousState = undoStack[undoStack.length - 2];
+
+    // Current state to add to redo stack
+    const currentState = undoStack[undoStack.length - 1];
+
+    // Update stacks
+    setRedoStack((stack) => [...stack, currentState]);
+    setUndoStack((stack) => stack.slice(0, -1));
+
+    // Restore the previous state
+    if (previousState) {
+      const parsedState = JSON.parse(previousState);
+      setNodes(parsedState.nodes || []);
+
+      // Save state to server
+      eventLocation &&
+        rfInstance &&
+        SaveState(event.id, eventLocation.locationId, previousState, clientId);
+    }
+  }, [undoStack, eventLocation, rfInstance, event.id]);
+
+  /**
+   * Handle redo action
+   */
+  const onRedo = useCallback(() => {
+    if (redoStack.length === 0) return;
+
+    // Get next state from redo stack
+    const nextState = redoStack[redoStack.length - 1];
+
+    // Save current state to undo stack
+    if (rfInstance) {
+      const currentState = JSON.stringify(rfInstance.toObject());
+      setUndoStack((stack) => [...stack, currentState]);
+    }
+
+    // Update redo stack
+    setRedoStack((stack) => stack.slice(0, -1));
+
+    // Restore the next state
+    if (nextState) {
+      const parsedState = JSON.parse(nextState);
+      setNodes(parsedState.nodes || []);
+    }
+  }, [redoStack, rfInstance, setNodes, setUndoStack]);
+
+  /**
+   * Handle drag over for node placement
+   */
   const onDragOver = useCallback(
     (event: React.DragEvent) => {
       event.preventDefault();
-      // block drag overs on view mode
+      // Block drag overs in view mode
       if (isEditable) {
         event.dataTransfer.dropEffect = "move";
       }
@@ -277,18 +344,18 @@ function Flow({
     [isEditable]
   );
 
+  /**
+   * Handle node drop
+   */
   const onDrop = useCallback(
     (event: React.DragEvent<HTMLDivElement>) => {
-      // block drag and drops on view mode
+      // Block drag and drops in view mode
       if (!isEditable) return;
 
       event.preventDefault();
 
       const jsonData = event.dataTransfer.getData("application/reactflow");
-
-      if (!jsonData) {
-        return;
-      }
+      if (!jsonData) return;
 
       const { type, iconName, label } = JSON.parse(jsonData);
 
@@ -324,30 +391,12 @@ function Flow({
     [screenToFlowPosition, setNodes, isEditable]
   );
 
-  // Call fit view after nodes have been loaded
-  useEffect(() => {
-    if (nodesLoaded) {
-      // Use requestAnimationFrame to ensure the nodes are rendered
-      requestAnimationFrame(() => {
-        fitView({
-          includeHiddenNodes: false,
-        });
-      });
-    }
-  }, [nodesLoaded, fitView]);
-
-  // Set nodes and mark them as loaded
-  useEffect(() => {
-    if (nodes.length > 0) {
-      setNodesLoaded(true);
-    }
-  }, [nodes]);
-
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
       <h1 className="fixed left-[50vw] -translate-x-1/2 flex space-x-4 content-center items-center justify-center z-10 bg-white py-2 px-3 mt-3 text-2xl rounded-xl border bg-card text-card-foreground shadow">
         {event.name}
       </h1>
+
       <ReactFlow
         nodes={nodes}
         onNodesChange={onNodesChange}
@@ -369,6 +418,7 @@ function Flow({
         />
 
         {isEditable && <Legend />}
+
         {isEditable && (
           <StateButtons
             undo={onUndo}
@@ -383,6 +433,10 @@ function Flow({
     </div>
   );
 }
+
+/**
+ * Event Flow wrapper component with providers
+ */
 export default function EventFlow({
   event,
   location,
