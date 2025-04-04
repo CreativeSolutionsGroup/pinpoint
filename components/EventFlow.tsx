@@ -6,6 +6,7 @@ import { CustomImageNode } from "@components/CustomImageNode";
 import EventMapSelect from "@components/EventMapSelect";
 import { IconNode } from "@components/IconNode";
 import Legend from "@components/Legend";
+import { ActiveNodeContext } from "@components/IconNode";
 import { createId } from "@paralleldrive/cuid2";
 import { Event, EventToLocation, Location } from "@prisma/client";
 import {
@@ -210,26 +211,32 @@ function Flow({
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, [isEditable]);
 
+  // Add state for tracking the active node
+  const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
+
   // Handle keyboard shortcuts - only in edit mode
   useEffect(() => {
     if (!isEditable) return;
 
     const handleKeyDown = async (event: KeyboardEvent) => {
       // Copy
-      // if (event.key === "c" && (event.ctrlKey || event.metaKey)) {
-      //   // Use rfInstance to get the current nodes with their selection state
-      //   const selectedNodes = rfInstance?.getNodes().filter(node => node.selected);
-      //   console.log("Selected nodes:", selectedNodes?.length);
-        
-      //   if (!selectedNodes || selectedNodes.length === 0) return;
-        
-      //   try {
-      //     await navigator.clipboard.writeText(JSON.stringify(selectedNodes));
-      //     console.log("Copied nodes:", selectedNodes.length);
-      //   } catch (err) {
-      //     console.error("Failed to copy:", err);
-      //   }
-      // }
+      if (event.key === "c" && (event.ctrlKey || event.metaKey)) {
+        if (activeNodeId) {
+          const activeNode = rfInstance?.getNode(activeNodeId);
+          if (activeNode) {
+            try {
+              await navigator.clipboard.writeText(JSON.stringify([activeNode]));
+              console.log("Copied active node:", activeNode.id);
+            } catch (err) {
+              console.error("Failed to copy:", err);
+            }
+          } else {
+            console.log("No active node found with ID:", activeNodeId);
+          }
+        } else {
+          console.log("No active node currently set");
+        }
+      }
 
       // Paste
       if (event.key === "v" && (event.ctrlKey || event.metaKey)) {
@@ -268,7 +275,7 @@ function Flow({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [nodes, mousePosition, screenToFlowPosition, setNodes, isEditable]);
+  }, [nodes, mousePosition, screenToFlowPosition, setNodes, isEditable, rfInstance, activeNodeId]);
 
   const onDragOver = useCallback(
     (event: React.DragEvent) => {
@@ -348,29 +355,30 @@ function Flow({
   }, [nodes]);
 
   return (
-    <div style={{ width: "100vw", height: "100vh" }}>
-      <ReactFlow
-        nodes={nodes}
-        onNodesChange={onNodesChange}
-        zoomOnScroll={false}
-        panOnScroll={false}
-        onDrop={onDrop}
-        onDragOver={onDragOver}
-        onInit={setRfInstance}
-        nodeTypes={nodeTypes}
-        nodesDraggable={isEditable}
-        selectNodesOnDrag={isEditable}
-        elementsSelectable={isEditable}
-        className="touch-none"
-      >
-        <Controls position="bottom-right" />
+    <ActiveNodeContext.Provider value={{ activeNodeId, setActiveNodeId }}>
+      <div style={{ width: "100vw", height: "100vh" }}>
+        <ReactFlow
+          nodes={nodes}
+          onNodesChange={onNodesChange}
+          zoomOnScroll={false}
+          panOnScroll={false}
+          onDrop={onDrop}
+          onDragOver={onDragOver}
+          onInit={setRfInstance}
+          nodeTypes={nodeTypes}
+          nodesDraggable={isEditable}
+          selectNodesOnDrag={isEditable}
+          elementsSelectable={isEditable}
+          className="touch-none"
+        >
+          <Controls position="bottom-right" />
 
-        {/* Hide legend on view only mode */}
-        {isEditable && <Legend />}
-        {isEditable && <StateButtons undo={onUndo} redo={onRedo} />}
+          {/* Hide legend on view only mode */}
+          {isEditable && <Legend />}
+          {isEditable && <StateButtons undo={onUndo} redo={onRedo} />}
 
-        <EventMapSelect eventId={event.id} locations={eventLocations} />
-      </ReactFlow>
+          <EventMapSelect eventId={event.id} locations={eventLocations} />
+        </ReactFlow>
 
       {/* Hide save button in view mode
       {isEditable && (
@@ -403,12 +411,13 @@ function Flow({
           onClick={onRedo}
           style={{ position: "fixed", top: "10rem", right: 16 }}
           variant="contained"
-        >
+          >
           Redo
         </Button>
       )}
       */}
-    </div>
+      </div>
+    </ActiveNodeContext.Provider>
   );
 }
 

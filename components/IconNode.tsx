@@ -11,7 +11,7 @@ import ColorMenu from "@components/ColorMenu";
 import { Box, IconButton, Paper } from "@mui/material";
 import { NodeProps, useReactFlow } from "@xyflow/react";
 import * as Icons from "lucide-react";
-import { useCallback, useEffect } from "react";
+import { createContext, useContext, useCallback, useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import ResizeMenu from "./ResizeMenu";
 import { Trash2 } from "lucide-react";
@@ -20,8 +20,18 @@ import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import { createId } from "@paralleldrive/cuid2";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@radix-ui/react-tooltip";
 
+export const ActiveNodeContext = createContext<{
+  activeNodeId: string | null;
+  setActiveNodeId: (id: string | null) => void;
+}>({
+  activeNodeId: null,
+  setActiveNodeId: () => {},
+});
+
 export function IconNode({ data, id }: NodeProps<CustomNode>) {
   const { deleteElements, setNodes, getNode } = useReactFlow();
+  const { setActiveNodeId } = useContext(ActiveNodeContext);
+  const [isOpen, setIsOpen] = useState(false);
 
   const params = useParams<{ mode: string }>();
 
@@ -30,42 +40,36 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
   // Get the icon component from the Lucide icons
   const IconComponent = Icons[data.iconName as keyof typeof Icons.icons];
 
-
-  // handle copying specific nodes
+  // When popover opens, set this node as active
   useEffect(() => {
-    const handleKeyDown = async (event: KeyboardEvent) => {
-      // Copy
-      if (event.key === "c" && (event.ctrlKey || event.metaKey)) {
-        // Use rfInstance to get the current nodes with their selection state
-        const selectedNodes = getNode(id);
-        
-        try {
-          await navigator.clipboard.writeText(JSON.stringify([selectedNodes]));
-          console.log("Copied nodes:", selectedNodes);
-        } catch (err) {
-          console.error("Failed to copy:", err);
-        }
-      }
+    if (isOpen) {
+      setActiveNodeId(id);
     }
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  });
-
-  const handleCopy = () => {
-    const node = getNode(id);
-    navigator.clipboard.writeText(JSON.stringify([node]));
-  };
+  }, [isOpen, id, setActiveNodeId]);
+  
+  const handleCopy = useCallback(() => {
+    try {
+      const node = getNode(id);
+      if (node) {
+        navigator.clipboard.writeText(JSON.stringify([node]));
+        console.log("Copied node:", node);
+      }
+    } catch (err) {
+      console.error("Failed to copy:", err);
+    }
+  }, [id, getNode]);
  
   const handleDup = () => {
     const node = getNode(id);
     if (!node) return;
 
-    const xOffset = (node?.position?.x ?? 0) + 50;
-    const yOffset = (node?.position?.y ?? 0) - 50;
+    const xOffset = (node?.position?.x ?? 0) + 20;
+    const yOffset = (node?.position?.y ?? 0) - 20;
     
+    const newNodeId = createId();
     const newNode = {
       ...node,
-      id: createId(),
+      id: newNodeId,
       position: {
       x: xOffset,
       y: yOffset,
@@ -74,6 +78,25 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
     };
 
     setNodes((nds) => [...nds, newNode]);
+
+    // Set the card menu to be over the new node
+    setIsOpen(false);
+    setActiveNodeId(newNodeId);
+
+    setTimeout(() => {
+      const newNodeElement = document.querySelector(`[data-id="${newNodeId}"]`);
+      console.log("New node element:", newNodeElement, newNodeId);
+      if (newNodeElement) {
+        const triggerElement = newNodeElement.querySelector('.popover-trigger');
+        console.log("Trigger element:", triggerElement);
+        
+        if (triggerElement) {
+          (triggerElement as HTMLElement).click();
+          console.log("Clicked on new node:", newNodeId);
+        }
+      }
+    }, 50);
+
   };
 
   const handleDelete = () => {
@@ -145,8 +168,8 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
 
   return (
     <>
-      <Popover>
-        <PopoverTrigger>
+      <Popover onOpenChange={setIsOpen}>
+        <PopoverTrigger className="popover-trigger">
           <IconComponent
             style={{
               color: data.color,
