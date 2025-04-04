@@ -6,6 +6,7 @@ import { CustomImageNode } from "@components/CustomImageNode";
 import EventMapSelect from "@components/EventMapSelect";
 import { IconNode } from "@components/IconNode";
 import Legend from "@components/Legend";
+import { ActiveNodeContext } from "@components/IconNode";
 import { createId } from "@paralleldrive/cuid2";
 import { Event, EventToLocation, Location } from "@prisma/client";
 import {
@@ -210,6 +211,9 @@ function Flow({
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, [isEditable]);
 
+  // Add state for tracking the active node
+  const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
+
   // Handle keyboard shortcuts - only in edit mode
   useEffect(() => {
     if (!isEditable) return;
@@ -217,13 +221,20 @@ function Flow({
     const handleKeyDown = async (event: KeyboardEvent) => {
       // Copy
       if (event.key === "c" && (event.ctrlKey || event.metaKey)) {
-        const selectedNodes = nodes.filter((node) => node.selected);
-        if (selectedNodes.length === 0) return;
-
-        try {
-          await navigator.clipboard.writeText(JSON.stringify(selectedNodes));
-        } catch (err) {
-          console.error("Failed to copy:", err);
+        if (activeNodeId) {
+          const activeNode = rfInstance?.getNode(activeNodeId);
+          if (activeNode) {
+            try {
+              await navigator.clipboard.writeText(JSON.stringify([activeNode]));
+              console.log("Copied active node:", activeNode.id);
+            } catch (err) {
+              console.error("Failed to copy:", err);
+            }
+          } else {
+            console.log("No active node found with ID:", activeNodeId);
+          }
+        } else {
+          console.log("No active node currently set");
         }
       }
 
@@ -256,15 +267,15 @@ function Flow({
           }));
 
           setNodes((nds) => [...nds, ...newNodes]);
-        } catch (err) {
-          console.error("Failed to paste:", err);
-        }
+          console.log("I pasted")
+
+        } catch (err) {/* Default to normal paste operations */}
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [nodes, mousePosition, screenToFlowPosition, setNodes, isEditable]);
+  }, [nodes, mousePosition, screenToFlowPosition, setNodes, isEditable, rfInstance, activeNodeId]);
 
   const onDragOver = useCallback(
     (event: React.DragEvent) => {
@@ -312,7 +323,7 @@ function Flow({
         extent: "parent",
         dragging: false,
         zIndex: 0,
-        selectable: false,
+        selectable: true,
         selected: false,
         isConnectable: false,
         positionAbsoluteX: 0,
@@ -344,11 +355,12 @@ function Flow({
   }, [nodes]);
 
   return (
-    <div style={{ width: "100vw", height: "100vh" }}>
-      <h1 className="fixed left-[50vw] -translate-x-1/2 flex space-x-4 content-center items-center justify-center z-10 bg-white py-2 px-3 mt-3 text-2xl rounded-xl border bg-card text-card-foreground shadow">
-        {event.name}
-      </h1>
-      <ReactFlow
+    <ActiveNodeContext.Provider value={{ activeNodeId, setActiveNodeId }}>
+      <div style={{ width: "100vw", height: "100vh" }}>
+        <h1 className="fixed left-[50vw] -translate-x-1/2 flex space-x-4 content-center items-center justify-center z-10 bg-white py-2 px-3 mt-3 text-2xl rounded-xl border bg-card text-card-foreground shadow">
+          {event.name}
+        </h1>
+        <ReactFlow
         nodes={nodes}
         onNodesChange={onNodesChange}
         zoomOnScroll={false}
@@ -378,9 +390,10 @@ function Flow({
           />
         )}
 
-        <EventMapSelect eventId={event.id} locations={eventLocations} />
-      </ReactFlow>
-    </div>
+          <EventMapSelect eventId={event.id} locations={eventLocations} />
+        </ReactFlow>
+      </div>
+    </ActiveNodeContext.Provider>
   );
 }
 export default function EventFlow({
