@@ -1,6 +1,6 @@
 "use client";
 import { Paper } from "@mui/material";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 export default function ColorMenu(props: {
   fixedPos?: boolean;
@@ -10,6 +10,21 @@ export default function ColorMenu(props: {
   changeColor: (colorSelected: string) => void;
 }) {
   const [customColor, setCustomColor] = useState(props.currentColor);
+  const [sliderPosition, setSliderPosition] = useState(0);
+  const gradientRef = useRef<HTMLDivElement>(null);
+
+  const hexValues = [
+    "#FFFFFF",
+    "#FF0000",
+    "#FF7F00",
+    "#FFFF00",
+    "#00FF00",
+    "#0000FF",
+    "#4B0082",
+    "#9400D3",
+    "#000000",
+  ];
+
   const colorArray = [
     "#000000",
     "#6C8EAD",
@@ -23,41 +38,28 @@ export default function ColorMenu(props: {
     "#A23E48",
   ];
 
+  useEffect(() => {
+    const initialPosition = findClosestColorPosition(props.currentColor);
+    setSliderPosition(initialPosition);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.currentColor]);
+
   function onColorClick(color: string) {
     props.changeColor(color);
     setCustomColor(color);
   }
 
-  // Handle gradient click to select custom color
-  const handleGradientClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    // Calculate position of click within the gradient
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const width = rect.width;
-
-    // Create hex colors directly along the spectrum
-    const hexValues = [
-      "#FF0000", // red
-      "#FF7F00", // orange
-      "#FFFF00", // yellow
-      "#00FF00", // green
-      "#0000FF", // blue
-      "#4B0082", // indigo
-      "#9400D3", // violet
-    ];
-
-    // Calculate position in the spectrum
+  // Update the color based on the gradient position
+  const handleGradientUpdate = (x: number, width: number) => {
     const position = (x / width) * (hexValues.length - 1);
     const index = Math.floor(position);
     const remainder = position - index;
 
-    // Interpolate between adjacent hex colors
     if (index < hexValues.length - 1) {
       const color1 = hexToRgb(hexValues[index]);
       const color2 = hexToRgb(hexValues[index + 1]);
 
       if (color1 && color2) {
-        // Linear interpolation between colors
         const r = Math.round(color1.r + remainder * (color2.r - color1.r));
         const g = Math.round(color1.g + remainder * (color2.g - color1.g));
         const b = Math.round(color1.b + remainder * (color2.b - color1.b));
@@ -66,10 +68,33 @@ export default function ColorMenu(props: {
         setCustomColor(newColor);
         props.changeColor(newColor);
       }
-    } else {
-      setCustomColor(hexValues[hexValues.length - 1]);
-      props.changeColor(hexValues[hexValues.length - 1]);
     }
+  };
+
+  // Helper function to find the closest color position in the gradient
+  const findClosestColorPosition = (targetColor: string) => {
+    const targetRgb = hexToRgb(targetColor);
+    if (!targetRgb) return 0;
+
+    let closestDistance = Infinity;
+    let closestIndex = 0;
+
+    hexValues.forEach((hexColor, index) => {
+      const currentRgb = hexToRgb(hexColor);
+      if (currentRgb) {
+        const distance = Math.sqrt(
+          Math.pow(targetRgb.r - currentRgb.r, 2) +
+            Math.pow(targetRgb.g - currentRgb.g, 2) +
+            Math.pow(targetRgb.b - currentRgb.b, 2)
+        );
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestIndex = index;
+        }
+      }
+    });
+
+    return (closestIndex / (hexValues.length - 1)) * 100;
   };
 
   // Helper function to convert hex to rgb
@@ -116,10 +141,50 @@ export default function ColorMenu(props: {
         {/* Gradient color picker */}
         <div className="px-2 py-1">
           <div
-            className="w-full h-8 rounded cursor-pointer"
+            ref={gradientRef}
+            className="w-full h-8 rounded cursor-pointer relative"
             style={renderGradient()}
-            onClick={handleGradientClick}
-          />
+            onMouseDown={(e) => {
+              const rect = gradientRef.current?.getBoundingClientRect();
+              if (rect) {
+                const x = Math.max(
+                  0,
+                  Math.min(e.clientX - rect.left, rect.width)
+                );
+                setSliderPosition((x / rect.width) * 100);
+                handleGradientUpdate(x, rect.width);
+              }
+            }}
+          >
+            <div
+              className="absolute top-0 bottom-0 w-1 bg-black rounded-full cursor-pointer"
+              style={{
+                left: `calc(${sliderPosition}% - 2px)`,
+              }}
+              onMouseDown={(e) => {
+                e.stopPropagation();
+                const handleDrag = (moveEvent: MouseEvent) => {
+                  const rect = gradientRef.current?.getBoundingClientRect();
+                  if (rect) {
+                    const x = Math.max(
+                      0,
+                      Math.min(moveEvent.clientX - rect.left, rect.width)
+                    );
+                    setSliderPosition((x / rect.width) * 100);
+                    handleGradientUpdate(x, rect.width);
+                  }
+                };
+
+                const handleDragEnd = () => {
+                  document.removeEventListener("mousemove", handleDrag);
+                  document.removeEventListener("mouseup", handleDragEnd);
+                };
+
+                document.addEventListener("mousemove", handleDrag);
+                document.addEventListener("mouseup", handleDragEnd);
+              }}
+            />
+          </div>
           <div className="flex items-center justify-between mt-1">
             <div
               className="w-6 h-6 rounded-full border border-gray-300"
@@ -132,8 +197,6 @@ export default function ColorMenu(props: {
               value={customColor}
               onChange={(e) => {
                 const value = e.target.value;
-
-                // Only update the actual color if it's a valid hex color
                 if (/^#([A-Fa-f0-9]{0,3}){1,2}$/.test(value)) {
                   setCustomColor(value);
                   props.changeColor(value);
