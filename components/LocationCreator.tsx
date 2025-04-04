@@ -22,13 +22,17 @@ import { useRouter } from "next/navigation";
 export default function LocationAdder({
   eventId,
   currentLocations,
+  setCurrentLocations,
   isOpen,
   onClose,
+  shouldUpdateDB,
 }: {
   eventId: string;
   currentLocations: Location[];
+  setCurrentLocations?: (locations: Location[]) => void;
   isOpen: boolean;
   onClose: () => void;
+  shouldUpdateDB?: boolean;
 }) {
   const [locations, setLocations] = useState<Location[]>([]);
   const [locationId, setLocationId] = useState<string>("");
@@ -37,8 +41,14 @@ export default function LocationAdder({
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const newEventLocation = await AddLocationToEvent({ eventId, locationId });
-    router.push(`/event/edit/${eventId}/${newEventLocation.locationId}`);
+    updateLocations(locations.find((v) => v.id === locationId) as Location);
+    if (shouldUpdateDB) {
+      const newEventLocation = await AddLocationToEvent({ eventId, locationId });
+      router.push(
+        `/event/${newEventLocation.eventId}/${newEventLocation.locationId}`
+      );
+    }
+    onClose();
   }
 
   useEffect(() => {
@@ -52,6 +62,11 @@ export default function LocationAdder({
       )
     );
   }, [currentLocations]);
+
+  function updateLocations(newLocation: Location) {
+    setCurrentLocations &&
+      setCurrentLocations([...currentLocations, newLocation]);
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -93,7 +108,9 @@ export default function LocationAdder({
                 eventId,
                 locationId: newLocation.id,
               });
-              router.push(eventLocationLink.id);
+              if (shouldUpdateDB) {
+                router.push(eventLocationLink.id);
+              }
             }
           }}
         >

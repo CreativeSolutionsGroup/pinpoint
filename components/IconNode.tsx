@@ -1,5 +1,6 @@
 "use client";
 
+import { Input } from "@/components/ui/input";
 import {
   Popover,
   PopoverContent,
@@ -8,11 +9,12 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { CustomNode } from "@/types/CustomNode";
 import ColorMenu from "@components/ColorMenu";
-import { Box, IconButton, Paper } from "@mui/material";
+import { Box, Button, IconButton, Paper, Typography } from "@mui/material";
 import { NodeProps, useReactFlow } from "@xyflow/react";
 import * as Icons from "lucide-react";
-import { createContext, useContext, useCallback, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { useParams } from "next/navigation";
+import { useCallback, useRef } from "react";
 import ResizeMenu from "./ResizeMenu";
 import { Trash2 } from "lucide-react";
 import QueueIcon from '@mui/icons-material/Queue';
@@ -34,8 +36,9 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
   const [isOpen, setIsOpen] = useState(false);
 
   const params = useParams<{ mode: string }>();
-
   const isEditable = params.mode == "edit";
+
+  const timeoutId = useRef<NodeJS.Timeout>();
 
   // Get the icon component from the Lucide icons
   const IconComponent = Icons[data.iconName as keyof typeof Icons.icons];
@@ -148,6 +151,32 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
   const handleNotesChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       const newValue = e.target.value;
+
+      if (timeoutId.current) clearTimeout(timeoutId.current);
+
+      timeoutId.current = setTimeout(() => {
+        setNodes((nodes) =>
+          nodes.map((node) => {
+            if (node.id === id) {
+              return {
+                ...node,
+                data: {
+                  ...node.data,
+                  notes: newValue,
+                },
+              };
+            }
+            return node;
+          })
+        );
+      }, 200);
+    },
+    [id, setNodes]
+  );
+
+  const handleLabelChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newValue = e.target.value;
       setNodes((nodes) =>
         nodes.map((node) => {
           if (node.id === id) {
@@ -155,7 +184,7 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
               ...node,
               data: {
                 ...node.data,
-                notes: newValue,
+                label: newValue,
               },
             };
           }
@@ -165,27 +194,48 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
     },
     [id, setNodes]
   );
-
   return (
     <>
       <Popover onOpenChange={setIsOpen}>
-        <PopoverTrigger className="popover-trigger">
+        <PopoverTrigger
+          style={{ borderColor: data.color }}
+          className="popover-trigger flex flex-col items-center justify-center cursor-move"
+        >
           <IconComponent
             style={{
               color: data.color,
-              width: `${data.size ?? 2}rem`,
-              height: `${data.size ?? 2}rem`,
+              width: `${data.size ?? 3}rem`,
+              height: `${data.size ?? 3}rem`,
             }}
             className="text-gray-700"
           />
+          <Typography
+            style={{
+              color: data.color,
+              width: "100%",
+              fontSize: `${(data.size ?? 3) / 3}rem`,
+              lineHeight: `${(data.size ?? 3) / 3}rem`,
+              textWrap: "wrap",
+              whiteSpace: "pre-wrap",
+              overflowWrap: "break-word",
+              maxWidth: `${(data.size ?? 3) * 3}rem`,
+            }}
+            className="text-center text-wrap"
+          >
+            {data.label}
+          </Typography>
         </PopoverTrigger>
         <PopoverContent className="w-fit">
           <div className="grid gap-4">
+            {isEditable && (
+              <div className="justify-center">
+                <Input placeholder={data.label} onChange={handleLabelChange} />
+              </div>
+            )}
             <Textarea
-              autoFocus={false}
-              tabIndex={-1}
+              placeholder="Add notes"
               defaultValue={data.notes}
-              onBlur={handleNotesChange}
+              onChange={handleNotesChange}
               disabled={!isEditable}
             />
             {isEditable && (
@@ -229,7 +279,14 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
                 </Box>
               </Box>
             )}
-            {isEditable && <ColorMenu x={0} y={0} changeColor={colorChange} />}
+            {isEditable && (
+              <ColorMenu
+                x={0}
+                y={0}
+                currentColor={data.color ?? "#000000"}
+                changeColor={colorChange}
+              />
+            )}
           </div>
         </PopoverContent>
       </Popover>

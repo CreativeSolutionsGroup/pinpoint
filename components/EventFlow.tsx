@@ -315,7 +315,7 @@ function Flow({
         data: {
           label,
           iconName,
-          color: "white",
+          color: "#57B9FF",
         },
         draggable: true,
         deletable: true,
@@ -357,70 +357,45 @@ function Flow({
   return (
     <ActiveNodeContext.Provider value={{ activeNodeId, setActiveNodeId }}>
       <div style={{ width: "100vw", height: "100vh" }}>
+        <h1 className="fixed left-[50vw] -translate-x-1/2 flex space-x-4 content-center items-center justify-center z-10 bg-white py-2 px-3 mt-3 text-2xl rounded-xl border bg-card text-card-foreground shadow">
+          {event.name}
+        </h1>
         <ReactFlow
-          nodes={nodes}
-          onNodesChange={onNodesChange}
-          zoomOnScroll={false}
-          panOnScroll={false}
-          onDrop={onDrop}
-          onDragOver={onDragOver}
-          onInit={setRfInstance}
-          nodeTypes={nodeTypes}
-          nodesDraggable={isEditable}
-          selectNodesOnDrag={isEditable}
-          elementsSelectable={isEditable}
-          className="touch-none"
-        >
-          <Controls position="bottom-right" />
+        nodes={nodes}
+        onNodesChange={onNodesChange}
+        zoomOnScroll={false}
+        panOnScroll={false}
+        onDrop={onDrop}
+        onDragOver={onDragOver}
+        onInit={setRfInstance}
+        nodeTypes={nodeTypes}
+        minZoom={0.1}
+        nodesDraggable={isEditable}
+        elementsSelectable={isEditable}
+        className="touch-none"
+      >
+        <Controls
+          position="bottom-right"
+          fitViewOptions={{ minZoom: 0.05 }}
+          showInteractive={false}
+        />
 
-          {/* Hide legend on view only mode */}
-          {isEditable && <Legend />}
-          {isEditable && <StateButtons undo={onUndo} redo={onRedo} />}
+        {isEditable && <Legend />}
+        {isEditable && (
+          <StateButtons
+            undo={onUndo}
+            redo={onRedo}
+            event={event}
+            eventLocations={eventLocations}
+          />
+        )}
 
           <EventMapSelect eventId={event.id} locations={eventLocations} />
         </ReactFlow>
-
-      {/* Hide save button in view mode
-      {isEditable && (
-        <Button
-          onClick={() =>
-            rfInstance &&
-            eventLocation &&
-            SaveState(
-              event.id,
-              eventLocation.locationId,
-              JSON.stringify(rfInstance.toObject()),
-            )}
-          style={{ position: "fixed", top: "4rem", right: 16 }}
-          variant="default"
-        >
-          Save
-        </Button>
-      )}
-      {isEditable && (
-        <Button
-          onClick={onUndo}
-          style={{ position: "fixed", top: "7rem", right: 16 }}
-          variant="contained"
-        >
-          Undo
-        </Button>
-      )}
-      {isEditable && (
-        <Button
-          onClick={onRedo}
-          style={{ position: "fixed", top: "10rem", right: 16 }}
-          variant="contained"
-          >
-          Redo
-        </Button>
-      )}
-      */}
       </div>
     </ActiveNodeContext.Provider>
   );
 }
-
 export default function EventFlow({
   event,
   location,
