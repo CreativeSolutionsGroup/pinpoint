@@ -24,14 +24,18 @@ export default function LocationAdder({
   currentLocations,
   setCurrentLocations,
   isOpen,
+  redirect = true,
   onClose,
+  onLocationChange,
   shouldUpdateDB,
 }: {
   eventId: string;
   currentLocations: Location[];
   setCurrentLocations?: (locations: Location[]) => void;
   isOpen: boolean;
+  redirect?: boolean;
   onClose: () => void;
+  onLocationChange?: (location: Location) => void; // Updated to pass the full location object
   shouldUpdateDB?: boolean;
 }) {
   const [locations, setLocations] = useState<Location[]>([]);
@@ -41,12 +45,18 @@ export default function LocationAdder({
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    updateLocations(locations.find((v) => v.id === locationId) as Location);
+    const newLocation = updateLocations(locations.find((v) => v.id === locationId) as Location);
     if (shouldUpdateDB) {
-      const newEventLocation = await AddLocationToEvent({ eventId, locationId });
-      router.push(
-        `/event/${newEventLocation.eventId}/${newEventLocation.locationId}`
-      );
+      const newEventLocation = await AddLocationToEvent({
+        eventId,
+        locationId,
+      });
+      if(onLocationChange && newLocation) {
+        onLocationChange(newLocation);
+      }
+      redirect
+        ? router.push(`/event/edit/${eventId}/${newEventLocation.locationId}`)
+        : onClose();
     }
     onClose();
   }
@@ -66,6 +76,7 @@ export default function LocationAdder({
   function updateLocations(newLocation: Location) {
     setCurrentLocations &&
       setCurrentLocations([...currentLocations, newLocation]);
+    return newLocation;
   }
 
   return (
@@ -108,8 +119,9 @@ export default function LocationAdder({
                 eventId,
                 locationId: newLocation.id,
               });
-              if (shouldUpdateDB) {
-                router.push(eventLocationLink.id);
+              if (shouldUpdateDB && onLocationChange) {
+                onLocationChange(newLocation); // Pass the new location object
+                redirect ? router.push(eventLocationLink.id) : onClose();
               }
             }
           }}

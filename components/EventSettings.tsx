@@ -171,6 +171,7 @@ export default function EventSettings({
         setCurrentLocations={(newLocations) =>
           setCurrentLocations(newLocations)
         }
+        shouldUpdateDB={true}
         isOpen={locationAdderOpen}
         onClose={() => setLocationAdderOpen(false)}
       />

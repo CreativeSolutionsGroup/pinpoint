@@ -48,7 +48,6 @@ function Flow({
   isEditable: boolean;
 }) {
   const timeoutId = useRef<NodeJS.Timeout>();
-  const [nodesLoaded, setNodesLoaded] = useState(false);
   const { fitView } = useReactFlow(); // Get the fitView method from useReactFlow
 
   useChannel("event-updates", "subscribe", (message) => {
@@ -335,24 +334,18 @@ function Flow({
     [screenToFlowPosition, setNodes, isEditable]
   );
 
-  // Call fit view after nodes have been loaded
+  // Detect when the big map node is loaded
   useEffect(() => {
-    if (nodesLoaded) {
-      // Use requestAnimationFrame to ensure the nodes are rendered
+    const mapNode = nodes.find((node) => node.id === "map");
+    if (mapNode) {
+      // Use requestAnimationFrame to ensure the map node is rendered
       requestAnimationFrame(() => {
         fitView({
           includeHiddenNodes: false,
         });
       });
     }
-  }, [nodesLoaded, fitView]);
-
-  // Set nodes and mark them as loaded
-  useEffect(() => {
-    if (nodes.length > 0) {
-      setNodesLoaded(true);
-    }
-  }, [nodes]);
+  }, [nodes, fitView]);
 
   return (
     <ActiveNodeContext.Provider value={{ activeNodeId, setActiveNodeId }}>
@@ -362,6 +355,7 @@ function Flow({
         </h1>
         <ReactFlow
         nodes={nodes}
+        minZoom={0.1}
         onNodesChange={onNodesChange}
         zoomOnScroll={false}
         panOnScroll={false}
@@ -369,17 +363,13 @@ function Flow({
         onDragOver={onDragOver}
         onInit={setRfInstance}
         nodeTypes={nodeTypes}
-        minZoom={0.1}
         nodesDraggable={isEditable}
         elementsSelectable={isEditable}
         className="touch-none"
       >
-        <Controls
-          position="bottom-right"
-          fitViewOptions={{ minZoom: 0.05 }}
-          showInteractive={false}
-        />
+        <Controls position="bottom-right" showInteractive={false} fitViewOptions={{ minZoom: 0.05 }}/>
 
+        {/* Hide legend on view only mode */}
         {isEditable && <Legend />}
         {isEditable && (
           <StateButtons
