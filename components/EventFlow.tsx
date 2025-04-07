@@ -48,7 +48,6 @@ function Flow({
   isEditable: boolean;
 }) {
   const timeoutId = useRef<NodeJS.Timeout>();
-  const [nodesLoaded, setNodesLoaded] = useState(false);
   const { fitView } = useReactFlow(); // Get the fitView method from useReactFlow
 
   useChannel("event-updates", "subscribe", (message) => {
@@ -335,24 +334,25 @@ function Flow({
     [screenToFlowPosition, setNodes, isEditable]
   );
 
-  // Call fit view after nodes have been loaded
-  useEffect(() => {
-    if (nodesLoaded) {
-      // Use requestAnimationFrame to ensure the nodes are rendered
-      requestAnimationFrame(() => {
-        fitView({
-          includeHiddenNodes: false,
-        });
-      });
-    }
-  }, [nodesLoaded, fitView]);
+  const hasInitialNodesLoaded = useRef(false);
 
-  // Set nodes and mark them as loaded
+  // Call fitView when the map node has loaded
   useEffect(() => {
-    if (nodes.length > 0) {
-      setNodesLoaded(true);
+    if (!hasInitialNodesLoaded.current) {
+      const observer = new MutationObserver(() => {
+        const mapNode = document.querySelector('[data-id="map"]');
+        if (mapNode) {
+          fitView();
+          hasInitialNodesLoaded.current = true;
+          observer.disconnect(); // Stop observing once the node is found
+        }
+      });
+
+      observer.observe(document.body, { childList: true, subtree: true });
+
+      return () => observer.disconnect(); // Cleanup observer on unmount
     }
-  }, [nodes]);
+  }, [nodes, fitView]);
 
   return (
     <ActiveNodeContext.Provider value={{ activeNodeId, setActiveNodeId }}>
@@ -362,6 +362,7 @@ function Flow({
         </h1>
         <ReactFlow
         nodes={nodes}
+        minZoom={0.1}
         onNodesChange={onNodesChange}
         zoomOnScroll={false}
         panOnScroll={false}
@@ -369,17 +370,13 @@ function Flow({
         onDragOver={onDragOver}
         onInit={setRfInstance}
         nodeTypes={nodeTypes}
-        minZoom={0.1}
         nodesDraggable={isEditable}
         elementsSelectable={isEditable}
         className="touch-none"
       >
-        <Controls
-          position="bottom-right"
-          fitViewOptions={{ minZoom: 0.05 }}
-          showInteractive={false}
-        />
+        <Controls position="bottom-right" showInteractive={false} />
 
+        {/* Hide legend on view only mode */}
         {isEditable && <Legend />}
         {isEditable && (
           <StateButtons
