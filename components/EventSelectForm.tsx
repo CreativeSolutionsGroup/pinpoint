@@ -119,120 +119,90 @@ export default function EventSelectForm({
   return (
     <div className="m-8 flex flex-col">
       <FormControl required fullWidth>
-      <InputLabel id="selectEvent">Event</InputLabel>
-      <Select
-        value={eventId}
-        defaultValue=""
-        labelId="selectEvent"
-        label="Event"
-        name="eventSelected"
-        onChange={handleChange}
-        sx={{ width: "100%" }}
-        renderValue={(selected) => {
-        const event = dropdownEvents.find((e) => e.id === selected);
-        return event ? (
-          <Typography fontSize={15}>{event.name}</Typography>
-        ) : null;
-        }}
-      >
-        {dropdownEvents
-        .map((event) => (
-          <MenuItem key={event.id} value={event.id}>
-          <div className="flex flex-row items-center justify-between w-full">
-            <Typography fontSize={15}>{event.name}</Typography>
-            {canEdit && (
-            <Button
-              color="warning"
-              size="small"
-              className="ml-2"
-              onClick={() => {
-              setDeleteDialogOpen(true);
-              setEntityToDelete({ entity: event, type: "event" });
-              }}
-            >
-              <RemoveIcon />
-            </Button>
-            )}
-          </div>
-          </MenuItem>
-        ))
-        .reverse()}
-        {canEdit && (
-        <MenuItem
-          key={1}
-          value={"newEvent"}
-          onClick={() => setInsertDialogOpen(true)}
-          sx={{
-          backgroundColor: "#fafafa",
-          "&:hover": {
-            backgroundColor: "rgba(4, 135, 217, 0.3)",
-          },
-          "&.Mui-selected": {
-            backgroundColor: "#fafafa",
-          },
-          "&.Mui-selected:hover": {
-            backgroundColor: "rgba(4, 135, 217, 0.3)",
-          },
+        <InputLabel id="selectEvent">Event</InputLabel>
+        <Select
+          value={eventId}
+          defaultValue=""
+          labelId="selectEvent"
+          label="Event"
+          name="eventSelected"
+          onChange={handleChange}
+          sx={{ width: "100%" }}
+          renderValue={(selected) => {
+            const event = dropdownEvents.find((e) => e.id === selected);
+            return event ? (
+              <Typography fontSize={15}>{event.name}</Typography>
+            ) : null;
           }}
         >
-          <div className="flex flex-row items-center justify-between w-full">
-          <Typography fontSize={15} fontWeight="bold">
-            Add Event
-          </Typography>
-          <Button
-            size="small"
-            className="ml-2"
-            sx={{ color: muiTheme.palette.lightblue.main }}
-          >
-            <AddIcon />
-          </Button>
-          </div>
-        </MenuItem>
-        )}
-      </Select>
+          {dropdownEvents
+            .map((event) => (
+              <MenuItem key={event.id} value={event.id}>
+                <div className="flex flex-row items-center justify-between w-full">
+                  <Typography fontSize={15}>{event.name}</Typography>
+                  {canEdit && (
+                    <Button
+                      color="warning"
+                      size="small"
+                      className="ml-2"
+                      onClick={() => {
+                        setDeleteDialogOpen(true);
+                        setEntityToDelete({ entity: event, type: "event" });
+                      }}
+                    >
+                      <RemoveIcon />
+                    </Button>
+                  )}
+                </div>
+              </MenuItem>
+            ))
+            .reverse()}
+          {canEdit && (
+            <MenuItem
+              key={1}
+              value={"newEvent"}
+              onClick={() => setInsertDialogOpen(true)}
+              sx={{
+                backgroundColor: "#fafafa",
+                "&:hover": {
+                  backgroundColor: "rgba(4, 135, 217, 0.3)",
+                },
+                "&.Mui-selected": {
+                  backgroundColor: "#fafafa",
+                },
+                "&.Mui-selected:hover": {
+                  backgroundColor: "rgba(4, 135, 217, 0.3)",
+                },
+              }}
+            >
+              <div className="flex flex-row items-center justify-between w-full">
+                <Typography fontSize={15} fontWeight="bold">
+                  Add Event
+                </Typography>
+                <Button
+                  size="small"
+                  className="ml-2"
+                  sx={{ color: muiTheme.palette.lightblue.main }}
+                >
+                  <AddIcon />
+                </Button>
+              </div>
+            </MenuItem>
+          )}
+        </Select>
       </FormControl>
 
       {eventSelected && (
-      <div className="mt-4">
-        <Label htmlFor="eventLocations" className="font-semibold px-2">
-        {dropdownEvents.find((event) => event.id === eventId)?.name ||
-          "Event"}{" "}
-        Locations
-        </Label>
-        <div
-        id="eventLocations"
-        className="space-y-2 rounded-md border-gray-200 border-2 p-2 pt-0 transition-all duration-300 max-h-[45vh] overflow-y-auto"
-        >
-        {selectedEventLocations.map((location) => (
+        <div className="mt-4">
+          <Label htmlFor="eventLocations" className="font-semibold px-2">
+            {dropdownEvents.find((event) => event.id === eventId)?.name ||
+              "Event"}{" "}
+            Locations
+          </Label>
           <div
-          key={location.id}
-          className="flex flex-row items-center justify-between w-full hover:bg-gray-100 p-2 rounded-md transition-all duration-300 cursor-pointer"
-          onClick={(e) => {
-            // Prevent the click event from triggering when clicking the trash button
-            if ((e.target as HTMLElement).closest(".trash-button"))
-            return;
-            router.push(`/event/edit/${eventId}/${location.id}`);
-          }}
+            id="eventLocations"
+            className="space-y-2 rounded-md border-gray-200 border-2 p-2 pt-0 transition-all duration-300 max-h-[45vh] overflow-y-auto"
           >
-          <div className="flex-1 text-sm text-gray-600 h-full flex items-stretch">
-            {location.name}{" "}
-          </div>
-          {canEdit && (
-            <Button
-            color="warning"
-            size="small"
-            className="ml-2 trash-button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setDeleteDialogOpen(true);
-              setEntityToDelete({ entity: location, type: "location" });
-            }}
-            >
-            <Trash className="h-4 w-4" />
-            </Button>
-          )}
-          </div>
-            ))}
             <div
               className="flex items-center justify-center sticky top-0 bg-white z-10 mt-1"
               onClick={() => {
@@ -244,6 +214,36 @@ export default function EventSelectForm({
                 Add Location
               </div>
             </div>
+            {selectedEventLocations.map((location) => (
+              <div
+                key={location.id}
+                className="flex flex-row items-center justify-between w-full hover:bg-gray-100 p-2 rounded-md transition-all duration-300 cursor-pointer"
+                onClick={(e) => {
+                  // Prevent the click event from triggering when clicking the trash button
+                  if ((e.target as HTMLElement).closest(".trash-button"))
+                    return;
+                  router.push(`/event/edit/${eventId}/${location.id}`);
+                }}
+              >
+                <div className="flex-1 text-sm text-gray-600 h-full flex items-stretch">
+                  {location.name}{" "}
+                </div>
+                {canEdit && (
+                  <Button
+                    color="warning"
+                    size="small"
+                    className="flex items-center justify-center trash-button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDeleteDialogOpen(true);
+                      setEntityToDelete({ entity: location, type: "location" });
+                    }}
+                  >
+                    <Trash className="h-5 w-5" />
+                  </Button>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -255,11 +255,9 @@ export default function EventSelectForm({
             <AlertDialogDescription>
               {entityToDelete?.type === "event"
                 ? `Are you sure you want to delete "${entityToDelete.entity.name}"?`
-                : `Are you sure you want to delete "${
-                    entityToDelete?.entity.name
-                  }" from "${
-                    dropdownEvents.find((event) => event.id === eventId)?.name
-                  }"?`}
+                : `Are you sure you want to delete "${entityToDelete?.entity.name
+                }" from "${dropdownEvents.find((event) => event.id === eventId)?.name
+                }"?`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

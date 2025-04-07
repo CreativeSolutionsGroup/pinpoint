@@ -323,16 +323,23 @@ function Flow({
     [screenToFlowPosition, setNodes, isEditable]
   );
 
-  // Detect when the big map node is loaded
+  const hasInitialNodesLoaded = useRef(false);
+
+  // Call fitView when the map node has loaded
   useEffect(() => {
-    const mapNode = nodes.find((node) => node.id === "map");
-    if (mapNode) {
-      // Use requestAnimationFrame to ensure the map node is rendered
-      requestAnimationFrame(() => {
-        fitView({
-          includeHiddenNodes: false,
-        });
+    if (!hasInitialNodesLoaded.current) {
+      const observer = new MutationObserver(() => {
+        const mapNode = document.querySelector('[data-id="map"]');
+        if (mapNode) {
+          fitView();
+          hasInitialNodesLoaded.current = true;
+          observer.disconnect(); // Stop observing once the node is found
+        }
       });
+
+      observer.observe(document.body, { childList: true, subtree: true });
+
+      return () => observer.disconnect(); // Cleanup observer on unmount
     }
   }, [nodes, fitView]);
 
@@ -355,7 +362,7 @@ function Flow({
         elementsSelectable={isEditable}
         className="touch-none"
       >
-        <Controls position="bottom-right" showInteractive={false} fitViewOptions={{ minZoom: 0.05 }}/>
+        <Controls position="bottom-right" showInteractive={false} />
 
         {/* Hide legend on view only mode */}
         {isEditable && <Legend />}
