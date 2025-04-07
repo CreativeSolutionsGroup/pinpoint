@@ -79,6 +79,7 @@ export default function EventSelectForm({
     setInsertDialogOpen(false);
     setDropdownEvents([...dropdownEvents, event]);
     setEventId(event.id);
+    setSelectedEventLocations([]);
   }
 
   function deleteLocation(id: string, eventId: string) {
@@ -229,18 +230,13 @@ export default function EventSelectForm({
                   {location.name}{" "}
                 </div>
                 {canEdit && (
-                  <Button
-                    color="warning"
-                    size="small"
-                    className="flex items-center justify-center trash-button"
+                  <Trash
+                    className="h-4 w-4 text-red-500 cursor-pointer hover:text-red-600 hover:bg-red-100 transition-all duration-300 rounded-md"
                     onClick={(e) => {
                       e.stopPropagation();
                       setDeleteDialogOpen(true);
                       setEntityToDelete({ entity: location, type: "location" });
-                    }}
-                  >
-                    <Trash className="h-5 w-5" />
-                  </Button>
+                    }} />
                 )}
               </div>
             ))}
