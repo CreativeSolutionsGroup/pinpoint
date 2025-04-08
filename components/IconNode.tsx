@@ -285,9 +285,21 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
-                  <IconButton onClick={handleDelete} sx={{ color: "red" }}>
-                    <Trash2 />
-                  </IconButton>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <IconButton
+                          onClick={handleDelete}
+                          sx={{ color: "red" }}
+                        >
+                          <Trash2 />
+                        </IconButton>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <Paper className="p-1">Delete Node</Paper>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </Box>
               </Box>
             )}
