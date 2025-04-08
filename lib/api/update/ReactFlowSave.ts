@@ -6,7 +6,8 @@ import * as Ably from "ably";
 export default async function SaveState(
   eventId: string,
   locationId: string,
-  state: string
+  state: string,
+  clientId: string,
 ) {
   await prisma.eventToLocation.update({
     where: {
@@ -28,5 +29,6 @@ export default async function SaveState(
   await channel.publish(`subscribe`, {
     eventId,
     locationId,
+    senderClientId: clientId,
   });
 }
