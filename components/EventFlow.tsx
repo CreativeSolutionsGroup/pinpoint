@@ -60,6 +60,23 @@ function Flow({
   // Refs
   const timeoutId = useRef<NodeJS.Timeout>();
 
+  useChannel("event-updates", "subscribe", (message) => {
+    const { eventId, locationId } = message.data;
+
+    if (eventId !== event.id || locationId !== eventLocation?.locationId) {
+      return;
+    }
+
+    GetEventLocationInfo(eventId, locationId).then((eventLocationInfo) => {
+      if (!eventLocationInfo?.state) return;
+
+      const state = JSON.parse(eventLocationInfo.state);
+
+      setNodes(state.nodes);
+    });
+  });
+
+
   // State
   const [nodesLoaded, setNodesLoaded] = useState(false);
   const eventLocation = event.locations.find((l) => l.locationId === location);
@@ -410,6 +427,26 @@ function Flow({
     [screenToFlowPosition, setNodes, isEditable]
   );
 
+  const hasInitialNodesLoaded = useRef(false);
+
+  // Call fitView when the map node has loaded
+  useEffect(() => {
+    if (!hasInitialNodesLoaded.current) {
+      const observer = new MutationObserver(() => {
+        const mapNode = document.querySelector('[data-id="map"]');
+        if (mapNode) {
+          fitView();
+          hasInitialNodesLoaded.current = true;
+          observer.disconnect(); // Stop observing once the node is found
+        }
+      });
+
+      observer.observe(document.body, { childList: true, subtree: true });
+
+      return () => observer.disconnect(); // Cleanup observer on unmount
+    }
+  }, [nodes, fitView]);
+
   return (
     <ActiveNodeContext.Provider value={{ activeNodeId, setActiveNodeId }}>
       <div style={{ width: "100vw", height: "100vh" }}>
@@ -417,35 +454,31 @@ function Flow({
           {event.name}
         </h1>
         <ReactFlow
-          nodes={nodes}
-          onNodesChange={onNodesChange}
-          zoomOnScroll={false}
-          panOnScroll={false}
-          onDrop={onDrop}
-          onDragOver={onDragOver}
-          onInit={setRfInstance}
-          nodeTypes={nodeTypes}
-          minZoom={0.1}
-          nodesDraggable={isEditable}
-          elementsSelectable={isEditable}
-          className="touch-none"
-        >
-          <Controls
-            position="bottom-right"
-            fitViewOptions={{ minZoom: 0.05 }}
-            showInteractive={false}
+        nodes={nodes}
+        minZoom={0.1}
+        onNodesChange={onNodesChange}
+        zoomOnScroll={false}
+        panOnScroll={false}
+        onDrop={onDrop}
+        onDragOver={onDragOver}
+        onInit={setRfInstance}
+        nodeTypes={nodeTypes}
+        nodesDraggable={isEditable}
+        elementsSelectable={isEditable}
+        className="touch-none"
+      >
+        <Controls position="bottom-right" showInteractive={false} />
+
+        {/* Hide legend on view only mode */}
+        {isEditable && <Legend />}
+        {isEditable && (
+          <StateButtons
+            undo={onUndo}
+            redo={onRedo}
+            event={event}
+            eventLocations={eventLocations}
           />
-
-          {isEditable && <Legend />}
-
-          {isEditable && (
-            <StateButtons
-              undo={onUndo}
-              redo={onRedo}
-              event={event}
-              eventLocations={eventLocations}
-            />
-          )}
+        )}
 
           <EventMapSelect eventId={event.id} locations={eventLocations} />
         </ReactFlow>
