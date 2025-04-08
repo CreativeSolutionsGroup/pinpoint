@@ -4,8 +4,8 @@ import UndoIcon from "@mui/icons-material/Undo";
 import RedoIcon from "@mui/icons-material/Redo";
 import SaveIcon from "@mui/icons-material/Save";
 import { Panel } from "@xyflow/react";
-import { Card } from "./ui/card";
-import EventSettings from "./EventSettings";
+import { Card } from "@/components/ui/card";
+import EventSettings from "@/components/EventSettings";
 import { Event, Location } from "@prisma/client";
 
 export default function StateButtons(props: {

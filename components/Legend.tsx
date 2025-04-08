@@ -17,8 +17,8 @@ import {
   Tent,
   Trash2,
   Recycle,
-  Cone,
-  Frame,
+  TrafficCone,
+  Signpost,
   Coffee,
   Truck,
   Table,
@@ -28,6 +28,8 @@ import {
   Fence,
   Armchair,
   LucideIcon,
+  TreePine,
+  Gift,
 } from "lucide-react";
 
 const IconItem = ({
@@ -61,14 +63,22 @@ const IconItem = ({
 
 const categories = [
   {
-    title: "Games",
-    value: "games",
+    title: "Outdoor Equipment",
+    value: "outdoor-equipment",
     items: [
-      { icon: Gamepad2, label: "Cornhole" },
-      { icon: Gamepad2, label: "Spikeball" },
-      { icon: Gamepad2, label: "Ping Pong" },
-      { icon: Gamepad2, label: "9-Square" },
-      { icon: Gamepad2, label: "Can-Jam" },
+      { icon: TrafficCone, label: "Cone" },
+      { icon: Signpost, label: "A-Frame" },
+    ],
+  },
+  {
+    title: "Indoor Equipment",
+    value: "indoor-equipment",
+    items: [
+      { icon: Trash2, label: "Trash Cans" },
+      { icon: Recycle, label: "Recycling" },
+      { icon: Fence, label: "Stanchions" },
+      { icon: Armchair, label: "Chairs" },
+      { icon: Theater, label: "Stage Items" },
     ],
   },
   {
@@ -82,27 +92,35 @@ const categories = [
     ],
   },
   {
-    title: "Site Furnishing",
-    value: "site-furnishing",
+    title: "Getting Started",
+    value: "getting-started",
     items: [
-      //Chairs, Tents, Trash Cans, Recycling Bins, Stanchions, Cones, Stage
-      //Pieces, A-Frames, Flags (yellow, navy, white, light blue)
-      //{ icon: ChairOffice, label: "Chairs" }, // this icon didn't exist
       { icon: Tent, label: "Tents" },
-      { icon: Trash2, label: "Trash Cans" },
-      { icon: Recycle, label: "Recycling" },
-      { icon: Fence, label: "Stanchions" },
-      { icon: Cone, label: "Cones" },
-      //{ icon: Stage, label: "Stage Pieces" }, // same here
-      { icon: Frame, label: "A-Frames" },
-      { icon: Theater, label: "Stage Items" },
       { icon: Flag, label: "Flags" },
-      { icon: Armchair, label: "Chairs" },
     ],
   },
   {
-    title: "Vending",
-    value: "vending",
+    title: "Campus XMas",
+    value: "campus-xmas",
+    items: [
+      { icon: TreePine, label: "Christmas Tree" },
+      { icon: Gift, label: "Present" },
+    ],
+  },
+  {
+    title: "Yard Games",
+    value: "yard-games",
+    items: [
+      { icon: Gamepad2, label: "Cornhole" },
+      { icon: Gamepad2, label: "Spikeball" },
+      { icon: Gamepad2, label: "Ping Pong" },
+      { icon: Gamepad2, label: "9-Square" },
+      { icon: Gamepad2, label: "Can-Jam" },
+    ],
+  },
+  {
+    title: "Rental Equipment",
+    value: "rental-equipment",
     items: [
       //Rinnova Coffee Cart, Food Trucks, Tables (6ft, Bistro, Round)
       { icon: Coffee, label: "Coffee Cart" },
@@ -114,7 +132,11 @@ const categories = [
   },
 ];
 
-export default function Legend() {
+export default function Legend({
+  isGettingStarted,
+}: {
+  isGettingStarted: boolean;
+}) {
   const isMobile = /Mobi|Android/i.test(navigator?.userAgent);
 
   // complicated (but only) way of effectively forcing the panel open
@@ -156,18 +178,22 @@ export default function Legend() {
     >
       <h2 className="text-lg font-bold mb-4">ICONS</h2>
       <Accordion type="single" collapsible className="w-full">
-        {categories.map((category) => (
-          <AccordionItem key={category.value} value={category.value}>
-            <AccordionTrigger>{category.title}</AccordionTrigger>
-            <AccordionContent>
-              <div className="grid grid-cols-3 gap-2">
-                {category.items.map((item, index) => (
-                  <IconItem key={index} {...item} />
-                ))}
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        ))}
+        {categories.map(
+          (category) =>
+            (category.value != "getting-started" ||
+              (category.value == "getting-started" && isGettingStarted)) && (
+              <AccordionItem key={category.value} value={category.value}>
+                <AccordionTrigger>{category.title}</AccordionTrigger>
+                <AccordionContent>
+                  <div className="grid grid-cols-3 gap-2">
+                    {category.items.map((item, index) => (
+                      <IconItem key={index} {...item} />
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            )
+        )}
       </Accordion>
     </Panel>
   );
