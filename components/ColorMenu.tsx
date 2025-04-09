@@ -1,6 +1,6 @@
 "use client";
 import { Paper } from "@mui/material";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 
 export default function ColorMenu(props: {
   fixedPos?: boolean;
@@ -27,31 +27,26 @@ export default function ColorMenu(props: {
     "#A23E48",
   ];
 
-  const hexValues = [
-    "#A23E48",
-    "#FF0000",
-    "#FF7F00",
-    "#FF8C42",
-    "#FFFF00",
-    "#ffffff",
-    "#00FF00",
-    "#add8e6",
-    "#6C8EAD",
-    "#0000FF",
-    "#4B0082",
-    "#800080",
-    "#9370db",
-    "#9400D3",
-    "#000000",
-  ];
-
-  // Initialize slider position based on current color when component mounts
-  useEffect(() => {
-    if (gradientRef.current) {
-      const position = findPositionForColor(props.currentColor);
-      setSliderPosition(position);
-    }
-  }, [props.currentColor]);
+  const hexValues = useMemo(
+    () => [
+      "#A23E48",
+      "#FF0000",
+      "#FF7F00",
+      "#FF8C42",
+      "#FFFF00",
+      "#ffffff",
+      "#00FF00",
+      "#add8e6",
+      "#6C8EAD",
+      "#0000FF",
+      "#4B0082",
+      "#800080",
+      "#9370db",
+      "#9400D3",
+      "#000000",
+    ],
+    []
+  );
 
   function onColorClick(color: string) {
     props.changeColor(color);
@@ -79,53 +74,64 @@ export default function ColorMenu(props: {
   };
 
   // Find approximate position for a given color
-  const findPositionForColor = (color: string): number => {
-    if (!gradientRef.current) return 0;
+  const findPositionForColor = useCallback(
+    (color: string): number => {
+      if (!gradientRef.current) return 0;
 
-    const width = gradientRef.current.clientWidth;
-    const targetRgb = hexToRgb(color);
+      const width = gradientRef.current.clientWidth;
+      const targetRgb = hexToRgb(color);
 
-    if (!targetRgb) return 0;
+      if (!targetRgb) return 0;
 
-    // Simple algorithm to find closest matching position
-    // This is approximate and could be improved for better accuracy
-    let closestDistance = Infinity;
-    let bestPosition = 0;
+      // Simple algorithm to find closest matching position
+      // This is approximate and could be improved for better accuracy
+      let closestDistance = Infinity;
+      let bestPosition = 0;
 
-    // Check positions across the gradient
-    const steps = 100;
-    for (let i = 0; i <= steps; i++) {
-      const position = (i / steps) * width;
-      const gradientPosition = (position / width) * (hexValues.length - 1);
-      const index = Math.floor(gradientPosition);
-      const remainder = gradientPosition - index;
+      // Check positions across the gradient
+      const steps = 100;
+      for (let i = 0; i <= steps; i++) {
+        const position = (i / steps) * width;
+        const gradientPosition = (position / width) * (hexValues.length - 1);
+        const index = Math.floor(gradientPosition);
+        const remainder = gradientPosition - index;
 
-      if (index < hexValues.length - 1) {
-        const color1 = hexToRgb(hexValues[index]);
-        const color2 = hexToRgb(hexValues[index + 1]);
+        if (index < hexValues.length - 1) {
+          const color1 = hexToRgb(hexValues[index]);
+          const color2 = hexToRgb(hexValues[index + 1]);
 
-        if (color1 && color2) {
-          const r = Math.round(color1.r + remainder * (color2.r - color1.r));
-          const g = Math.round(color1.g + remainder * (color2.g - color1.g));
-          const b = Math.round(color1.b + remainder * (color2.b - color1.b));
+          if (color1 && color2) {
+            const r = Math.round(color1.r + remainder * (color2.r - color1.r));
+            const g = Math.round(color1.g + remainder * (color2.g - color1.g));
+            const b = Math.round(color1.b + remainder * (color2.b - color1.b));
 
-          // Calculate color distance (euclidean in RGB space)
-          const distance = Math.sqrt(
-            Math.pow(r - targetRgb.r, 2) +
-              Math.pow(g - targetRgb.g, 2) +
-              Math.pow(b - targetRgb.b, 2)
-          );
+            // Calculate color distance (euclidean in RGB space)
+            const distance = Math.sqrt(
+              Math.pow(r - targetRgb.r, 2) +
+                Math.pow(g - targetRgb.g, 2) +
+                Math.pow(b - targetRgb.b, 2)
+            );
 
-          if (distance < closestDistance) {
-            closestDistance = distance;
-            bestPosition = position;
+            if (distance < closestDistance) {
+              closestDistance = distance;
+              bestPosition = position;
+            }
           }
         }
       }
-    }
 
-    return bestPosition;
-  };
+      return bestPosition;
+    },
+    [hexValues]
+  );
+
+  // Initialize slider position based on current color when component mounts
+  useEffect(() => {
+    if (gradientRef.current) {
+      const position = findPositionForColor(props.currentColor);
+      setSliderPosition(position);
+    }
+  }, [findPositionForColor, props.currentColor]);
 
   // Process color selection based on position in the gradient
   const processColorAtPosition = (position: number) => {
