@@ -23,6 +23,7 @@ export default async function EventSelect() {
     select: {
       id: true,
       name: true,
+      isGS: true,
       locations: {
         select: {
           id: true,

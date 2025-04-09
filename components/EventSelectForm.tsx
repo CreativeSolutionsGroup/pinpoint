@@ -37,15 +37,12 @@ import { GetEvent } from "@/lib/api/read/GetEvent";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import { GetAllLocations } from "@/lib/api/read/GetAllLocations";
+import { EventWithLocationIds } from "@/types/Event";
 
 export default function EventSelectForm({
   events,
 }: {
-  events: {
-    id: string;
-    name: string;
-    locations: { id: string }[];
-  }[];
+  events: Array<EventWithLocationIds>;
 }) {
   const router = useRouter();
   const [eventSelected, setEventSelected] = useState(false);
@@ -106,7 +103,9 @@ export default function EventSelectForm({
       const allLocations = await GetAllLocations();
       const updatedLocations = allLocations
         ?.filter((location) =>
-          info?.locations.some((eventLocation) => eventLocation.locationId === location.id)
+          info?.locations.some(
+            (eventLocation) => eventLocation.locationId === location.id
+          )
         )
         .sort((a, b) => a.name.localeCompare(b.name));
 
@@ -236,7 +235,8 @@ export default function EventSelectForm({
                       e.stopPropagation();
                       setDeleteDialogOpen(true);
                       setEntityToDelete({ entity: location, type: "location" });
-                    }} />
+                    }}
+                  />
                 )}
               </div>
             ))}
@@ -251,9 +251,11 @@ export default function EventSelectForm({
             <AlertDialogDescription>
               {entityToDelete?.type === "event"
                 ? `Are you sure you want to delete "${entityToDelete.entity.name}"?`
-                : `Are you sure you want to delete "${entityToDelete?.entity.name
-                }" from "${dropdownEvents.find((event) => event.id === eventId)?.name
-                }"?`}
+                : `Are you sure you want to delete "${
+                    entityToDelete?.entity.name
+                  }" from "${
+                    dropdownEvents.find((event) => event.id === eventId)?.name
+                  }"?`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
