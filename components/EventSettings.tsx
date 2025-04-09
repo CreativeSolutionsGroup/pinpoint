@@ -1,23 +1,42 @@
 "use client";
 
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Event, type Location } from "@prisma/client";
 import { Plus, Settings, Trash } from "lucide-react";
-import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "./ui/dialog";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
 
-import { SyncLocations, UpdateName } from "@/lib/api/update/Event";
+import { Switch } from "@/components/ui/switch";
+
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+} from "@/components/ui/form";
+import {
+  SyncLocations,
+  UpdateGettingStarted,
+  UpdateName,
+} from "@/lib/api/update/Event";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import LocationAdder from "./LocationCreator";
-import { Form, FormField } from "./ui/form";
-import { useParams, useRouter } from "next/navigation";
+import LocationAdder from "@/components/LocationCreator";
 
 const formSchema = z.object({
   eventName: z.string().min(1, "Event name is required"),
   eventLocations: z.array(z.string()).optional(),
+  isGettingStarted: z.boolean(),
 });
 
 export default function EventSettings({
@@ -43,12 +62,14 @@ export default function EventSettings({
     defaultValues: {
       eventName: event.name,
       eventLocations: locations.map((location) => location.id),
+      isGettingStarted: false,
     },
   });
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
     await SyncLocations(event, data.eventLocations ?? []);
     await UpdateName(event.id, data.eventName);
+    await UpdateGettingStarted(event.id, data.isGettingStarted);
     setIsOpen(false);
     setLocationAdderOpen(false);
     if (!data.eventLocations?.find((v) => v === locationId)) {
@@ -61,10 +82,11 @@ export default function EventSettings({
       "eventLocations",
       currentLocations.map((location) => location.id)
     );
+    form.setValue("isGettingStarted", event.isGS);
     setCurrentLocations(
       currentLocations.sort((a, b) => a.name.localeCompare(b.name))
     );
-  }, [currentLocations, form]);
+  }, [currentLocations, form, event.isGS]);
 
   return (
     <>
@@ -78,6 +100,7 @@ export default function EventSettings({
           </DialogTitle>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              {/* Event Name Input */}
               <FormField
                 control={form.control}
                 name="eventName"
@@ -94,6 +117,7 @@ export default function EventSettings({
                   </div>
                 )}
               />
+              {/* Event Location select */}
               <FormField
                 control={form.control}
                 name="eventLocations"
@@ -139,6 +163,29 @@ export default function EventSettings({
                       ))}
                     </div>
                   </div>
+                )}
+              />
+              {/* Getting Started weekend switch */}
+              <FormField
+                control={form.control}
+                name="isGettingStarted"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                    <div className="space-y-0.5">
+                      <FormLabel className="font-semibold">
+                        Getting Started
+                      </FormLabel>
+                      <FormDescription>
+                        Is this event related to getting started weekend?
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
                 )}
               />
               <div className="flex space-x-2">

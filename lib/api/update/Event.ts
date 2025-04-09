@@ -50,3 +50,15 @@ export async function UpdateName(eventId: string, name: string) {
     },
   });
 }
+
+export async function UpdateGettingStarted(eventId: string, isGS: boolean) {
+  revalidatePath("event/");
+  return await prisma.event.update({
+    where: {
+      id: eventId,
+    },
+    data: {
+      isGS,
+    },
+  });
+}

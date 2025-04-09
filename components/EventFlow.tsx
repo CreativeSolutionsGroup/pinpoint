@@ -470,7 +470,7 @@ function Flow({
         <Controls position="bottom-right" showInteractive={false} />
 
         {/* Hide legend on view only mode */}
-        {isEditable && <Legend />}
+        {isEditable && <Legend isGettingStarted={event.isGS}/>}
         {isEditable && (
           <StateButtons
             undo={onUndo}
