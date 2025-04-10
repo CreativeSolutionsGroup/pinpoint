@@ -6,6 +6,19 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+.rotatable-node__handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: transparent;
+  left: 50%;
+  top: -30px;
+  border-radius: 100%;
+  transform: translate(-50%, -50%);
+  cursor: alias;
+}
+
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;

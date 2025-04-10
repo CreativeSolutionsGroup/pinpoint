@@ -19,9 +19,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@radix-ui/react-tooltip";
-import { NodeProps, useReactFlow } from "@xyflow/react";
+import { NodeProps, useReactFlow, useUpdateNodeInternals } from "@xyflow/react";
+import { drag } from 'd3-drag';
+import { select } from 'd3-selection';
 import * as Icons from "lucide-react";
-import { Trash2 } from "lucide-react";
+import { RotateCw, Trash2 } from "lucide-react";
 import { useParams } from "next/navigation";
 import {
   createContext,
@@ -51,6 +53,10 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
 
   const timeoutId = useRef<NodeJS.Timeout>();
 
+  const updateNodeInternals = useUpdateNodeInternals();
+  const [rotation, setRotation] = useState(0);
+  const rotateControlRef = useRef<HTMLDivElement | null>(null);
+
   // Get the icon component from the Lucide icons
   const IconComponent = Icons[data.iconName as keyof typeof Icons.icons];
 
@@ -60,6 +66,24 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
       setActiveNodeId(id);
     }
   }, [isOpen, id, setActiveNodeId]);
+
+  useEffect(() => {
+    if (!rotateControlRef.current) {
+      return;
+    }
+
+    const selection = select(rotateControlRef.current as Element);
+    const dragHandler = drag().on('drag', (evt) => {
+      const dx = evt.x - 100;
+      const dy = evt.y - 100;
+      const rad = Math.atan2(dx, dy);
+      const deg = rad * (180 / Math.PI);
+      setRotation(180 - deg);
+      updateNodeInternals(id);
+    });
+
+    selection.call(dragHandler);
+  }, [id, updateNodeInternals]);
 
   const handleCopy = useCallback(() => {
     try {
@@ -208,17 +232,45 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
     <>
       <Popover onOpenChange={setIsOpen}>
         <PopoverTrigger
-          style={{ borderColor: data.color }}
+          style={{ 
+            borderColor: data.color,
+           }}
           className="popover-trigger flex flex-col items-center justify-center cursor-move"
         >
-          <IconComponent
+          <div
             style={{
-              color: data.color,
-              width: `${data.size ?? 3}rem`,
-              height: `${data.size ?? 3}rem`,
+              transform: `rotate(${Math.round(rotation / 45) * 45}deg)`,
             }}
-            className="text-gray-700"
-          />
+              >
+              <div 
+                ref={rotateControlRef} 
+                className={`nodrag rotatable-node__handle`}
+                style={{
+                  position: 'absolute',
+                  top: '-30px',
+                  width: '20px',
+                  height: '20px',
+                  backgroundColor: 'black',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'move',
+                  zIndex: 10,
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                  borderRadius: '50%',
+                }}
+              >
+                <RotateCw size={12} color="white" />
+              </div>
+            <IconComponent
+              style={{
+                color: data.color,
+                width: `${data.size ?? 3}rem`,
+                height: `${data.size ?? 3}rem`,
+              }}
+              className="text-gray-700"
+            />
+          </div>
           <Typography
             style={{
               color: data.color,
