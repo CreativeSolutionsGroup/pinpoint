@@ -76,7 +76,6 @@ function Flow({
     });
   });
 
-
   // State
   const [nodesLoaded, setNodesLoaded] = useState(false);
   const eventLocation = event.locations.find((l) => l.locationId === location);
@@ -454,31 +453,31 @@ function Flow({
           {event.name}
         </h1>
         <ReactFlow
-        nodes={nodes}
-        minZoom={0.1}
-        onNodesChange={onNodesChange}
-        zoomOnScroll={false}
-        panOnScroll={false}
-        onDrop={onDrop}
-        onDragOver={onDragOver}
-        onInit={setRfInstance}
-        nodeTypes={nodeTypes}
-        nodesDraggable={isEditable}
-        elementsSelectable={isEditable}
-        className="touch-none"
-      >
-        <Controls position="bottom-right" showInteractive={false} />
+          nodes={nodes}
+          minZoom={0.1}
+          onNodesChange={onNodesChange}
+          zoomOnScroll={false}
+          panOnScroll={false}
+          onDrop={onDrop}
+          onDragOver={onDragOver}
+          onInit={setRfInstance}
+          nodeTypes={nodeTypes}
+          nodesDraggable={isEditable}
+          elementsSelectable={isEditable}
+          className="touch-none"
+        >
+          <Controls position="bottom-right" showInteractive={false} />
 
-        {/* Hide legend on view only mode */}
-        {isEditable && <Legend />}
-        {isEditable && (
-          <StateButtons
-            undo={onUndo}
-            redo={onRedo}
-            event={event}
-            eventLocations={eventLocations}
-          />
-        )}
+          {/* Hide legend on view only mode */}
+          {isEditable && <Legend isGettingStarted={event.isGS} />}
+          {isEditable && (
+            <StateButtons
+              undo={onUndo}
+              redo={onRedo}
+              event={event}
+              eventLocations={eventLocations}
+            />
+          )}
 
           <EventMapSelect eventId={event.id} locations={eventLocations} />
         </ReactFlow>
