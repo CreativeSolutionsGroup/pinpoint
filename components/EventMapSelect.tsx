@@ -42,6 +42,20 @@ export default function EventMapsSelect({
             <DialogHeader>
               <DialogTitle>Choose a Different Map</DialogTitle>
             </DialogHeader>
+            {locations.filter((v) => v.id === params.locationId?.[0]).map(
+              (location) => (
+                <fieldset
+                  key={location.id}
+                  className="border-4 border-blue-500 rounded-lg pl-1 pb-1 mb-2 text-sm text-center"
+                  >
+                  <legend className="text-xs text-left text-muted-foreground pr-1">
+                    You are here
+                  </legend>
+                  {location.name}
+                  </fieldset>
+              )
+            )
+            }
             {locations
               .filter((v) => v.id !== params.locationId?.[0])
               .map((location) => (
