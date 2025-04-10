@@ -169,7 +169,7 @@ export default function LocationAdder({
                   <SelectTrigger id="location-select" className="w-full">
                     <SelectValue placeholder="Select a location" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-[200px] overflow-y-auto">
                     {locations.length > 0 ? (
                       locations.map((location) => (
                         <SelectItem key={location.id} value={location.id}>
