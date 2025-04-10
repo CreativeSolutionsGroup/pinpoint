@@ -11,14 +11,8 @@ import { CustomNode } from "@/types/CustomNode";
 import ColorMenu from "@components/ColorMenu";
 import ContentPasteIcon from "@mui/icons-material/ContentPaste";
 import QueueIcon from "@mui/icons-material/Queue";
-import { Box, IconButton, Paper, Typography } from "@mui/material";
+import { Box, IconButton, Typography, Tooltip } from "@mui/material";
 import { createId } from "@paralleldrive/cuid2";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@radix-ui/react-tooltip";
 import { NodeProps, useReactFlow } from "@xyflow/react";
 import * as Icons from "lucide-react";
 import { Trash2 } from "lucide-react";
@@ -255,39 +249,27 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
                   currentSize={data.size ?? 2}
                 />
                 <Box>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <IconButton
-                          onClick={() => handleCopy()}
-                          sx={{ color: "black" }}
-                        >
-                          <ContentPasteIcon />
-                        </IconButton>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <Paper className="p-1">Copy Node</Paper>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <IconButton
-                          onClick={() => handleDup()}
-                          sx={{ color: "black" }}
-                        >
-                          <QueueIcon />
-                        </IconButton>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <Paper className="p-1">Duplicate Node</Paper>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  <IconButton onClick={handleDelete} sx={{ color: "red" }}>
-                    <Trash2 />
-                  </IconButton>
+                  <Tooltip title="Copy Node">
+                    <IconButton
+                      onClick={() => handleCopy()}
+                      sx={{ color: "black" }}
+                    >
+                      <ContentPasteIcon />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Duplicate Node">
+                    <IconButton
+                      onClick={() => handleDup()}
+                      sx={{ color: "black" }}
+                    >
+                      <QueueIcon />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Delete Node">
+                    <IconButton onClick={handleDelete} sx={{ color: "red" }}>
+                      <Trash2 />
+                    </IconButton>
+                  </Tooltip>
                 </Box>
               </Box>
             )}
