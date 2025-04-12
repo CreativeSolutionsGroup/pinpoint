@@ -45,6 +45,7 @@ export function CustomImageNode ({ data }: NodeProps<CustomNode>) {
         width: dimensions.width,
         height: dimensions.height,
         position: "relative",
+        border: "12px solid black",
       }}
     >
       <Image

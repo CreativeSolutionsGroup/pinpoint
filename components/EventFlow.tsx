@@ -12,6 +12,8 @@ import {
   applyNodeChanges,
   Edge,
   ReactFlowInstance,
+  BackgroundVariant,
+  Background,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { Event, EventToLocation, Location } from "@prisma/client";
@@ -466,6 +468,7 @@ function Flow({
           elementsSelectable={isEditable}
           className="touch-none"
         >
+          <Background color="#ccc" variant={BackgroundVariant.Lines} gap={64} size={16} />
           <Controls position="bottom-right" showInteractive={false} />
 
           {/* Hide legend on view only mode */}
