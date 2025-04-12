@@ -1,5 +1,6 @@
 "use client";
 
+import CustomIconAccordion from "./CustomIconNode"; 
 import React, { useEffect } from "react";
 import { Panel } from "@xyflow/react";
 import {
@@ -168,6 +169,7 @@ export default function Legend() {
             </AccordionContent>
           </AccordionItem>
         ))}
+        <CustomIconAccordion />
       </Accordion>
     </Panel>
   );
