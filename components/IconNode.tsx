@@ -23,7 +23,8 @@ import { NodeProps, useReactFlow, useUpdateNodeInternals } from "@xyflow/react";
 import { drag } from 'd3-drag';
 import { select } from 'd3-selection';
 import * as Icons from "lucide-react";
-import { RotateCw, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
+import NextPlanIcon from '@mui/icons-material/NextPlan';
 import { useParams } from "next/navigation";
 import {
   createContext,
@@ -45,7 +46,7 @@ export const ActiveNodeContext = createContext<{
 
 export function IconNode({ data, id }: NodeProps<CustomNode>) {
   const { deleteElements, setNodes, getNode } = useReactFlow();
-  const { setActiveNodeId } = useContext(ActiveNodeContext);
+  const { activeNodeId, setActiveNodeId } = useContext(ActiveNodeContext);
   const [isOpen, setIsOpen] = useState(false);
 
   const params = useParams<{ mode: string }>();
@@ -163,6 +164,7 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
 
   const handleResize = useCallback(
     (selectedSize: number) => {
+      console.log(selectedSize)
       setNodes((nds) =>
         nds.map((node) => {
           if (node.id === id) {
@@ -237,31 +239,32 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
            }}
           className="popover-trigger flex flex-col items-center justify-center cursor-move"
         >
+          {/*TODO: fix the top and right attributes to properly place the button on the node.*/}
+          {(activeNodeId === id || isOpen) && (
+            <IconButton 
+              onClick={(e) => {
+                e.stopPropagation();
+                setRotation(rotation + 45);
+              }}
+              style={{
+                position: 'relative',
+                top: '3rem',
+                right: `-${(data.size ?? 3) * 1.25}rem`,
+                backgroundColor: 'rgba(0, 0, 0, 1.0)',
+                width: '30px',
+                height: '30px',
+                zIndex: 10000,
+              }}
+              className="nodrag"
+            >
+              <NextPlanIcon sx={{ color: "white" }} />
+            </IconButton>
+          )}
           <div
             style={{
               transform: `rotate(${Math.round(rotation / 45) * 45}deg)`,
             }}
               >
-              <div 
-                ref={rotateControlRef} 
-                className={`nodrag rotatable-node__handle`}
-                style={{
-                  position: 'absolute',
-                  top: '-30px',
-                  width: '20px',
-                  height: '20px',
-                  backgroundColor: 'black',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'move',
-                  zIndex: 10,
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                  borderRadius: '50%',
-                }}
-              >
-                <RotateCw size={12} color="white" />
-              </div>
             <IconComponent
               style={{
                 color: data.color,
