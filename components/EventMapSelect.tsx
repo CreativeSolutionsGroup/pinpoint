@@ -7,12 +7,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@components/ui/button";
-import { Divider } from "@mui/material";
 import { Location } from "@prisma/client";
 import { Panel } from "@xyflow/react";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import LocationAdder from "./LocationCreator";
 import NavButtons from "./navButtons";
 
 interface EventMapsSelectProps {
@@ -27,7 +25,6 @@ export default function EventMapsSelect({
   const router = useRouter();
   const params = useParams();
 
-  const [isOpenLocationAdder, setIsOpenLocationAdder] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -42,20 +39,19 @@ export default function EventMapsSelect({
             <DialogHeader>
               <DialogTitle>Choose a Different Map</DialogTitle>
             </DialogHeader>
-            {locations.filter((v) => v.id === params.locationId?.[0]).map(
-              (location) => (
+            {locations
+              .filter((v) => v.id === params.locationId?.[0])
+              .map((location) => (
                 <fieldset
                   key={location.id}
-                  className="border-4 border-blue-500 rounded-lg pl-1 pb-1 mb-2 text-sm text-center"
-                  >
-                  <legend className="text-xs text-left text-muted-foreground pr-1">
-                    You are here
+                  className="border-2 border-black rounded pb-1.5 pt-0.25 text-sm text-center w-full"
+                >
+                  <legend className="text-xs text-left ml-1 px-1 text-blue-500">
+                    Current
                   </legend>
                   {location.name}
-                  </fieldset>
-              )
-            )
-            }
+                </fieldset>
+              ))}
             {locations
               .filter((v) => v.id !== params.locationId?.[0])
               .map((location) => (
@@ -71,27 +67,9 @@ export default function EventMapsSelect({
                   {location.name}
                 </Button>
               ))}
-            {locations.length > 1 && <Divider>OR</Divider>}
-            <button
-              onClick={() => {
-                setIsOpen(false);
-                setTimeout(() => setIsOpenLocationAdder(true), 300);
-              }}
-              className="w-full p-2 text-white bg-blue-500 rounded"
-            >
-              Add Location
-            </button>
           </DialogContent>
         </Dialog>
       </div>
-
-      <LocationAdder
-        eventId={eventId}
-        currentLocations={locations}
-        isOpen={isOpenLocationAdder}
-        onClose={() => setIsOpenLocationAdder(false)}
-        shouldUpdateDB
-      />
     </Panel>
   );
 }
