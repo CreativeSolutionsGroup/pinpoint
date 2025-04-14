@@ -1,12 +1,4 @@
 "use client";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select";
-import React, { useEffect, useState } from "react";
 import AddCircleIcon from "@mui/icons-material/AddCircle"; // Ensure you have this icon installed
 import {IconButton, TextField} from "@mui/material";
 import {
@@ -14,48 +6,32 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import {LucideIcon} from "lucide-react";
 import * as LucideIcons from "lucide-react";
-
+import {IconItem} from "@/components/Legend";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
-const IconItem = ({
-    icon: Icon,
-    label,
-    }: {
-        icon: LucideIcon;
-        label: string;
-    }) => {
-        const onDragStart = (event: React.DragEvent<HTMLDivElement>) => {
-        const data = {
-            type: "iconNode",
-            iconName: Icon.displayName, // Use the display name of the Lucide icon
-            label,
-        };
-        event.dataTransfer.setData("application/reactflow", JSON.stringify(data));
-        event.dataTransfer.effectAllowed = "move";
-        };
 
-        return (
-        <div
-            className="flex flex-col items-center justify-center p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-move"
-            draggable
-            onDragStart={onDragStart}
-        >
-            <Icon className="w-6 h-6 mb-1 text-gray-700" />
-            <span className="text-xs text-center text-gray-600">{label}</span>
-        </div>
-        );
-    };
+//stores custom icons the user chooses
+export const customIcons: Array<{ icon: LucideIcons.LucideIcon; label: string}> = [];
 
-function handleIconSelect() {}
+//temporary storage for filtered icons we want to render
+let filteredIcons: Array<{ icon: LucideIcons.LucideIcon; label: string }> = [];
+
+function handleIconSelect( ) {
+//clear the filtered icons
+
+//add the selected icon to custom icons
+
+}
 function handleSearchIcons(input: string) {
+  //empty the filtered list of icons
+  filteredIcons = [];
   for (const [key, Icon] of Object.entries(LucideIcons)) {
     if (key.toLowerCase().includes(input.toLowerCase())) {
-      console.log(key, Icon);
-      // return <IconItem icon={Icon} label={key} />;
+      filteredIcons.push({ icon: Icon as LucideIcons.LucideIcon, label: key });
     }
   }
+  console.log(filteredIcons);
 }
 
 export default function CustomIconAccordion(){
@@ -66,7 +42,7 @@ export default function CustomIconAccordion(){
                 {/* pool of "custom" icons we store in the database /}
               {/ <div className="grid grid-cols-3 gap-2">
                 {category.items.map((item, index) => (
-                  <IconItem key={index} {...item} />
+                  <IconItem key={index} icon={item[1]} label={item[0]} />
                 ))}
               </div> */}
                 <Dialog>
@@ -86,9 +62,15 @@ export default function CustomIconAccordion(){
                           onChange={(e) => handleSearchIcons(e.target.value)}/>
                         </div>
                         <div>
-                            {Object.entries(LucideIcons).map(([key, Icon]) => (
-                                <IconItem icon={Icon} key={key}/>
-                            ))}
+                          {filteredIcons.map((item, index) => (
+                            <IconItem 
+                              key={index} 
+                              icon={item.icon} 
+                              label={item.label} 
+                              //FIXME IconItem isn't clickable currently
+                              // onClick={() => handleIconSelect(item)} 
+                            />
+                          ))}
                         </div>
                     </DialogContent>
                 </Dialog>

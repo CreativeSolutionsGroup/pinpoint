@@ -54,7 +54,7 @@ const IconItem = ({
       draggable
       onDragStart={onDragStart}
     >
-      <Icon className="w-6 h-6 mb-1 text-gray-700" />
+      <Icon className="w-6 h-6 mb-1 text-gray-700"/>
       <span className="text-xs text-center text-gray-600">{label}</span>
     </div>
   );
@@ -174,3 +174,5 @@ export default function Legend() {
     </Panel>
   );
 }
+
+export {IconItem};
