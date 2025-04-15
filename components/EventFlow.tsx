@@ -468,7 +468,7 @@ function Flow({
           elementsSelectable={isEditable}
           className="touch-none"
         >
-          <Background color="#ccc" variant={BackgroundVariant.Lines} gap={64} size={16} />
+          <Background color="#ccc" variant={BackgroundVariant.Dots} gap={144} size={12} />
           <Controls position="bottom-right" showInteractive={false} />
 
           {/* Hide legend on view only mode */}
