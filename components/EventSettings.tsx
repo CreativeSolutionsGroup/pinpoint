@@ -37,6 +37,7 @@ const formSchema = z.object({
   eventName: z.string().min(1, "Event name is required"),
   eventLocations: z.array(z.string()).optional(),
   isGettingStarted: z.boolean(),
+  editMode: z.boolean(),
 });
 
 export default function EventSettings({
@@ -63,6 +64,7 @@ export default function EventSettings({
       eventName: event.name,
       eventLocations: locations.map((location) => location.id),
       isGettingStarted: false,
+      editMode: params.mode === "edit",
     },
   });
 
@@ -72,8 +74,19 @@ export default function EventSettings({
     await UpdateGettingStarted(event.id, data.isGettingStarted);
     setIsOpen(false);
     setLocationAdderOpen(false);
-    if (!data.eventLocations?.find((v) => v === locationId)) {
-      router.push(`/event/edit/${event.id}/${data.eventLocations?.[0]}`);
+
+    const mode = data.editMode ? "edit" : "view";
+    const currentMode = params.mode;
+
+    const targetLocationId = data.eventLocations?.find((v) => v === locationId)
+      ? locationId
+      : data.eventLocations?.[0];
+
+    if (
+      mode !== currentMode ||
+      !data.eventLocations?.find((v) => v === locationId)
+    ) {
+      router.push(`/event/${mode}/${event.id}/${targetLocationId}`);
     }
   }
 
@@ -83,10 +96,11 @@ export default function EventSettings({
       currentLocations.map((location) => location.id)
     );
     form.setValue("isGettingStarted", event.isGS);
+    form.setValue("editMode", params.mode === "edit");
     setCurrentLocations(
       currentLocations.sort((a, b) => a.name.localeCompare(b.name))
     );
-  }, [currentLocations, form, event.isGS]);
+  }, [currentLocations, form, event.isGS, params.mode]);
 
   return (
     <>
@@ -177,6 +191,27 @@ export default function EventSettings({
                       </FormLabel>
                       <FormDescription>
                         Is this event related to getting started weekend?
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              {/* Edit Mode switch */}
+              <FormField
+                control={form.control}
+                name="editMode"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                    <div className="space-y-0.5">
+                      <FormLabel className="font-semibold">Edit Mode</FormLabel>
+                      <FormDescription>
+                        Enable editing for this event
                       </FormDescription>
                     </div>
                     <FormControl>
