@@ -19,9 +19,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@radix-ui/react-tooltip";
-import { NodeProps, useReactFlow, useUpdateNodeInternals } from "@xyflow/react";
-import { drag } from 'd3-drag';
-import { select } from 'd3-selection';
+import { NodeProps, useReactFlow } from "@xyflow/react";
 import * as Icons from "lucide-react";
 import { Trash2 } from "lucide-react";
 import NextPlanIcon from '@mui/icons-material/NextPlan';
@@ -54,10 +52,6 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
 
   const timeoutId = useRef<NodeJS.Timeout>();
 
-  const updateNodeInternals = useUpdateNodeInternals();
-  const [rotation, setRotation] = useState(0);
-  const rotateControlRef = useRef<HTMLDivElement | null>(null);
-
   // Get the icon component from the Lucide icons
   const IconComponent = Icons[data.iconName as keyof typeof Icons.icons];
 
@@ -66,25 +60,10 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
     if (isOpen) {
       setActiveNodeId(id);
     }
-  }, [isOpen, id, setActiveNodeId]);
-
-  useEffect(() => {
-    if (!rotateControlRef.current) {
-      return;
+    else{
+      setActiveNodeId(null);
     }
-
-    const selection = select(rotateControlRef.current as Element);
-    const dragHandler = drag().on('drag', (evt) => {
-      const dx = evt.x - 100;
-      const dy = evt.y - 100;
-      const rad = Math.atan2(dx, dy);
-      const deg = rad * (180 / Math.PI);
-      setRotation(180 - deg);
-      updateNodeInternals(id);
-    });
-
-    selection.call(dragHandler);
-  }, [id, updateNodeInternals]);
+  }, [isOpen, id, setActiveNodeId]);
 
   const handleCopy = useCallback(() => {
     try {
@@ -230,6 +209,51 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
     },
     [id, setNodes]
   );
+
+  const handleRotateClockwise = useCallback(() => {
+    const newRotation = (data.rotation + 45) % 360;
+    
+    // Update the node data to persist rotation
+    setNodes((nodes) =>
+      nodes.map((node) => {
+        if (node.id === id) {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              rotation: newRotation,
+            },
+          };
+        }
+        return node;
+      })
+    );
+    console.log("r  otation", newRotation);
+    //updateNodeInternals(id);
+  }, [data.rotation, id, setNodes]);
+  
+  const handleRotateCounterClockwise = useCallback(() => {
+    const newRotation = (data.rotation - 45) % 360;
+    
+    // Update the node data to persist rotation
+    setNodes((nodes) =>
+      nodes.map((node) => {
+        if (node.id === id) {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              rotation: newRotation,
+            },
+          };
+        }
+        return node;
+      })
+    );
+    console.log("rotation", newRotation);
+    //updateNodeInternals(id);
+  }, [data.rotation, id, setNodes]);
+
   return (
     <>
       <Popover onOpenChange={setIsOpen}>
@@ -239,30 +263,61 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
            }}
           className="popover-trigger flex flex-col items-center justify-center cursor-move"
         >
-          {/*TODO: fix the top and right attributes to properly place the button on the node.*/}
           {(activeNodeId === id || isOpen) && (
-            <IconButton 
+          <>
+            <div
               onClick={(e) => {
-                e.stopPropagation();
-                setRotation(rotation + 45);
+                e.stopPropagation(); // Prevent popover from triggering
+                handleRotateClockwise();
               }}
               style={{
-                position: 'relative',
-                top: '3rem',
-                right: `-${(data.size ?? 3) * 1.25}rem`,
-                backgroundColor: 'rgba(0, 0, 0, 1.0)',
-                width: '30px',
-                height: '30px',
-                zIndex: 10000,
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: `translate(-50%, -50%) translate(${((data.size == 1 ? 1.5 : data.size) ?? 3) * 15}px, 0) rotate(90deg)`,
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                width: '15px',
+                height: '15px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                zIndex: 10,
               }}
               className="nodrag"
             >
               <NextPlanIcon sx={{ color: "white" }} />
-            </IconButton>
-          )}
+            </div>
+            <div
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent popover from triggering
+                handleRotateCounterClockwise();
+              }}
+              style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: `translate(-50%, -50%) translate(-${((data.size == 1 ? 1.5 : data.size) ?? 3) * 15}px, 0) scale(-1, 1) rotate(90deg)`,
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                width: '15px',
+                height: '15px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                zIndex: 10,
+              }}
+              className="nodrag"
+          >
+            <NextPlanIcon sx={{ color: "white" }} />
+          </div>
+        </>
+        )}
           <div
             style={{
-              transform: `rotate(${Math.round(rotation / 45) * 45}deg)`,
+              transform: `rotate(${Math.round(data.rotation / 45) * 45}deg)`,
             }}
               >
             <IconComponent

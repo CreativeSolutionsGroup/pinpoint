@@ -8,6 +8,7 @@ export interface CustomNode extends NodeProps {
     color?: string;
     size?: number;
     notes?: string;
+    rotation: number;
   };
   position: { x: number; y: number; z?: number };
   extent?: "parent";

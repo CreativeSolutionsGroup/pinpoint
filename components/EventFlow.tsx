@@ -132,7 +132,7 @@ function Flow({
       {
         id: "map",
         type: "customImageNode",
-        data: { label: "map", imageURL: imageURL },
+        data: { label: "map", imageURL: imageURL, rotation: 0 },
         position: { x: 0, y: 0, z: -1 },
         draggable: false,
         deletable: false,
@@ -407,6 +407,7 @@ function Flow({
           label,
           iconName,
           color: "#57B9FF",
+          rotation: 0,
         },
         draggable: true,
         deletable: true,
