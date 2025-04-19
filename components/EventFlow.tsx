@@ -1,38 +1,35 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { ChannelProvider, useChannel } from "ably/react";
 import { createId } from "@paralleldrive/cuid2";
+import { Event, EventToLocation, Location } from "@prisma/client";
 import {
+  applyNodeChanges,
+  Controls,
+  NodeChange,
+  Panel,
   ReactFlow,
   ReactFlowProvider,
-  Controls,
   useReactFlow,
-  NodeChange,
-  applyNodeChanges,
-  Edge,
-  ReactFlowInstance,
-  XYPosition,
-  Panel,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { Event, EventToLocation, Location } from "@prisma/client";
+import { ChannelProvider, useChannel } from "ably/react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 // API imports
 import { GetEventLocationInfo } from "@/lib/api/read/GetEventLocationInfo";
 import SaveState from "@/lib/api/update/ReactFlowSave";
 
 // Component imports
-import { ActiveNodeContext, IconNode } from "@components/IconNode";
 import { CustomImageNode } from "@components/CustomImageNode";
-import Legend from "@components/Legend";
 import EventMapSelect from "@components/EventMapSelect";
+import { ActiveNodeContext, IconNode } from "@components/IconNode";
+import Legend from "@components/Legend";
 import StateButtons from "./stateButtons";
 
 // Types
 import { CustomNode } from "@/types/CustomNode";
-import { DraggableEvent } from "react-draggable";
 import { LucideIcon } from "lucide-react";
+import { DraggableEvent } from "react-draggable";
 
 const getId = () => createId();
 const clientId = createId();
@@ -91,11 +88,6 @@ function Flow({
     JSON.parse(eventLocation?.state ?? "{}")?.nodes || []
   );
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  /* const [rfInstance, setRfInstance] = useState<ReactFlowInstance<
-    CustomNode,
-    Edge
-  > | null>(null); */
-
   const rfInstance = useReactFlow();
 
   // History management
@@ -371,44 +363,6 @@ function Flow({
       setNodes(parsedState.nodes || []);
     }
   }, [redoStack, rfInstance, setNodes, setUndoStack]);
-
-  const onNodeCreate = useCallback(
-    (type: string, iconName: string, label: string, position: XYPosition) => {
-      // Exit early if not in edit mode
-      if (!isEditable) return;
-
-      console.log(
-        `Creating node: ${type}, ${iconName}, ${label} at ${JSON.stringify(
-          position
-        )}`
-      );
-
-      const newNode: CustomNode = {
-        id: getId(),
-        type,
-        position,
-        data: {
-          label,
-          iconName,
-          color: "#57B9FF",
-        },
-        draggable: true,
-        deletable: true,
-        parentId: "map",
-        extent: "parent",
-        dragging: false,
-        zIndex: 0,
-        selectable: true,
-        selected: false,
-        isConnectable: false,
-        positionAbsoluteX: 0,
-        positionAbsoluteY: 0,
-      };
-
-      setNodes((nds) => [...nds, newNode]);
-    },
-    [setNodes, isEditable]
-  );
 
   const hasInitialNodesLoaded = useRef(false);
 

@@ -6,7 +6,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Panel } from "@xyflow/react";
 import { LucideIcon } from "lucide-react";
 import React, { useEffect } from "react";
 import { DraggableEvent } from "react-draggable";

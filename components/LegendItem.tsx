@@ -23,13 +23,16 @@ const LegendItem: React.FC<LegendItemProps> = ({
   };
 
   return (
-    <div className="legend-item-wrapper" style={{ position: 'relative' }}>
+    <div
+      className="legend-item-wrapper justify-items-center"
+      style={{ position: "relative" }}
+    >
       {/* Static copy that stays in place */}
-      <div className="static-copy justify-items-center">
+      <div className="static-copy justify-items-center text-center">
         <Icon className="w-6 h-6 mb-1 text-gray-700" />
         <span className="text-xs text-center text-gray-600">{label}</span>
       </div>
-      
+
       {/* Draggable element with pointer-events */}
       <Draggable
         nodeRef={nodeRef}
@@ -39,19 +42,19 @@ const LegendItem: React.FC<LegendItemProps> = ({
       >
         <div
           ref={nodeRef}
-          className="draggable-node justify-items-center"
+          className="draggable-node justify-items-center text-center"
           style={{
-            position: 'absolute',
+            position: "absolute",
             top: 0,
             left: 0,
-            width: '100%',
-            height: '100%',
-            touchAction: 'none',
-            zIndex: 10 // Ensure draggable is above the static copy
+            width: "100%",
+            height: "100%",
+            touchAction: "none",
+            zIndex: 10, // Ensure draggable is above the static copy
           }}
         >
           <Icon className="w-6 h-6 mb-1 text-gray-700 justify-center" />
-          <span className="text-xs text-center text-gray-600">{label}</span>
+          <span className="text-xs text-gray-600">{label}</span>
         </div>
       </Draggable>
     </div>
