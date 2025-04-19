@@ -1,6 +1,5 @@
 import { Box, IconButton, Tooltip } from "@mui/material";
-import AddCircleIcon from "@mui/icons-material/AddCircle";
-import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
+import { CirclePlus, CircleMinus } from "lucide-react";
 
 export default function ResizeMenu({
   onResize,
@@ -18,7 +17,7 @@ export default function ResizeMenu({
           }
           sx={{ color: "black" }}
         >
-          <RemoveCircleIcon />
+          <CircleMinus />
         </IconButton>
       </Tooltip>
       <Tooltip title="Increase Size">
@@ -28,7 +27,7 @@ export default function ResizeMenu({
           }
           sx={{ color: "black" }}
         >
-          <AddCircleIcon />
+          <CirclePlus />
         </IconButton>
       </Tooltip>
     </Box>

@@ -9,13 +9,11 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { CustomNode } from "@/types/CustomNode";
 import ColorMenu from "@components/ColorMenu";
-import ContentPasteIcon from "@mui/icons-material/ContentPaste";
-import QueueIcon from "@mui/icons-material/Queue";
 import { Box, IconButton, Typography, Tooltip } from "@mui/material";
 import { createId } from "@paralleldrive/cuid2";
 import { NodeProps, useReactFlow } from "@xyflow/react";
 import * as Icons from "lucide-react";
-import { Trash2 } from "lucide-react";
+import { Trash, Clipboard, CopyPlus } from "lucide-react";
 import { useParams } from "next/navigation";
 import {
   createContext,
@@ -52,6 +50,14 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
   useEffect(() => {
     if (isOpen) {
       setActiveNodeId(id);
+
+      // Prevent auto-focus on form elements by removing focus after a brief delay
+      setTimeout(() => {
+        // If an element is focused, blur it
+        if (document.activeElement instanceof HTMLElement) {
+          document.activeElement.blur();
+        }
+      }, 0);
     }
   }, [isOpen, id, setActiveNodeId]);
 
@@ -233,7 +239,7 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
           <div className="grid gap-4">
             {isEditable && (
               <div className="justify-center">
-                <Input placeholder={data.label} onChange={handleLabelChange} />
+                <Input value={data.label} onChange={handleLabelChange} />
               </div>
             )}
             <Textarea
@@ -254,7 +260,7 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
                       onClick={() => handleCopy()}
                       sx={{ color: "black" }}
                     >
-                      <ContentPasteIcon />
+                      <Clipboard />
                     </IconButton>
                   </Tooltip>
                   <Tooltip title="Duplicate Node">
@@ -262,12 +268,12 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
                       onClick={() => handleDup()}
                       sx={{ color: "black" }}
                     >
-                      <QueueIcon />
+                      <CopyPlus />
                     </IconButton>
                   </Tooltip>
                   <Tooltip title="Delete Node">
                     <IconButton onClick={handleDelete} sx={{ color: "red" }}>
-                      <Trash2 />
+                      <Trash />
                     </IconButton>
                   </Tooltip>
                 </Box>

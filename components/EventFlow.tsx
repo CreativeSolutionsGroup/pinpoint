@@ -27,7 +27,7 @@ import { ActiveNodeContext, IconNode } from "@components/IconNode";
 import { CustomImageNode } from "@components/CustomImageNode";
 import Legend from "@components/Legend";
 import EventMapSelect from "@components/EventMapSelect";
-import StateButtons from "./stateButtons";
+import ControlButtons from "./ControlButtons";
 
 // Types
 import { CustomNode } from "@/types/CustomNode";
@@ -451,9 +451,6 @@ function Flow({
   return (
     <ActiveNodeContext.Provider value={{ activeNodeId, setActiveNodeId }}>
       <div style={{ width: "100vw", height: "100vh" }}>
-        <h1 className="fixed left-[50vw] -translate-x-1/2 flex space-x-4 content-center items-center justify-center z-10 bg-white py-2 px-3 mt-3 text-2xl rounded-xl border bg-card text-card-foreground shadow">
-          {event.name}
-        </h1>
         <ReactFlow
           nodes={nodes}
           minZoom={0.1}
@@ -468,13 +465,18 @@ function Flow({
           elementsSelectable={isEditable}
           className="touch-none"
         >
-          <Background color="#ccc" variant={BackgroundVariant.Dots} gap={144} size={12} />
-          <Controls position="bottom-right" showInteractive={false} />
+          <Background
+            color="#ccc"
+            variant={BackgroundVariant.Dots}
+            gap={144}
+            size={12}
+          />
+          <Controls position="bottom-left" showInteractive={false} />
 
           {/* Hide legend on view only mode */}
           {isEditable && <Legend isGettingStarted={event.isGS} />}
           {isEditable && (
-            <StateButtons
+            <ControlButtons
               undo={onUndo}
               redo={onRedo}
               event={event}
@@ -482,7 +484,7 @@ function Flow({
             />
           )}
 
-          <EventMapSelect eventId={event.id} locations={eventLocations} />
+          <EventMapSelect eventName={event.name} eventId={event.id} locations={eventLocations} />
         </ReactFlow>
       </div>
     </ActiveNodeContext.Provider>
