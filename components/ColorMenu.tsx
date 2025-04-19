@@ -11,6 +11,7 @@ export default function ColorMenu(props: {
 }) {
   const [customColor, setCustomColor] = useState(props.currentColor);
   const [sliderPosition, setSliderPosition] = useState(0);
+  const [shouldSmoothAnimate, setShouldSmoothAnimate] = useState(false);
   const gradientRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
 
@@ -175,6 +176,10 @@ export default function ColorMenu(props: {
     const x = e.clientX - rect.left;
 
     // Immediately update slider position and color
+    setShouldSmoothAnimate(true);
+    setTimeout(() => {
+      setShouldSmoothAnimate(false);
+    }, 100);
     setSliderPosition(x);
     processColorAtPosition(x);
 
@@ -254,7 +259,11 @@ export default function ColorMenu(props: {
             />
             {/* Slider indicator */}
             <div
-              className="absolute top-0 w-2 h-8 bg-white border border-gray-800 rounded-sm cursor-grab active:cursor-grabbing"
+              className={`absolute top-0 w-2 h-8 bg-white border border-gray-800 rounded-sm cursor-grab active:cursor-grabbing ${
+                shouldSmoothAnimate
+                  ? "transition-all duration-100"
+                  : "transition-none"
+              }`}
               style={{
                 left: `${sliderPosition}px`,
                 transform: "translateX(-50%)",

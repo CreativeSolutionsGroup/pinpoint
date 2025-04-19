@@ -8,21 +8,13 @@ import {
 } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { CustomNode } from "@/types/CustomNode";
+import { NextPlan } from "@mui/icons-material";
 import ColorMenu from "@components/ColorMenu";
-import ContentPasteIcon from "@mui/icons-material/ContentPaste";
-import QueueIcon from "@mui/icons-material/Queue";
-import { Box, IconButton, Paper, Typography } from "@mui/material";
+import { Box, IconButton, Typography, Tooltip } from "@mui/material";
 import { createId } from "@paralleldrive/cuid2";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@radix-ui/react-tooltip";
 import { NodeProps, useReactFlow } from "@xyflow/react";
 import * as Icons from "lucide-react";
-import { Trash2 } from "lucide-react";
-import NextPlanIcon from "@mui/icons-material/NextPlan";
+import { Trash, Clipboard, CopyPlus } from "lucide-react";
 import { useParams } from "next/navigation";
 import {
   createContext,
@@ -33,7 +25,7 @@ import {
   useState,
 } from "react";
 import ResizeMenu from "./ResizeMenu";
-import { memo } from 'react';
+import { memo } from "react";
 
 export const ActiveNodeContext = createContext<{
   activeNodeId: string | null;
@@ -44,7 +36,10 @@ export const ActiveNodeContext = createContext<{
 });
 
 // Memoize the IconNode component to prevent unnecessary re-renders
-export const IconNode = memo(function IconNode({ data, id }: NodeProps<CustomNode>) {
+export const IconNode = memo(function IconNode({
+  data,
+  id,
+}: NodeProps<CustomNode>) {
   const { deleteElements, setNodes, getNode } = useReactFlow();
   const { activeNodeId, setActiveNodeId } = useContext(ActiveNodeContext);
   const [isOpen, setIsOpen] = useState(false);
@@ -61,8 +56,14 @@ export const IconNode = memo(function IconNode({ data, id }: NodeProps<CustomNod
   useEffect(() => {
     if (isOpen) {
       setActiveNodeId(id);
-    } else {
-      setActiveNodeId(null);
+
+      // Prevent auto-focus on form elements by removing focus after a brief delay
+      setTimeout(() => {
+        // If an element is focused, blur it
+        if (document.activeElement instanceof HTMLElement) {
+          document.activeElement.blur();
+        }
+      }, 0);
     }
   }, [isOpen, id, setActiveNodeId]);
 
@@ -279,7 +280,7 @@ export const IconNode = memo(function IconNode({ data, id }: NodeProps<CustomNod
                 }}
                 className="nodrag"
               >
-                <NextPlanIcon sx={{ color: "white" }} />
+                <NextPlan sx={{ color: "white" }} />
               </div>
               <div
                 onClick={(e) => {
@@ -305,7 +306,7 @@ export const IconNode = memo(function IconNode({ data, id }: NodeProps<CustomNod
                 }}
                 className="nodrag"
               >
-                <NextPlanIcon sx={{ color: "white" }} />
+                <NextPlan sx={{ color: "white" }} />
               </div>
             </>
           )}
@@ -343,7 +344,7 @@ export const IconNode = memo(function IconNode({ data, id }: NodeProps<CustomNod
           <div className="grid gap-4">
             {isEditable && (
               <div className="justify-center">
-                <Input placeholder={data.label} onChange={handleLabelChange} />
+                <Input value={data.label} onChange={handleLabelChange} />
               </div>
             )}
             <Textarea
@@ -359,39 +360,27 @@ export const IconNode = memo(function IconNode({ data, id }: NodeProps<CustomNod
                   currentSize={data.size ?? 2}
                 />
                 <Box>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <IconButton
-                          onClick={() => handleCopy()}
-                          sx={{ color: "black" }}
-                        >
-                          <ContentPasteIcon />
-                        </IconButton>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <Paper className="p-1">Copy Node</Paper>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <IconButton
-                          onClick={() => handleDup()}
-                          sx={{ color: "black" }}
-                        >
-                          <QueueIcon />
-                        </IconButton>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <Paper className="p-1">Duplicate Node</Paper>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  <IconButton onClick={handleDelete} sx={{ color: "red" }}>
-                    <Trash2 />
-                  </IconButton>
+                  <Tooltip title="Copy Node">
+                    <IconButton
+                      onClick={() => handleCopy()}
+                      sx={{ color: "black" }}
+                    >
+                      <Clipboard />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Duplicate Node">
+                    <IconButton
+                      onClick={() => handleDup()}
+                      sx={{ color: "black" }}
+                    >
+                      <CopyPlus />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Delete Node">
+                    <IconButton onClick={handleDelete} sx={{ color: "red" }}>
+                      <Trash />
+                    </IconButton>
+                  </Tooltip>
                 </Box>
               </Box>
             )}
