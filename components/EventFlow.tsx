@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import { ChannelProvider, useChannel } from "ably/react";
 import { createId } from "@paralleldrive/cuid2";
 import {
@@ -33,7 +33,7 @@ import { CustomNode } from "@/types/CustomNode";
 const getId = () => createId();
 const clientId = createId();
 
-// Define node types
+// Define node types - memoize to prevent unnecessary re-renders
 const nodeTypes = {
   iconNode: IconNode,
   customImageNode: CustomImageNode,
@@ -59,32 +59,20 @@ function Flow({
 }) {
   // Refs
   const timeoutId = useRef<NodeJS.Timeout>();
-
-  useChannel("event-updates", "subscribe", (message) => {
-    const { eventId, locationId } = message.data;
-
-    if (eventId !== event.id || locationId !== eventLocation?.locationId) {
-      return;
-    }
-
-    GetEventLocationInfo(eventId, locationId).then((eventLocationInfo) => {
-      if (!eventLocationInfo?.state) return;
-
-      const state = JSON.parse(eventLocationInfo.state);
-
-      setNodes(state.nodes);
-    });
-  });
+  const isInitialLoad = useRef(true);
+  const eventLocation = event.locations.find((l) => l.locationId === location);
 
   // State
   const [nodesLoaded, setNodesLoaded] = useState(false);
-  const eventLocation = event.locations.find((l) => l.locationId === location);
   const eventLocations = useRef<Array<Location>>(
     event.locations.map((l) => l.location)
   ).current;
-  const [nodes, setNodes] = useState<CustomNode[]>(
-    JSON.parse(eventLocation?.state ?? "{}")?.nodes || []
-  );
+  
+  const [nodes, setNodes] = useState<CustomNode[]>(() => {
+    const savedState = eventLocation?.state ? JSON.parse(eventLocation.state) : {};
+    return savedState?.nodes || [];
+  });
+  
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [rfInstance, setRfInstance] = useState<ReactFlowInstance<
     CustomNode,
@@ -98,14 +86,15 @@ function Flow({
   // Hooks
   const { fitView, screenToFlowPosition } = useReactFlow();
 
-  // Subscribe to real-time updates
+  // Subscribe to real-time updates with proper client ID filtering
   useChannel("event-updates", "subscribe", (message) => {
     const { eventId, locationId, senderClientId } = message.data;
-
+    
+    // Skip processing messages from this client
     if (
-      eventId !== event.id ||
-      locationId !== eventLocation?.locationId ||
-      senderClientId === clientId
+      senderClientId === clientId ||
+      eventId !== event.id || 
+      locationId !== eventLocation?.locationId
     ) {
       return;
     }
@@ -243,7 +232,6 @@ function Flow({
           }));
 
           setNodes((nds) => [...nds, ...newNodes]);
-          console.log("I pasted");
         } catch (err) {
           /* Default to normal paste operations */
         }
@@ -263,7 +251,7 @@ function Flow({
   ]);
 
   /**
-   * Handle node changes and save state
+   * Handle node changes and save state with debouncing and memoization
    */
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
@@ -271,6 +259,12 @@ function Flow({
       if (!isEditable) return;
 
       setNodes((nds) => applyNodeChanges(changes, nds) as CustomNode[]);
+
+      // Skip saving during initial load
+      if (isInitialLoad.current) {
+        isInitialLoad.current = false;
+        return;
+      }
 
       // Debounce save
       clearTimeout(timeoutId.current);
@@ -298,7 +292,7 @@ function Flow({
           JSON.stringify(rfInstance.toObject()),
           clientId
         );
-      }, 200);
+      }, 500); // Increased debounce time to reduce API calls
     },
     [
       isEditable,
@@ -447,8 +441,14 @@ function Flow({
     }
   }, [nodes, fitView]);
 
+  // Memoize the active node context value
+  const activeNodeContextValue = useMemo(
+    () => ({ activeNodeId, setActiveNodeId }),
+    [activeNodeId, setActiveNodeId]
+  );
+  
   return (
-    <ActiveNodeContext.Provider value={{ activeNodeId, setActiveNodeId }}>
+    <ActiveNodeContext.Provider value={activeNodeContextValue}>
       <div style={{ width: "100vw", height: "100vh" }}>
         <h1 className="fixed left-[50vw] -translate-x-1/2 flex space-x-4 content-center items-center justify-center z-10 bg-white py-2 px-3 mt-3 text-2xl rounded-xl border bg-card text-card-foreground shadow">
           {event.name}

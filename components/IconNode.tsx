@@ -22,7 +22,7 @@ import {
 import { NodeProps, useReactFlow } from "@xyflow/react";
 import * as Icons from "lucide-react";
 import { Trash2 } from "lucide-react";
-import NextPlanIcon from '@mui/icons-material/NextPlan';
+import NextPlanIcon from "@mui/icons-material/NextPlan";
 import { useParams } from "next/navigation";
 import {
   createContext,
@@ -33,6 +33,7 @@ import {
   useState,
 } from "react";
 import ResizeMenu from "./ResizeMenu";
+import { memo } from 'react';
 
 export const ActiveNodeContext = createContext<{
   activeNodeId: string | null;
@@ -42,7 +43,8 @@ export const ActiveNodeContext = createContext<{
   setActiveNodeId: () => {},
 });
 
-export function IconNode({ data, id }: NodeProps<CustomNode>) {
+// Memoize the IconNode component to prevent unnecessary re-renders
+export const IconNode = memo(function IconNode({ data, id }: NodeProps<CustomNode>) {
   const { deleteElements, setNodes, getNode } = useReactFlow();
   const { activeNodeId, setActiveNodeId } = useContext(ActiveNodeContext);
   const [isOpen, setIsOpen] = useState(false);
@@ -59,8 +61,7 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
   useEffect(() => {
     if (isOpen) {
       setActiveNodeId(id);
-    }
-    else{
+    } else {
       setActiveNodeId(null);
     }
   }, [isOpen, id, setActiveNodeId]);
@@ -143,7 +144,7 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
 
   const handleResize = useCallback(
     (selectedSize: number) => {
-      console.log(selectedSize)
+      console.log(selectedSize);
       setNodes((nds) =>
         nds.map((node) => {
           if (node.id === id) {
@@ -212,29 +213,20 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
 
   const handleRotateClockwise = useCallback(() => {
     const newRotation = (data.rotation + 45) % 360;
-    
+
     // Update the node data to persist rotation
     setNodes((nodes) =>
-      nodes.map((node) => {
-        if (node.id === id) {
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              rotation: newRotation,
-            },
-          };
-        }
-        return node;
-      })
+      nodes.map((node) =>
+        node.id === id
+          ? { ...node, data: { ...node.data, rotation: newRotation } }
+          : node
+      )
     );
-    console.log("r  otation", newRotation);
-    //updateNodeInternals(id);
   }, [data.rotation, id, setNodes]);
-  
+
   const handleRotateCounterClockwise = useCallback(() => {
     const newRotation = (data.rotation - 45) % 360;
-    
+
     // Update the node data to persist rotation
     setNodes((nodes) =>
       nodes.map((node) => {
@@ -250,76 +242,78 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
         return node;
       })
     );
-    console.log("rotation", newRotation);
-    //updateNodeInternals(id);
   }, [data.rotation, id, setNodes]);
 
   return (
     <>
       <Popover onOpenChange={setIsOpen}>
         <PopoverTrigger
-          style={{ 
+          style={{
             borderColor: data.color,
-           }}
+          }}
           className="popover-trigger flex flex-col items-center justify-center cursor-move"
         >
           {(activeNodeId === id || isOpen) && (
-          <>
-            <div
-              onClick={(e) => {
-                e.stopPropagation(); // Prevent popover from triggering
-                handleRotateClockwise();
-              }}
-              style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: `translate(-50%, -50%) translate(${((data.size == 1 ? 1.5 : data.size) ?? 3) * 15}px, 0) rotate(90deg)`,
-                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                width: '15px',
-                height: '15px',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                zIndex: 10,
-              }}
-              className="nodrag"
-            >
-              <NextPlanIcon sx={{ color: "white" }} />
-            </div>
-            <div
-              onClick={(e) => {
-                e.stopPropagation(); // Prevent popover from triggering
-                handleRotateCounterClockwise();
-              }}
-              style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: `translate(-50%, -50%) translate(-${((data.size == 1 ? 1.5 : data.size) ?? 3) * 15}px, 0) scale(-1, 1) rotate(90deg)`,
-                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                width: '15px',
-                height: '15px',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                zIndex: 10,
-              }}
-              className="nodrag"
-          >
-            <NextPlanIcon sx={{ color: "white" }} />
-          </div>
-        </>
-        )}
+            <>
+              <div
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent popover from triggering
+                  handleRotateClockwise();
+                }}
+                style={{
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: `translate(-50%, -50%) translate(${
+                    ((data.size == 1 ? 1.5 : data.size) ?? 3) * 15
+                  }px, 0) rotate(90deg)`,
+                  backgroundColor: "rgba(0, 0, 0, 0.8)",
+                  width: "15px",
+                  height: "15px",
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  zIndex: 10,
+                }}
+                className="nodrag"
+              >
+                <NextPlanIcon sx={{ color: "white" }} />
+              </div>
+              <div
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent popover from triggering
+                  handleRotateCounterClockwise();
+                }}
+                style={{
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: `translate(-50%, -50%) translate(-${
+                    ((data.size == 1 ? 1.5 : data.size) ?? 3) * 15
+                  }px, 0) scale(-1, 1) rotate(90deg)`,
+                  backgroundColor: "rgba(0, 0, 0, 0.8)",
+                  width: "15px",
+                  height: "15px",
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  zIndex: 10,
+                }}
+                className="nodrag"
+              >
+                <NextPlanIcon sx={{ color: "white" }} />
+              </div>
+            </>
+          )}
           <div
             style={{
               transform: `rotate(${Math.round(data.rotation / 45) * 45}deg)`,
             }}
-              >
+          >
             <IconComponent
               style={{
                 color: data.color,
@@ -414,4 +408,4 @@ export function IconNode({ data, id }: NodeProps<CustomNode>) {
       </Popover>
     </>
   );
-}
+});
