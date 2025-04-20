@@ -9,16 +9,16 @@ import {
   MenuItem,
   Select,
   SelectChangeEvent,
-  Typography,
+  Typography
 } from "@mui/material";
-import { Label } from "./ui/label";
-import { Plus, Trash } from "lucide-react";
 import { Event, Location } from "@prisma/client";
+import { Plus, Trash } from "lucide-react";
 import LocationAdder from "./LocationCreator";
+import { Label } from "./ui/label";
 
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   AlertDialog,
@@ -33,11 +33,11 @@ import {
 
 import CreateEvent from "@/lib/api/create/createEvent";
 import DeleteEntity from "@/lib/api/delete/DeleteEntity";
+import { GetAllLocations } from "@/lib/api/read/GetAllLocations";
 import { GetEvent } from "@/lib/api/read/GetEvent";
+import { EventWithLocationIds } from "@/types/Event";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
-import { GetAllLocations } from "@/lib/api/read/GetAllLocations";
-import { EventWithLocationIds } from "@/types/Event";
 
 export default function EventSelectForm({
   events,
@@ -62,6 +62,22 @@ export default function EventSelectForm({
   const [eventToCreate, setEventToCreate] = useState<string>("");
 
   const [dropdownEvents, setDropdownEvents] = useState<Event[]>(events);
+
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && typeof navigator !== "undefined") {
+      const checkMobile = () => {
+        const isMobileDevice = /Mobi|Android/i.test(navigator?.userAgent);
+        setIsMobile(isMobileDevice);
+      };
+
+      checkMobile();
+      window.addEventListener("resize", checkMobile);
+
+      return () => window.removeEventListener("resize", checkMobile);
+    }
+  }, []);
 
   function deleteEvent(id: string) {
     DeleteEntity("event", id);
@@ -117,7 +133,7 @@ export default function EventSelectForm({
   const canEdit = session?.role === "ADMIN" || session?.role === "EDITOR";
 
   return (
-    <div className="m-8 flex flex-col">
+    <div className={`${isMobile ? "m-4" : "m-8"} flex flex-col`}>
       <FormControl required fullWidth>
         <InputLabel id="selectEvent">Event</InputLabel>
         <Select
@@ -131,7 +147,9 @@ export default function EventSelectForm({
           renderValue={(selected) => {
             const event = dropdownEvents.find((e) => e.id === selected);
             return event ? (
-              <Typography fontSize={15}>{event.name}</Typography>
+              <Typography fontSize={isMobile ? 14 : 15}>
+                {event.name}
+              </Typography>
             ) : null;
           }}
         >
@@ -139,7 +157,9 @@ export default function EventSelectForm({
             .map((event) => (
               <MenuItem key={event.id} value={event.id}>
                 <div className="flex flex-row items-center justify-between w-full">
-                  <Typography fontSize={15}>{event.name}</Typography>
+                  <Typography fontSize={isMobile ? 14 : 15}>
+                    {event.name}
+                  </Typography>
                   {canEdit && (
                     <Button
                       color="warning"
@@ -150,7 +170,7 @@ export default function EventSelectForm({
                         setEntityToDelete({ entity: event, type: "event" });
                       }}
                     >
-                      <RemoveIcon />
+                      <RemoveIcon fontSize={isMobile ? "small" : "medium"} />
                     </Button>
                   )}
                 </div>
@@ -176,7 +196,7 @@ export default function EventSelectForm({
               }}
             >
               <div className="flex flex-row items-center justify-between w-full">
-                <Typography fontSize={15} fontWeight="bold">
+                <Typography fontSize={isMobile ? 14 : 15} fontWeight="bold">
                   Add Event
                 </Typography>
                 <Button
@@ -184,7 +204,7 @@ export default function EventSelectForm({
                   className="ml-2"
                   sx={{ color: muiTheme.palette.lightblue.main }}
                 >
-                  <AddIcon />
+                  <AddIcon fontSize={isMobile ? "small" : "medium"} />
                 </Button>
               </div>
             </MenuItem>
@@ -194,14 +214,19 @@ export default function EventSelectForm({
 
       {eventSelected && (
         <div className="mt-4">
-          <Label htmlFor="eventLocations" className="font-semibold px-2">
+          <Label
+            htmlFor="eventLocations"
+            className={`font-semibold px-2 ${isMobile ? "text-sm" : ""}`}
+          >
             {dropdownEvents.find((event) => event.id === eventId)?.name ||
               "Event"}{" "}
             Locations
           </Label>
           <div
             id="eventLocations"
-            className="space-y-2 rounded-md border-gray-200 border-2 p-2 pt-0 transition-all duration-300 max-h-[45vh] overflow-y-auto"
+            className={`space-y-2 rounded-md border-gray-200 border-2 p-2 pt-0 transition-all duration-300 ${
+              isMobile ? "max-h-[35vh]" : "max-h-[45vh]"
+            } overflow-y-auto`}
           >
             <div
               className="flex items-center justify-center sticky top-0 bg-white z-10 mt-1"
@@ -209,15 +234,25 @@ export default function EventSelectForm({
                 setLocationAdderOpen(true);
               }}
             >
-              <div className="flex items-center space-x-1 hover:bg-gray-100 p-1 rounded-md transition-all duration-300 text-sm text-gray-600 cursor-pointer pr-2">
-                <Plus className="h-6 w-6 text-blue-500 cursor-pointer hover:text-blue-600 hover:bg-gray-100 rounded-full p-1 transition-all duration-300" />
+              <div
+                className={`flex items-center space-x-1 hover:bg-gray-100 p-1 rounded-md transition-all duration-300 ${
+                  isMobile ? "text-xs" : "text-sm"
+                } text-gray-600 cursor-pointer pr-2`}
+              >
+                <Plus
+                  className={`${
+                    isMobile ? "h-5 w-5" : "h-6 w-6"
+                  } text-blue-500 cursor-pointer hover:text-blue-600 hover:bg-gray-100 rounded-full p-1 transition-all duration-300`}
+                />
                 Add Location
               </div>
             </div>
             {selectedEventLocations.map((location) => (
               <div
                 key={location.id}
-                className="flex flex-row items-center justify-between w-full hover:bg-gray-100 p-2 rounded-md transition-all duration-300 cursor-pointer"
+                className={`flex flex-row items-center justify-between w-full hover:bg-gray-100 ${
+                  isMobile ? "p-1.5" : "p-2"
+                } rounded-md transition-all duration-300 cursor-pointer`}
                 onClick={(e) => {
                   // Prevent the click event from triggering when clicking the trash button
                   if ((e.target as HTMLElement).closest(".trash-button"))
@@ -225,12 +260,18 @@ export default function EventSelectForm({
                   router.push(`/event/edit/${eventId}/${location.id}`);
                 }}
               >
-                <div className="flex-1 text-sm text-gray-600 h-full flex items-stretch">
+                <div
+                  className={`flex-1 ${
+                    isMobile ? "text-xs" : "text-sm"
+                  } text-gray-600 h-full flex items-stretch`}
+                >
                   {location.name}{" "}
                 </div>
                 {canEdit && (
                   <Trash
-                    className="h-4 w-4 text-red-500 cursor-pointer hover:text-red-600 hover:bg-red-100 transition-all duration-300 rounded-md"
+                    className={`${
+                      isMobile ? "h-3.5 w-3.5" : "h-4 w-4"
+                    } text-red-500 cursor-pointer hover:text-red-600 hover:bg-red-100 transition-all duration-300 rounded-md`}
                     onClick={(e) => {
                       e.stopPropagation();
                       setDeleteDialogOpen(true);
@@ -294,6 +335,8 @@ export default function EventSelectForm({
               </AlertDialogDescription>
               <Input
                 autoFocus
+                size={isMobile ? "small" : "medium"}
+                sx={{ fontSize: isMobile ? "0.875rem" : "1rem" }}
                 onChange={(e) => {
                   setEventToCreate(e.target.value);
                 }}

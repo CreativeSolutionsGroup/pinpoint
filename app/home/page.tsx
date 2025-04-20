@@ -34,7 +34,12 @@ export default async function EventSelect() {
 
   return (
     <>
-      <Box width="45rem" mx="auto" display="flex" flexDirection="column">
+      <Box 
+        width={{ xs: "95%", sm: "95%", md: "45rem" }} 
+        mx="auto" 
+        display="flex" 
+        flexDirection="column"
+      >
         <Box mt={5}>
           <Heading />
         </Box>
@@ -54,7 +59,11 @@ export default async function EventSelect() {
           <ErrorToast />
         </Suspense>
       </Box>
-      <Box sx={{ width: "75%", position: "fixed" }}>
+      <Box sx={{ 
+        width: { xs: "95%", sm: "85%", md: "75%" }, 
+        position: "fixed", 
+        display: { xs: "none", md: "block" } 
+      }}>
         <HomepageArrow />
       </Box>
     </>
