@@ -1,15 +1,18 @@
 "use client";
 
+import { useMemo } from "react";
 import { createId } from "@paralleldrive/cuid2";
 import { Event, EventToLocation, Location } from "@prisma/client";
 import {
-  applyNodeChanges,
   Controls,
-  NodeChange,
   Panel,
   ReactFlow,
   ReactFlowProvider,
   useReactFlow,
+  NodeChange,
+  applyNodeChanges,
+  BackgroundVariant,
+  Background,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { ChannelProvider, useChannel } from "ably/react";
@@ -24,7 +27,7 @@ import { CustomImageNode } from "@components/CustomImageNode";
 import EventMapSelect from "@components/EventMapSelect";
 import { ActiveNodeContext, IconNode } from "@components/IconNode";
 import Legend from "@components/Legend";
-import StateButtons from "./stateButtons";
+import ControlButtons from "./ControlButtons";
 
 // Types
 import { CustomNode } from "@/types/CustomNode";
@@ -34,7 +37,7 @@ import { DraggableEvent } from "react-draggable";
 const getId = () => createId();
 const clientId = createId();
 
-// Define node types
+// Define node types - memoize to prevent unnecessary re-renders
 const nodeTypes = {
   iconNode: IconNode,
   customImageNode: CustomImageNode,
@@ -61,32 +64,20 @@ function Flow({
   // Refs
   const timeoutId = useRef<NodeJS.Timeout>();
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
-
-  useChannel("event-updates", "subscribe", (message) => {
-    const { eventId, locationId } = message.data;
-
-    if (eventId !== event.id || locationId !== eventLocation?.locationId) {
-      return;
-    }
-
-    GetEventLocationInfo(eventId, locationId).then((eventLocationInfo) => {
-      if (!eventLocationInfo?.state) return;
-
-      const state = JSON.parse(eventLocationInfo.state);
-
-      setNodes(state.nodes);
-    });
-  });
+  const isInitialLoad = useRef(true);
+  const eventLocation = event.locations.find((l) => l.locationId === location);
 
   // State
   const [nodesLoaded, setNodesLoaded] = useState(false);
-  const eventLocation = event.locations.find((l) => l.locationId === location);
   const eventLocations = useRef<Array<Location>>(
     event.locations.map((l) => l.location)
   ).current;
-  const [nodes, setNodes] = useState<CustomNode[]>(
-    JSON.parse(eventLocation?.state ?? "{}")?.nodes || []
-  );
+  
+  const [nodes, setNodes] = useState<CustomNode[]>(() => {
+    const savedState = eventLocation?.state ? JSON.parse(eventLocation.state) : {};
+    return savedState?.nodes || [];
+  });
+  
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const rfInstance = useReactFlow();
 
@@ -97,14 +88,15 @@ function Flow({
   // Hooks
   const { fitView, screenToFlowPosition } = useReactFlow();
 
-  // Subscribe to real-time updates
+  // Subscribe to real-time updates with proper client ID filtering
   useChannel("event-updates", "subscribe", (message) => {
     const { eventId, locationId, senderClientId } = message.data;
-
+    
+    // Skip processing messages from this client
     if (
-      eventId !== event.id ||
-      locationId !== eventLocation?.locationId ||
-      senderClientId === clientId
+      senderClientId === clientId ||
+      eventId !== event.id || 
+      locationId !== eventLocation?.locationId
     ) {
       return;
     }
@@ -131,7 +123,7 @@ function Flow({
       {
         id: "map",
         type: "customImageNode",
-        data: { label: "map", imageURL: imageURL },
+        data: { label: "map", imageURL: imageURL, rotation: 0 },
         position: { x: 0, y: 0, z: -1 },
         draggable: false,
         deletable: false,
@@ -242,7 +234,6 @@ function Flow({
           }));
 
           setNodes((nds) => [...nds, ...newNodes]);
-          console.log("I pasted");
         } catch (err) {
           /* Default to normal paste operations */
         }
@@ -262,7 +253,7 @@ function Flow({
   ]);
 
   /**
-   * Handle node changes and save state
+   * Handle node changes and save state with debouncing and memoization
    */
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
@@ -270,6 +261,12 @@ function Flow({
       if (!isEditable) return;
 
       setNodes((nds) => applyNodeChanges(changes, nds) as CustomNode[]);
+
+      // Skip saving during initial load
+      if (isInitialLoad.current) {
+        isInitialLoad.current = false;
+        return;
+      }
 
       // Debounce save
       clearTimeout(timeoutId.current);
@@ -297,7 +294,7 @@ function Flow({
           JSON.stringify(rfInstance.toObject()),
           clientId
         );
-      }, 200);
+      }, 500); // Increased debounce time to reduce API calls
     },
     [
       isEditable,
@@ -446,6 +443,7 @@ function Flow({
           label,
           iconName: icon.displayName,
           color: "#57B9FF",
+          rotation: 0,
         },
         dragging: false,
         zIndex: 0,
@@ -464,12 +462,15 @@ function Flow({
     [screenToFlowPosition, setNodes]
   );
 
+  // Memoize the active node context value
+  const activeNodeContextValue = useMemo(
+    () => ({ activeNodeId, setActiveNodeId }),
+    [activeNodeId, setActiveNodeId]
+  );
+  
   return (
-    <ActiveNodeContext.Provider value={{ activeNodeId, setActiveNodeId }}>
+    <ActiveNodeContext.Provider value={activeNodeContextValue}>
       <div style={{ width: "100vw", height: "100vh" }} ref={reactFlowWrapper}>
-        <h1 className="fixed left-[50vw] -translate-x-1/2 flex space-x-4 content-center items-center justify-center z-10 bg-white py-2 px-3 mt-3 text-2xl rounded-xl border bg-card text-card-foreground shadow">
-          {event.name}
-        </h1>
         <ReactFlow
           nodes={nodes}
           minZoom={0.1}
@@ -482,7 +483,13 @@ function Flow({
           elementsSelectable={isEditable}
           className="touch-none"
         >
-          <Controls position="bottom-right" showInteractive={false} />
+          <Background
+            color="#ccc"
+            variant={BackgroundVariant.Dots}
+            gap={144}
+            size={12}
+          />
+          <Controls position="bottom-left" showInteractive={false} />
 
           {/* Hide legend on view only mode */}
           {isEditable && (
@@ -491,7 +498,7 @@ function Flow({
             </Panel>
           )}
           {isEditable && (
-            <StateButtons
+            <ControlButtons
               undo={onUndo}
               redo={onRedo}
               event={event}
@@ -499,7 +506,7 @@ function Flow({
             />
           )}
 
-          <EventMapSelect eventId={event.id} locations={eventLocations} />
+          <EventMapSelect eventName={event.name} eventId={event.id} locations={eventLocations} />
         </ReactFlow>
       </div>
     </ActiveNodeContext.Provider>
