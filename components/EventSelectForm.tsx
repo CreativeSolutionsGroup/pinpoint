@@ -15,11 +15,11 @@ import {
 import { Label } from "./ui/label";
 import { Plus, Trash } from "lucide-react";
 import { Event, Location } from "@prisma/client";
-import LocationAdder from "./LocationCreator";
-
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, startTransition } from "react";
+import LocationAdder from "./LocationCreator";
+import PinpointLoader from "./PinpointLoader";
 
 import {
   AlertDialog,
@@ -46,24 +46,23 @@ export default function EventSelectForm({
   events: Array<EventWithLocationIds>;
 }) {
   const router = useRouter();
+
   const [eventSelected, setEventSelected] = useState(false);
   const [eventId, setEventId] = useState("");
-  const [selectedEventLocations, setSelectedEventLocations] = useState<
-    Location[]
-  >([]);
   const [locationAdderOpen, setLocationAdderOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [insertDialogOpen, setInsertDialogOpen] = useState(false);
+  const [eventToCreate, setEventToCreate] = useState<string>("");
+  const [dropdownEvents, setDropdownEvents] = useState<Event[]>(events);
+  const [isNavigating, setIsNavigating] = useState(false);
   const [entityToDelete, setEntityToDelete] = useState<{
     entity: Event | Location;
     type: "event" | "location";
   }>();
-
-  const [insertDialogOpen, setInsertDialogOpen] = useState(false);
-  const [eventToCreate, setEventToCreate] = useState<string>("");
-
-  const [dropdownEvents, setDropdownEvents] = useState<Event[]>(events);
+  const [selectedEventLocations, setSelectedEventLocations] = useState<
+    Location[]
+  >([]);
 
   function deleteEvent(id: string) {
     DeleteEntity("event", id);
@@ -232,7 +231,14 @@ export default function EventSelectForm({
                       // Prevent the click event from triggering when clicking the trash button
                       if ((e.target as HTMLElement).closest(".trash-button"))
                         return;
-                      router.push(`/event/edit/${eventId}/${location.id}`);
+
+                      // Show loading immediately
+                      setIsNavigating(true);
+
+                      // Use startTransition for the navigation to indicate it's a UI update
+                      startTransition(() => {
+                        router.push(`/event/edit/${eventId}/${location.id}`);
+                      });
                     }}
                   >
                     <div className="flex-1 text-sm text-gray-600 h-full flex items-stretch">
@@ -244,7 +250,10 @@ export default function EventSelectForm({
                         onClick={(e) => {
                           e.stopPropagation();
                           setDeleteDialogOpen(true);
-                          setEntityToDelete({ entity: location, type: "location" });
+                          setEntityToDelete({
+                            entity: location,
+                            type: "location",
+                          });
                         }}
                       />
                     )}
@@ -339,6 +348,8 @@ export default function EventSelectForm({
           setSelectedEventLocations((prev) => [...prev, location]);
         }}
       />
+
+      {isNavigating && <PinpointLoader />}
     </div>
   );
 }

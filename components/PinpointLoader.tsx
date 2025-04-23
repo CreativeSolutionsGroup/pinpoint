@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 
 const PinpointLoader = () => {
   const [progress, setProgress] = useState(0);
-  const [loadingText, setLoadingText] = useState("Initializing maps");
+  const [loadingText, setLoadingText] = useState("Initializing maps...");
 
   useEffect(() => {
     // Loading phrases...
@@ -16,12 +16,9 @@ const PinpointLoader = () => {
       "Calculating routes",
       "Syncing location data",
       "Rendering map tiles",
-      // "Phoning Brian..."
-      // "Checking Teams"
-      // "Waiting for my carmelo"
     ];
 
-    // fake loading progress
+    // Fake loading progress
     const interval = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 100) {
@@ -33,8 +30,9 @@ const PinpointLoader = () => {
 
       // Change loading text every now and then
       if (progress % 16 === 0) {
-        const nextPhrase =
-          loadingPhrases[Math.floor((progress / 16) % loadingPhrases.length)];
+        const nextPhrase = `${
+          loadingPhrases[Math.floor((progress / 16) % loadingPhrases.length)]
+        }...`;
         setLoadingText(nextPhrase);
       }
     }, 80);
@@ -43,7 +41,12 @@ const PinpointLoader = () => {
   }, [progress]);
 
   return (
-    <div className="fixed inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-sky-50 to-white">
+    <div
+      className="fixed inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-sky-50 to-white"
+      style={{
+        zIndex: 9999, // Ensure highest z-index to overlay everything
+      }}
+    >
       <div className="flex flex-col items-center w-full max-w-md mx-auto p-6 space-y-12">
         {/* Logo */}
         <div className="w-full flex justify-center">
@@ -53,18 +56,17 @@ const PinpointLoader = () => {
         {/* Loading progress */}
         <div className="w-full space-y-3">
           <div className="flex items-center justify-between">
-            <div className="text-sm font-medium text-slate-700">
-              {loadingText}
-            </div>
-            <span className="text-sm font-medium text-slate-700">
-              {progress}%
-            </span>
+            <div className="text-sm font-[550]">{loadingText}</div>
+            <span className="text-sm font-[550]">{progress}%</span>
           </div>
 
           <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-blue-500 to-green-500 rounded-full transition-all duration-200 ease-out"
-              style={{ width: `${progress}%` }}
+              className="h-full rounded-full transition-all duration-200 ease-out"
+              style={{
+                width: `${progress}%`,
+                background: "linear-gradient(to right, #357ad2, #62d6ae)",
+              }}
             />
           </div>
         </div>
