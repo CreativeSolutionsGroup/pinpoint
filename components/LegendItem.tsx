@@ -1,4 +1,5 @@
-// /components/LegendItem.tsx
+"use client";
+
 import { LucideIcon } from "lucide-react";
 import React, { useRef, useState } from "react";
 import Draggable, { DraggableEvent } from "react-draggable";
@@ -17,8 +18,9 @@ const LegendItem: React.FC<LegendItemProps> = ({
   // Create a ref to pass to Draggable component
   const nodeRef = useRef<HTMLDivElement>(null!);
 
-  // Track dragging state
+  // Track dragging and hovering state
   const [isDragging, setIsDragging] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
 
   // Handle drag start
   const handleDragStart = () => {
@@ -33,13 +35,15 @@ const LegendItem: React.FC<LegendItemProps> = ({
 
   return (
     <div
-      className="legend-item-wrapper justify-items-center"
+      className="legend-item-wrapper justify-items-center select-none"
       style={{ position: "relative" }}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
     >
       {/* Static copy that stays in place */}
       <div
         className={`static-copy justify-items-center text-center p-1 ${
-          isDragging ? "bg-gray-100 rounded-md" : ""
+          isDragging || isHovering ? "bg-gray-100 rounded-md w-full h-full" : ""
         }`}
       >
         <Icon className="w-6 h-6 mb-1 text-gray-700" />
@@ -52,11 +56,11 @@ const LegendItem: React.FC<LegendItemProps> = ({
         onStart={handleDragStart}
         onStop={handleDragEnd}
         position={{ x: 0, y: 0 }}
-        enableUserSelectHack={false}
+        enableUserSelectHack={true}
       >
         <div
           ref={nodeRef}
-          className="draggable-node justify-items-center text-center p-1 cursor-grab active:cursor-grabbing"
+          className="draggable-node justify-items-center text-center p-1 cursor-grab active:cursor-grabbing select-none"
           style={{
             position: "absolute",
             top: 0,
@@ -65,6 +69,7 @@ const LegendItem: React.FC<LegendItemProps> = ({
             height: "100%",
             touchAction: "none",
             zIndex: 10, // Ensure draggable is above the static copy
+            userSelect: "none", // Additional explicit styling to prevent selection
           }}
         >
           <Icon className="w-6 h-6 mb-1 text-gray-700 justify-center" />
