@@ -10,15 +10,16 @@ import {
   Select,
   SelectChangeEvent,
   Typography,
+  CircularProgress,
 } from "@mui/material";
 import { Label } from "./ui/label";
 import { Plus, Trash } from "lucide-react";
 import { Event, Location } from "@prisma/client";
-import LocationAdder from "./LocationCreator";
-
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, startTransition } from "react";
+import LocationAdder from "./LocationCreator";
+import PinpointLoader from "./PinpointLoader";
 
 import {
   AlertDialog,
@@ -45,23 +46,23 @@ export default function EventSelectForm({
   events: Array<EventWithLocationIds>;
 }) {
   const router = useRouter();
+
   const [eventSelected, setEventSelected] = useState(false);
   const [eventId, setEventId] = useState("");
-  const [selectedEventLocations, setSelectedEventLocations] = useState<
-    Location[]
-  >([]);
   const [locationAdderOpen, setLocationAdderOpen] = useState(false);
-
+  const [isLoading, setIsLoading] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [insertDialogOpen, setInsertDialogOpen] = useState(false);
+  const [eventToCreate, setEventToCreate] = useState<string>("");
+  const [dropdownEvents, setDropdownEvents] = useState<Event[]>(events);
+  const [isNavigating, setIsNavigating] = useState(false);
   const [entityToDelete, setEntityToDelete] = useState<{
     entity: Event | Location;
     type: "event" | "location";
   }>();
-
-  const [insertDialogOpen, setInsertDialogOpen] = useState(false);
-  const [eventToCreate, setEventToCreate] = useState<string>("");
-
-  const [dropdownEvents, setDropdownEvents] = useState<Event[]>(events);
+  const [selectedEventLocations, setSelectedEventLocations] = useState<
+    Location[]
+  >([]);
 
   function deleteEvent(id: string) {
     DeleteEntity("event", id);
@@ -89,6 +90,7 @@ export default function EventSelectForm({
 
   const handleChange = async (e: SelectChangeEvent) => {
     setEventSelected(true);
+    setIsLoading(true);
     const selectedEventId = e.target.value;
     setEventId(selectedEventId);
 
@@ -111,6 +113,7 @@ export default function EventSelectForm({
 
       setSelectedEventLocations(updatedLocations ?? []);
     }
+    setIsLoading(false);
   };
 
   const { data: session } = useSession();
@@ -203,43 +206,61 @@ export default function EventSelectForm({
             id="eventLocations"
             className="space-y-2 rounded-md border-gray-200 border-2 p-2 pt-0 transition-all duration-300 max-h-[45vh] overflow-y-auto"
           >
-            <div
-              className="flex items-center justify-center sticky top-0 bg-white z-10 mt-1"
-              onClick={() => {
-                setLocationAdderOpen(true);
-              }}
-            >
-              <div className="flex items-center space-x-1 hover:bg-gray-100 p-1 rounded-md transition-all duration-300 text-sm text-gray-600 cursor-pointer pr-2">
-                <Plus className="h-6 w-6 text-blue-500 cursor-pointer hover:text-blue-600 hover:bg-gray-100 rounded-full p-1 transition-all duration-300" />
-                Add Location
+            {isLoading ? (
+              <div className="flex justify-center items-center p-6">
+                <CircularProgress size={30} />
               </div>
-            </div>
-            {selectedEventLocations.map((location) => (
-              <div
-                key={location.id}
-                className="flex flex-row items-center justify-between w-full hover:bg-gray-100 p-2 rounded-md transition-all duration-300 cursor-pointer"
-                onClick={(e) => {
-                  // Prevent the click event from triggering when clicking the trash button
-                  if ((e.target as HTMLElement).closest(".trash-button"))
-                    return;
-                  router.push(`/event/edit/${eventId}/${location.id}`);
-                }}
-              >
-                <div className="flex-1 text-sm text-gray-600 h-full flex items-stretch">
-                  {location.name}{" "}
+            ) : (
+              <>
+                <div
+                  className="flex items-center justify-center sticky top-0 bg-white z-10 mt-1"
+                  onClick={() => {
+                    setLocationAdderOpen(true);
+                  }}
+                >
+                  <div className="flex items-center space-x-1 hover:bg-gray-100 p-1 rounded-md transition-all duration-300 text-sm text-gray-600 cursor-pointer pr-2">
+                    <Plus className="h-6 w-6 text-blue-500 cursor-pointer hover:text-blue-600 hover:bg-gray-100 rounded-full p-1 transition-all duration-300" />
+                    Add Location
+                  </div>
                 </div>
-                {canEdit && (
-                  <Trash
-                    className="h-4 w-4 text-red-500 cursor-pointer hover:text-red-600 hover:bg-red-100 transition-all duration-300 rounded-md"
+                {selectedEventLocations.map((location) => (
+                  <div
+                    key={location.id}
+                    className="flex flex-row items-center justify-between w-full hover:bg-gray-100 p-2 rounded-md transition-all duration-300 cursor-pointer"
                     onClick={(e) => {
-                      e.stopPropagation();
-                      setDeleteDialogOpen(true);
-                      setEntityToDelete({ entity: location, type: "location" });
+                      // Prevent the click event from triggering when clicking the trash button
+                      if ((e.target as HTMLElement).closest(".trash-button"))
+                        return;
+
+                      // Show loading immediately
+                      setIsNavigating(true);
+
+                      // Use startTransition for the navigation to indicate it's a UI update
+                      startTransition(() => {
+                        router.push(`/event/edit/${eventId}/${location.id}`);
+                      });
                     }}
-                  />
-                )}
-              </div>
-            ))}
+                  >
+                    <div className="flex-1 text-sm text-gray-600 h-full flex items-stretch">
+                      {location.name}{" "}
+                    </div>
+                    {canEdit && (
+                      <Trash
+                        className="h-4 w-4 text-red-500 cursor-pointer hover:text-red-600 hover:bg-red-100 transition-all duration-300 rounded-md"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeleteDialogOpen(true);
+                          setEntityToDelete({
+                            entity: location,
+                            type: "location",
+                          });
+                        }}
+                      />
+                    )}
+                  </div>
+                ))}
+              </>
+            )}
           </div>
         </div>
       )}
@@ -327,6 +348,8 @@ export default function EventSelectForm({
           setSelectedEventLocations((prev) => [...prev, location]);
         }}
       />
+
+      {isNavigating && <PinpointLoader />}
     </div>
   );
 }
