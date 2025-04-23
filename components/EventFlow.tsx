@@ -1,36 +1,38 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, useMemo } from "react";
-import { ChannelProvider, useChannel } from "ably/react";
+import { useMemo } from "react";
 import { createId } from "@paralleldrive/cuid2";
+import { Event, EventToLocation, Location } from "@prisma/client";
 import {
+  Controls,
+  Panel,
   ReactFlow,
   ReactFlowProvider,
-  Controls,
   useReactFlow,
   NodeChange,
   applyNodeChanges,
-  Edge,
-  ReactFlowInstance,
   BackgroundVariant,
   Background,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { Event, EventToLocation, Location } from "@prisma/client";
+import { ChannelProvider, useChannel } from "ably/react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 // API imports
 import { GetEventLocationInfo } from "@/lib/api/read/GetEventLocationInfo";
 import SaveState from "@/lib/api/update/ReactFlowSave";
 
 // Component imports
-import { ActiveNodeContext, IconNode } from "@components/IconNode";
 import { CustomImageNode } from "@components/CustomImageNode";
-import Legend from "@components/Legend";
 import EventMapSelect from "@components/EventMapSelect";
+import { ActiveNodeContext, IconNode } from "@components/IconNode";
+import Legend from "@components/Legend";
 import ControlButtons from "./ControlButtons";
 
 // Types
 import { CustomNode } from "@/types/CustomNode";
+import { LucideIcon } from "lucide-react";
+import { DraggableEvent } from "react-draggable";
 
 const getId = () => createId();
 const clientId = createId();
@@ -61,6 +63,7 @@ function Flow({
 }) {
   // Refs
   const timeoutId = useRef<NodeJS.Timeout>();
+  const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const isInitialLoad = useRef(true);
   const eventLocation = event.locations.find((l) => l.locationId === location);
 
@@ -76,10 +79,7 @@ function Flow({
   });
   
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [rfInstance, setRfInstance] = useState<ReactFlowInstance<
-    CustomNode,
-    Edge
-  > | null>(null);
+  const rfInstance = useReactFlow();
 
   // History management
   const [undoStack, setUndoStack] = useState<string[]>([]);
@@ -361,68 +361,6 @@ function Flow({
     }
   }, [redoStack, rfInstance, setNodes, setUndoStack]);
 
-  /**
-   * Handle drag over for node placement
-   */
-  const onDragOver = useCallback(
-    (event: React.DragEvent) => {
-      event.preventDefault();
-      // Block drag overs in view mode
-      if (isEditable) {
-        event.dataTransfer.dropEffect = "move";
-      }
-    },
-    [isEditable]
-  );
-
-  /**
-   * Handle node drop
-   */
-  const onDrop = useCallback(
-    (event: React.DragEvent<HTMLDivElement>) => {
-      // Block drag and drops in view mode
-      if (!isEditable) return;
-
-      event.preventDefault();
-
-      const jsonData = event.dataTransfer.getData("application/reactflow");
-      if (!jsonData) return;
-
-      const { type, iconName, label } = JSON.parse(jsonData);
-
-      const position = screenToFlowPosition({
-        x: event.clientX,
-        y: event.clientY,
-      });
-
-      const newNode: CustomNode = {
-        id: getId(),
-        type,
-        position,
-        data: {
-          label,
-          iconName,
-          color: "#57B9FF",
-          rotation: 0,
-        },
-        draggable: true,
-        deletable: true,
-        parentId: "map",
-        extent: "parent",
-        dragging: false,
-        zIndex: 0,
-        selectable: true,
-        selected: false,
-        isConnectable: false,
-        positionAbsoluteX: 0,
-        positionAbsoluteY: 0,
-      };
-
-      setNodes((nds) => [...nds, newNode]);
-    },
-    [screenToFlowPosition, setNodes, isEditable]
-  );
-
   const hasInitialNodesLoaded = useRef(false);
 
   // Call fitView when the map node has loaded
@@ -443,6 +381,87 @@ function Flow({
     }
   }, [nodes, fitView]);
 
+  const onDrop = useCallback(
+    (event: DraggableEvent, icon: LucideIcon, label: string) => {
+      if (!reactFlowWrapper.current) return;
+
+      // Get bounds of react flow wrapper
+      const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
+
+      // Drop position
+      let clientX = 0;
+      let clientY = 0;
+
+      if (event instanceof MouseEvent) {
+        // MouseEvent = browser drop
+        clientX = (event as MouseEvent).clientX;
+        clientY = (event as MouseEvent).clientY;
+      } else if (event instanceof TouchEvent) {
+        // TouchEvent = mobile drop
+        clientX = (event as TouchEvent).changedTouches[0].clientX;
+        clientY = (event as TouchEvent).changedTouches[0].clientY;
+      }
+
+      // Make sure coords are valid
+      if (isNaN(clientX) || isNaN(clientY)) {
+        console.error("Invalid coordinates:", { clientX, clientY });
+        return;
+      }
+      // Calculate the drop position in the flow
+      // First get the raw position where the cursor is
+      const rawPosition = screenToFlowPosition({
+        x: clientX - reactFlowBounds.left,
+        y: clientY - reactFlowBounds.top,
+      });
+
+      // Get the node dimensions from CSS to center it on cursor
+      // The CustomNode has a width of 100px as defined in CustomNode.tsx
+      const nodeWidth = 100;
+      // Estimate height based on padding in CustomNode.tsx (10px top + 10px bottom)
+      const nodeHeight = 40;
+
+      // Calculate the position with offset to center the node on cursor
+      const position = {
+        x: rawPosition.x - nodeWidth / 2,
+        y: rawPosition.y - nodeHeight / 2,
+      };
+
+      // Ensure position values are valid numbers
+      if (isNaN(position.x) || isNaN(position.y)) {
+        console.error("Invalid position:", position);
+        return;
+      }
+
+      console.log("Drop position:", position, "Icon:", icon.displayName);
+
+      // Create a new node
+      const newNode: CustomNode = {
+        id: getId(),
+        type: "iconNode",
+        position,
+        data: {
+          label,
+          iconName: icon.displayName,
+          color: "#57B9FF",
+          rotation: 0,
+        },
+        dragging: false,
+        zIndex: 0,
+        selectable: true,
+        deletable: true,
+        selected: false,
+        draggable: true,
+        isConnectable: true,
+        positionAbsoluteX: position.x,
+        positionAbsoluteY: position.y,
+      };
+
+      // Add the new node to the flow
+      setNodes((nds) => nds.concat(newNode));
+    },
+    [screenToFlowPosition, setNodes]
+  );
+
   // Memoize the active node context value
   const activeNodeContextValue = useMemo(
     () => ({ activeNodeId, setActiveNodeId }),
@@ -451,16 +470,14 @@ function Flow({
   
   return (
     <ActiveNodeContext.Provider value={activeNodeContextValue}>
-      <div style={{ width: "100vw", height: "100vh" }}>
+      <div style={{ width: "100vw", height: "100vh" }} ref={reactFlowWrapper}>
         <ReactFlow
           nodes={nodes}
           minZoom={0.1}
           onNodesChange={onNodesChange}
+          //onNodeClick={(_, node) => setActiveNodeId(node.id)} // Fix the onNodeClick handler
           zoomOnScroll={false}
           panOnScroll={false}
-          onDrop={onDrop}
-          onDragOver={onDragOver}
-          onInit={setRfInstance}
           nodeTypes={nodeTypes}
           nodesDraggable={isEditable}
           elementsSelectable={isEditable}
@@ -475,7 +492,11 @@ function Flow({
           <Controls position="bottom-left" showInteractive={false} />
 
           {/* Hide legend on view only mode */}
-          {isEditable && <Legend isGettingStarted={event.isGS} />}
+          {isEditable && (
+            <Panel position="top-left">
+              <Legend onDrop={onDrop} isGettingStarted={event.isGS} />
+            </Panel>
+          )}
           {isEditable && (
             <ControlButtons
               undo={onUndo}
