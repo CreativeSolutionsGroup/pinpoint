@@ -6,20 +6,34 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { LucideIcon } from "lucide-react";
-import React, { useEffect } from "react";
+import { LucideIcon, PlusCircle } from "lucide-react";
+import React, { useEffect, useState } from "react";
 import { DraggableEvent } from "react-draggable";
-import categories from "./Categories";
 import LegendItem from "./LegendItem";
+import CustomIconCreator from "./CustomIconCreator";
 
 // Updated interface with generics
 interface LegendProps {
   isGettingStarted: boolean;
   onDrop: (event: DraggableEvent, icon: LucideIcon, label: string) => void;
+  categories: {
+    id: string;
+    title: string;
+    value: string;
+    items: {
+      icon: LucideIcon;
+      label: string;
+    }[];
+  }[];
 }
 
-const Legend: React.FC<LegendProps> = ({ isGettingStarted, onDrop }) => {
+const Legend: React.FC<LegendProps> = ({
+  isGettingStarted,
+  onDrop,
+  categories,
+}) => {
   const isMobile = /Mobi|Android/i.test(navigator?.userAgent);
+  const [customIconDialogOpen, setCustomIconDialogOpen] = useState(false);
 
   // complicated (but only) way of effectively forcing the panel open
   // so mobile users see it before it hides. any interaction with the page
@@ -57,7 +71,13 @@ const Legend: React.FC<LegendProps> = ({ isGettingStarted, onDrop }) => {
         "absolute left-0 transform -translate-x-full hover:translate-x-0"
       } transition-transform duration-700 ease-in-out`}
     >
-      <h2 className="text-lg font-bold mb-4">ICONS</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-bold">ICONS</h2>
+        <PlusCircle
+          className="cursor-pointer hover:text-blue-500"
+          onClick={() => setCustomIconDialogOpen(true)}
+        />
+      </div>
       <Accordion type="single" collapsible className="w-full">
         {categories.map(
           (category) =>
@@ -81,6 +101,13 @@ const Legend: React.FC<LegendProps> = ({ isGettingStarted, onDrop }) => {
             )
         )}
       </Accordion>
+
+      {/* Custom Icon Dialog */}
+      <CustomIconCreator
+        open={customIconDialogOpen}
+        onOpenChange={setCustomIconDialogOpen}
+        categories={categories}
+      />
     </div>
   );
 };
