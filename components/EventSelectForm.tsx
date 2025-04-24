@@ -32,7 +32,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-import CreateEvent from "@/lib/api/create/createEvent";
+import CreateEvent from "@/lib/api/create/CreateEvent";
 import DeleteEntity from "@/lib/api/delete/DeleteEntity";
 import { GetEvent } from "@/lib/api/read/GetEvent";
 import AddIcon from "@mui/icons-material/Add";
