@@ -19,6 +19,7 @@ function LegendWrapper({
     title: string;
     value: string;
     items: {
+      id: string;
       icon: LucideIcon;
       label: string;
     }[];
@@ -43,6 +44,7 @@ function LegendWrapper({
               value: value,
               items: category.icons.map((icon) => {
                 return {
+                  id: icon.id,
                   icon: icons[icon.name as keyof typeof icons],
                   label: icon.customName || icon.name,
                 };
@@ -72,7 +74,7 @@ function LegendWrapper({
       isGettingStarted={isGettingStarted}
       onDrop={onDrop}
       categories={categories}
-      onAdd={setRefresh}
+      onIconsChange={setRefresh}
     />
   );
 }

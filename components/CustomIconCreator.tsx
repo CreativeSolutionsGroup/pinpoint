@@ -25,12 +25,12 @@ import Fuse from "fuse.js";
 const CustomIconCreator = ({
   open,
   onOpenChange,
-  onAddChange,
+  onIconsChange,
   categories,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAddChange: (refresh: boolean) => void;
+  onIconsChange: (refresh: boolean) => void;
   categories: {
     id: string;
     title: string;
@@ -93,7 +93,7 @@ const CustomIconCreator = ({
 
     setCategoryDialogOpen(false);
     onOpenChange(false);
-    onAddChange(true);
+    onIconsChange(true);
     setSelectedIcon(null);
     setSelectedCategory("");
     setCustomName("");
