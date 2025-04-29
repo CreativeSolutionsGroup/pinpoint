@@ -25,10 +25,12 @@ import Fuse from "fuse.js";
 const CustomIconCreator = ({
   open,
   onOpenChange,
+  onAddChange,
   categories,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onAddChange: (refresh: boolean) => void;
   categories: {
     id: string;
     title: string;
@@ -83,10 +85,15 @@ const CustomIconCreator = ({
       (category) => category.value === selectedCategory
     )?.id;
 
-    await CreateIcon(selectedIcon[0] as string, customName.trim(), categoryId);
+    await CreateIcon(
+      selectedIcon![0] as string,
+      customName.trim(),
+      categoryId!
+    );
 
     setCategoryDialogOpen(false);
     onOpenChange(false);
+    onAddChange(true);
     setSelectedIcon(null);
     setSelectedCategory("");
     setCustomName("");
@@ -153,7 +160,7 @@ const CustomIconCreator = ({
           <div className="py-4 space-y-4">
             {selectedIcon && (
               <div className="flex justify-center mb-4">
-                {React.createElement(selectedIcon[1], { size: 32 })}
+                {React.createElement(selectedIcon[1])}
               </div>
             )}
 

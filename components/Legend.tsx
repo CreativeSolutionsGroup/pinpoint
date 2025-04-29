@@ -6,7 +6,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { LucideIcon, PlusCircle } from "lucide-react";
+import { LucideIcon, PlusSquare, MinusSquare } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { DraggableEvent } from "react-draggable";
 import LegendItem from "./LegendItem";
@@ -16,6 +16,7 @@ import CustomIconCreator from "./CustomIconCreator";
 interface LegendProps {
   isGettingStarted: boolean;
   onDrop: (event: DraggableEvent, icon: LucideIcon, label: string) => void;
+  onAdd: (refresh: boolean) => void;
   categories: {
     id: string;
     title: string;
@@ -30,6 +31,7 @@ interface LegendProps {
 const Legend: React.FC<LegendProps> = ({
   isGettingStarted,
   onDrop,
+  onAdd,
   categories,
 }) => {
   const isMobile = /Mobi|Android/i.test(navigator?.userAgent);
@@ -73,10 +75,16 @@ const Legend: React.FC<LegendProps> = ({
     >
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-bold">ICONS</h2>
-        <PlusCircle
-          className="cursor-pointer hover:text-blue-500"
-          onClick={() => setCustomIconDialogOpen(true)}
-        />
+        <div className="flex items-center gap-1">
+          <MinusSquare
+            className="cursor-pointer hover:text-blue-500"
+            onClick={() => {}}
+          />
+          <PlusSquare
+            className="cursor-pointer hover:text-blue-500"
+            onClick={() => setCustomIconDialogOpen(true)}
+          />
+        </div>
       </div>
       <Accordion type="single" collapsible className="w-full">
         {categories.map(
@@ -106,6 +114,7 @@ const Legend: React.FC<LegendProps> = ({
       <CustomIconCreator
         open={customIconDialogOpen}
         onOpenChange={setCustomIconDialogOpen}
+        onAddChange={onAdd}
         categories={categories}
       />
     </div>

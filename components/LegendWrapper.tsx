@@ -26,9 +26,12 @@ function LegendWrapper({
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refresh, setRefresh] = useState(true);
 
   useEffect(() => {
     async function fetchCategories() {
+      if (!refresh) return;
+
       try {
         const dbCategories = await GetAllCategories();
         if (dbCategories) {
@@ -53,11 +56,12 @@ function LegendWrapper({
         console.error("Error fetching categories:", error);
       } finally {
         setLoading(false);
+        setRefresh(false);
       }
     }
 
     fetchCategories();
-  }, []);
+  }, [refresh]);
 
   if (loading) {
     return <div className="p-5 text-sm">Loading icons...</div>;
@@ -68,6 +72,7 @@ function LegendWrapper({
       isGettingStarted={isGettingStarted}
       onDrop={onDrop}
       categories={categories}
+      onAdd={setRefresh}
     />
   );
 }
