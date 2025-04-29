@@ -14,6 +14,22 @@ model Event {
   locations EventToLocation[]
 }
 
+model Category {
+  id    String @id @default(cuid())
+  name  String
+  icons Icon[]
+}
+
+model Icon {
+  id          String    @id @default(cuid())
+  name        String
+  customName  String?
+  categoryId  String
+  category    Category  @relation(fields: [categoryId], references: [id])
+
+  @@unique([name, customName, categoryId])
+}
+
 model EventToLocation {
   id         String   @id @default(cuid())
   eventId    String

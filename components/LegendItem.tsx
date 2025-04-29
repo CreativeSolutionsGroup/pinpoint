@@ -8,12 +8,14 @@ interface LegendItemProps {
   icon: LucideIcon;
   label: string;
   onDrop: (event: DraggableEvent, icon: LucideIcon, label: string) => void;
+  isSelected?: boolean;
 }
 
 const LegendItem: React.FC<LegendItemProps> = ({
   icon: Icon,
   label,
   onDrop,
+  isSelected = false,
 }) => {
   // Create a ref to pass to Draggable component
   const nodeRef = useRef<HTMLDivElement>(null!);
@@ -43,11 +45,25 @@ const LegendItem: React.FC<LegendItemProps> = ({
       {/* Static copy that stays in place */}
       <div
         className={`static-copy justify-items-center text-center p-1 ${
-          isDragging || isHovering ? "bg-gray-100 rounded-md w-full h-full" : ""
+          isSelected
+            ? "bg-red-100 rounded-md w-full h-full"
+            : isDragging || isHovering
+            ? "bg-gray-100 rounded-md w-full h-full"
+            : ""
         }`}
       >
-        <Icon className="w-6 h-6 mb-1 text-gray-700" />
-        <span className="text-xs text-center text-gray-600">{label}</span>
+        <Icon
+          className={`w-6 h-6 mb-1 ${
+            isSelected ? "text-red-700" : "text-gray-700"
+          }`}
+        />
+        <span
+          className={`text-xs text-center ${
+            isSelected ? "text-red-600" : "text-gray-600"
+          }`}
+        >
+          {label}
+        </span>
       </div>
 
       {/* Draggable element with pointer-events */}
@@ -57,10 +73,13 @@ const LegendItem: React.FC<LegendItemProps> = ({
         onStop={handleDragEnd}
         position={{ x: 0, y: 0 }}
         enableUserSelectHack={true}
+        disabled={isSelected} // Disable dragging when selected for deletion
       >
         <div
           ref={nodeRef}
-          className="draggable-node justify-items-center text-center p-1 cursor-grab active:cursor-grabbing select-none"
+          className={`draggable-node justify-items-center text-center p-1 ${
+            isSelected ? "cursor-pointer" : "cursor-grab active:cursor-grabbing"
+          } select-none`}
           style={{
             position: "absolute",
             top: 0,
@@ -72,8 +91,18 @@ const LegendItem: React.FC<LegendItemProps> = ({
             userSelect: "none", // Additional explicit styling to prevent selection
           }}
         >
-          <Icon className="w-6 h-6 mb-1 text-gray-700 justify-center" />
-          <span className="text-xs text-gray-600">{label}</span>
+          <Icon
+            className={`w-6 h-6 mb-1 ${
+              isSelected ? "text-red-700" : "text-gray-700"
+            } justify-center`}
+          />
+          <span
+            className={`text-xs ${
+              isSelected ? "text-red-600" : "text-gray-600"
+            }`}
+          >
+            {label}
+          </span>
         </div>
       </Draggable>
     </div>

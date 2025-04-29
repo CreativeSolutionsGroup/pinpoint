@@ -26,7 +26,7 @@ import SaveState from "@/lib/api/update/ReactFlowSave";
 import { CustomImageNode } from "@components/CustomImageNode";
 import EventMapSelect from "@components/EventMapSelect";
 import { ActiveNodeContext, IconNode } from "@components/IconNode";
-import Legend from "@components/Legend";
+import LegendWrapper from "@components/LegendWrapper";
 import ControlButtons from "./ControlButtons";
 
 // Types
@@ -72,12 +72,14 @@ function Flow({
   const eventLocations = useRef<Array<Location>>(
     event.locations.map((l) => l.location)
   ).current;
-  
+
   const [nodes, setNodes] = useState<CustomNode[]>(() => {
-    const savedState = eventLocation?.state ? JSON.parse(eventLocation.state) : {};
+    const savedState = eventLocation?.state
+      ? JSON.parse(eventLocation.state)
+      : {};
     return savedState?.nodes || [];
   });
-  
+
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const rfInstance = useReactFlow();
 
@@ -91,11 +93,11 @@ function Flow({
   // Subscribe to real-time updates with proper client ID filtering
   useChannel("event-updates", "subscribe", (message) => {
     const { eventId, locationId, senderClientId } = message.data;
-    
+
     // Skip processing messages from this client
     if (
       senderClientId === clientId ||
-      eventId !== event.id || 
+      eventId !== event.id ||
       locationId !== eventLocation?.locationId
     ) {
       return;
@@ -467,7 +469,7 @@ function Flow({
     () => ({ activeNodeId, setActiveNodeId }),
     [activeNodeId, setActiveNodeId]
   );
-  
+
   return (
     <ActiveNodeContext.Provider value={activeNodeContextValue}>
       <div style={{ width: "100vw", height: "100vh" }} ref={reactFlowWrapper}>
@@ -494,7 +496,7 @@ function Flow({
           {/* Hide legend on view only mode */}
           {isEditable && (
             <Panel position="top-left">
-              <Legend onDrop={onDrop} isGettingStarted={event.isGS} />
+              <LegendWrapper onDrop={onDrop} isGettingStarted={event.isGS} />
             </Panel>
           )}
           {isEditable && (
@@ -506,7 +508,11 @@ function Flow({
             />
           )}
 
-          <EventMapSelect eventName={event.name} eventId={event.id} locations={eventLocations} />
+          <EventMapSelect
+            eventName={event.name}
+            eventId={event.id}
+            locations={eventLocations}
+          />
         </ReactFlow>
       </div>
     </ActiveNodeContext.Provider>
