@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Fuse from "fuse.js";
+import { AlertCircle } from "lucide-react";
 
 const CustomIconCreator = ({
   open,
@@ -45,6 +46,7 @@ const CustomIconCreator = ({
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [customName, setCustomName] = useState<string>("");
+  const [error, setError] = useState<string | null>(null);
   const [selectedIcon, setSelectedIcon] = useState<
     [string, React.ComponentType] | null
   >(null);
@@ -70,6 +72,7 @@ const CustomIconCreator = ({
 
   const handleIconClick = (icon: [string, React.ComponentType]) => {
     setSelectedIcon(icon);
+    setError(null);
 
     const formattedName = (icon[0] as string)
       .replace(/([A-Z])/g, " $1")
@@ -85,24 +88,36 @@ const CustomIconCreator = ({
       (category) => category.value === selectedCategory
     )?.id;
 
-    await CreateIcon(
-      selectedIcon![0] as string,
-      customName.trim(),
-      categoryId!
-    );
+    try {
+      await CreateIcon(
+        selectedIcon![0] as string,
+        customName.trim(),
+        categoryId!
+      );
 
-    setCategoryDialogOpen(false);
-    onOpenChange(false);
-    onIconsChange(true);
-    setSelectedIcon(null);
-    setSelectedCategory("");
-    setCustomName("");
+      setCategoryDialogOpen(false);
+      onOpenChange(false);
+      onIconsChange(true);
+      setSelectedIcon(null);
+      setSelectedCategory("");
+      setCustomName("");
+      setError(null);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+
+      if (errorMessage.includes("Unique constraint failed")) {
+        setError("This icon name already exists in this category");
+      } else {
+        setError("Failed to create icon");
+      }
+    }
   };
 
   const handleCancel = () => {
     setCategoryDialogOpen(false);
     setSelectedCategory("");
     setCustomName("");
+    setError(null);
   };
 
   return (
@@ -169,7 +184,10 @@ const CustomIconCreator = ({
               <Input
                 id="custom-name"
                 value={customName}
-                onChange={(e) => setCustomName(e.target.value)}
+                onChange={(e) => {
+                  setCustomName(e.target.value);
+                  setError(null);
+                }}
               />
             </div>
 
@@ -177,7 +195,10 @@ const CustomIconCreator = ({
               <Label htmlFor="category-select">Category</Label>
               <Select
                 value={selectedCategory}
-                onValueChange={setSelectedCategory}
+                onValueChange={(value) => {
+                  setSelectedCategory(value);
+                  setError(null);
+                }}
               >
                 <SelectTrigger id="category-select" className="w-full">
                   <SelectValue placeholder="Select a category" />
@@ -191,6 +212,13 @@ const CustomIconCreator = ({
                 </SelectContent>
               </Select>
             </div>
+
+            {error && (
+              <div className="flex items-center gap-2 text-red-500 text-sm mt-2">
+                <AlertCircle size={16} />
+                <span>{error}</span>
+              </div>
+            )}
           </div>
           <DialogFooter className="sm:justify-end gap-2">
             <Button variant="outline" onClick={handleCancel}>

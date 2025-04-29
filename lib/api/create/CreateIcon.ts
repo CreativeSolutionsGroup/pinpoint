@@ -101,11 +101,11 @@ export async function SeedCategoriesAndIcons() {
           categoryId: createdCategory.id,
         },
       });
-      
+
       results.push(createdIcon);
     }
   }
-  
+
   return results;
 }
 
@@ -117,12 +117,20 @@ export async function CreateCategory(name: string) {
   });
 }
 
-export async function CreateIcon(name: string, customName: string, categoryId: string) {
-  return await prisma.icon.create({
-    data: {
-      name,
-      customName,
-      categoryId,
-    },
-  });
+export async function CreateIcon(
+  name: string,
+  customName: string,
+  categoryId: string
+) {
+  try {
+    return await prisma.icon.create({
+      data: {
+        name,
+        customName,
+        categoryId,
+      },
+    });
+  } catch (error) {
+    throw error;
+  }
 }
