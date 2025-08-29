@@ -10,6 +10,7 @@
  */
 
 import ErrorToast from "@/components/ErrorToast";
+import EventPageTransitionWrapper from "@/components/EventPageTransitionWrapper";
 import EventSelectForm from "@/components/EventSelectForm";
 import Heading from "@/components/Heading";
 import HomepageArrow from "@/components/svg/HomepageArrow";
@@ -38,7 +39,9 @@ export default async function EventSelect() {
         <Box mt={5}>
           <Heading />
         </Box>
-        <EventSelectForm events={events} />
+        <EventPageTransitionWrapper exitDirection="left" entryDirection="left">
+          <EventSelectForm events={events} />
+        </EventPageTransitionWrapper>
         <Suspense>
           <ErrorToast />
         </Suspense>

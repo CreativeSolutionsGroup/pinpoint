@@ -139,13 +139,14 @@ export default function LocationList({ eventId, eventName }: Props) {
             ))}
           </>
         )}
-      </div>
-      {isNavigating && (
-        <div className="mt-4 flex justify-center">
-          <CircularProgress size={22} />
-        </div>
-      )}
 
+        {isNavigating && (
+          <div className="mt-4 flex justify-center">
+            <CircularProgress size={22} />
+          </div>
+        )}
+      </div>
+      
       {/* LocationAdder modal */}
       <LocationAdder
         eventId={eventId}

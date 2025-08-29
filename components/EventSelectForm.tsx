@@ -15,6 +15,8 @@ import { Event, Location } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { usePageTransitionExit } from "@/components/EventPageTransitionWrapper";
+
 import LocationAdder from "./LocationCreator";
 import PinpointLoader from "./PinpointLoader";
 
@@ -57,7 +59,7 @@ export default function EventSelectForm({
   const [selectedEventLocations, setSelectedEventLocations] = useState<
     Location[]
   >([]);
-  const [animateOut, setAnimateOut] = useState(false);
+  // exit handled by wrapper
 
   function deleteEvent(id: string) {
     DeleteEntity("event", id);
@@ -89,20 +91,15 @@ export default function EventSelectForm({
       return;
     }
     setEventId(selectedEventId);
-    setAnimateOut(true);
-    // navigate after animation finishes
-    setTimeout(() => router.push(`/home/event/${selectedEventId}`), 450);
+    exit(() => router.push(`/home/event/${selectedEventId}`));
   };
+  const exit = usePageTransitionExit();
 
   const { data: session } = useSession();
   const canEdit = session?.role === "ADMIN" || session?.role === "EDITOR";
 
   return (
-    <div
-      className={`p-8 w-full flex flex-col transform transition-transform duration-500 ease-in-out ${
-        animateOut ? "-translate-x-[190%]" : "translate-x-0"
-      }`}
-    >
+    <div className="p-8 w-full flex flex-col">
       <Typography
         variant="h6"
         align="center"
@@ -128,7 +125,7 @@ export default function EventSelectForm({
               <Typography fontSize={15}>{event.name}</Typography>
             ) : null;
           }}
-          disabled={animateOut}
+          // disabled during dialog; wrapper exit blocks interaction anyway
         >
           {dropdownEvents
             .map((event) => (
