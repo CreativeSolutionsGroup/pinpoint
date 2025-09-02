@@ -493,7 +493,7 @@ function Flow({
   
   return (
     <ActiveNodeContext.Provider value={activeNodeContextValue}>
-      <div style={{ width: "100vw", height: "100vh" }} ref={reactFlowWrapper}>
+      <div style={{ width: "100vw", height: "100vh" }} ref={reactFlowWrapper} className="select-none">
         <ReactFlow
           nodes={nodes}
           minZoom={0.1}
@@ -504,8 +504,8 @@ function Flow({
           nodeTypes={nodeTypes}
           nodesDraggable={isEditable}
           elementsSelectable={isEditable}
-          className="touch-none"
-          selectionKeyCode={'Rightclick'}
+          className="touch-none select-none"
+          selectionKeyCode={'Shift'}
         >
           <Background
             color="#ccc"
