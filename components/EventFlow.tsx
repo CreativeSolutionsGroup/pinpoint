@@ -505,6 +505,7 @@ function Flow({
           nodesDraggable={isEditable}
           elementsSelectable={isEditable}
           className="touch-none"
+          selectionKeyCode={'Rightclick'}
         >
           <Background
             color="#ccc"
