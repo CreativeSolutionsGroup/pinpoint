@@ -30,6 +30,18 @@ model Location {
   name     String
   imageURL String            @default("https://placehold.co/600x400")
   events   EventToLocation[]
+  Recents  Recents[]
+}
+
+model Recents {
+  id         String         @id @default(cuid())
+  userId     String
+  locationId String
+  lastUsed   DateTime       @default(now()) @updatedAt
+  user       AuthorizedUser @relation(fields: [userId], references: [id])
+  location   Location       @relation(fields: [locationId], references: [id])
+
+  @@unique([userId, locationId])
 }
 
 model Account {
@@ -60,9 +72,10 @@ model Session {
 }
 
 model AuthorizedUser {
-  id    String @id @default(cuid())
-  email String @unique
-  role  Roles  @default(VIEWER)
+  id      String    @id @default(cuid())
+  email   String    @unique
+  role    Roles     @default(VIEWER)
+  Recents Recents[]
 }
 
 model User {
@@ -86,6 +99,22 @@ model VerificationRequest {
   updatedAt  DateTime @updatedAt
 
   @@unique([identifier, token])
+}
+
+model Category {
+  id   String @id
+  name String
+  Icon Icon[]
+}
+
+model Icon {
+  id         String   @id
+  name       String
+  customName String?
+  categoryId String
+  Category   Category @relation(fields: [categoryId], references: [id])
+
+  @@unique([name, customName, categoryId])
 }
 
 enum Roles {

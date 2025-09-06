@@ -2,8 +2,9 @@ import AblyClientProvider from "@/components/AblyProvider";
 import ClientProvider from "@/components/ClientProvider";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v14-appRouter";
 import localFont from "next/font/local";
-import Head from 'next/head'
+import Head from "next/head";
 import "./globals.css";
+import Sidebar from "@/components/layout/sidebar";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -41,7 +42,10 @@ export default function RootLayout({
       >
         <AblyClientProvider>
           <AppRouterCacheProvider>
-            <ClientProvider>{children}</ClientProvider>
+            <ClientProvider>
+              <Sidebar />
+              {children}
+            </ClientProvider>
           </AppRouterCacheProvider>
         </AblyClientProvider>
       </body>
