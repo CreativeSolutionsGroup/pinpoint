@@ -13,7 +13,7 @@ export default function Heading() {
       <Image
         fill
         src="/pinpoint-logo-color.png"
-        alt="Project Dora"
+        alt="Pinpoint"
         sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
         style={{ objectFit: "contain" }}
         priority

@@ -10,11 +10,12 @@
  */
 
 import ErrorToast from "@/components/ErrorToast";
+import EventPageTransitionWrapper from "@/components/EventPageTransitionWrapper";
 import EventSelectForm from "@/components/EventSelectForm";
 import Heading from "@/components/Heading";
 import HomepageArrow from "@/components/svg/HomepageArrow";
 import { prisma } from "@/lib/api/db";
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 import { Suspense } from "react";
 
 // Collect all events from doradev database
@@ -34,29 +35,30 @@ export default async function EventSelect() {
 
   return (
     <>
-      <Box width="45rem" mx="auto" display="flex" flexDirection="column">
+      <Box width="45rem" mx="auto" display="flex" flexDirection="column" sx={{ position:"relative", zIndex:1 }}>
         <Box mt={5}>
           <Heading />
         </Box>
-
-        <Typography
-          mx="auto"
-          variant="h6"
-          align="center"
-          mt={0.5}
-          mb={1}
-          color="primary.main"
-        >
-          Select an Event
-        </Typography>
-        <EventSelectForm events={events} />
+        <EventPageTransitionWrapper exitDirection="left" entryDirection="left">
+          <EventSelectForm events={events} />
+        </EventPageTransitionWrapper>
         <Suspense>
           <ErrorToast />
         </Suspense>
       </Box>
-      <Box sx={{ width: "75%", position: "fixed" }}>
+      <Box
+        sx={{
+          position: "fixed",
+          width: "75%",
+          left: 0,
+          bottom: 0,
+          zIndex: 0,
+          pointerEvents: "none",
+        }}
+      >
         <HomepageArrow />
       </Box>
     </>
   );
 }
+
