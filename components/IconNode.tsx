@@ -251,8 +251,24 @@ export const IconNode = memo(function IconNode({
     );
   }, [data.rotation, id, setNodes]);
 
+  // Track orientation for mobile dialog layout adjustments
+  const [isLandscape, setIsLandscape] = useState(false);
+
   // If user is on mobile, make the node settings a dialog instead of a popover
   const isMobile = /Mobi|Android/i.test(navigator?.userAgent);
+
+  // Update orientation state when on mobile
+  useEffect(() => {
+    if (!isMobile) return;
+    const handleResize = () => {
+      if (typeof window !== "undefined") {
+        setIsLandscape(window.innerWidth > window.innerHeight);
+      }
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [isMobile]);
   if (!isMobile) {
     return (
       <>
@@ -502,22 +518,73 @@ export const IconNode = memo(function IconNode({
               {data.label}
             </Typography>
           </DialogTrigger>
-          <DialogContent className="w-fit">
+          <DialogContent
+            className="w-fit"
+            style={
+              isLandscape
+                ? {
+                    width: "80vw",
+                    maxWidth: "90vw",
+                    height: "80dvh",
+                    maxHeight: "100dvh",
+                    borderRadius: 0,
+                    padding: "1rem",
+                    display: "flex",
+                    flexDirection: "column",
+                  }
+                : {
+                    maxWidth: "90vw",
+                    maxHeight: "100vh",
+                  }
+            }
+          >
             <DialogTitle className="text-lg font-semibold">
               Icon Settings
             </DialogTitle>
             <div className="grid gap-4">
-              {isEditable && (
+              {isEditable && isLandscape && (
+                <div className="grid gap-2 grid-cols-[1fr_auto] w-full items-start">
+                  <div className="flex flex-col gap-2 w-full">
+                    <Input
+                      value={data.label}
+                      onChange={handleLabelChange}
+                      className="w-full"
+                    />
+                    <Textarea
+                      placeholder="Add notes"
+                      defaultValue={data.notes}
+                      onChange={handleNotesChange}
+                      disabled={!isEditable}
+                      className="w-full resize-y h-32"
+                    />
+                  </div>
+                  <div className="shrink-0 pt-1">
+                    <ColorMenu
+                      x={0}
+                      y={0}
+                      currentColor={data.color ?? "#000000"}
+                      changeColor={colorChange}
+                    />
+                  </div>
+                </div>
+              )}
+              {isEditable && !isLandscape && (
                 <div className="justify-center">
                   <Input value={data.label} onChange={handleLabelChange} />
                 </div>
               )}
-              <Textarea
-                placeholder="Add notes"
-                defaultValue={data.notes}
-                onChange={handleNotesChange}
-                disabled={!isEditable}
-              />
+              {!isLandscape && (
+                <div className="flex-1 flex min-h-0">
+                  <Textarea
+                    placeholder="Add notes"
+                    defaultValue={data.notes}
+                    onChange={handleNotesChange}
+                    disabled={!isEditable}
+                    className="flex-1 h-full w-full resize-none"
+                    style={{ minHeight: 0 }}
+                  />
+                </div>
+              )}
               {isEditable && (
                 <Box className="flex place-content-between">
                   <ResizeMenu
@@ -549,7 +616,7 @@ export const IconNode = memo(function IconNode({
                   </Box>
                 </Box>
               )}
-              {isEditable && (
+              {isEditable && !isLandscape && (
                 <ColorMenu
                   x={0}
                   y={0}
