@@ -10,7 +10,7 @@ export default function SideBarHelper({ children }: PropsWithChildren) {
     <>
       <div
         className={`float-left h-screen ${
-          open ? "w-64" : "w-16"
+          open ? "max-w-64 min-w-64" : "w-16"
         } transition-all duration-300`}
       ></div>
       <div
@@ -20,7 +20,7 @@ export default function SideBarHelper({ children }: PropsWithChildren) {
       >
         <Button
           onClick={() => setOpen(!open)}
-          className="w-min m-1.5 cursor-pointer absolute top-0 right-0"
+          className="w-min m-1.5 cursor-pointer absolute top-0 right-0 z-20"
           variant="outline"
         >
           <div className="relative h-4 w-4">
@@ -36,7 +36,7 @@ export default function SideBarHelper({ children }: PropsWithChildren) {
             />
           </div>
         </Button>
-        <div className="flex flex-col h-screen">{children}</div>
+        <div className="flex flex-col h-screen bg-background border-r border-border z-10">{children}</div>
       </div>
     </>
   );

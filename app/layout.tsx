@@ -43,8 +43,10 @@ export default function RootLayout({
         <AblyClientProvider>
           <AppRouterCacheProvider>
             <ClientProvider>
-              <Sidebar />
-              {children}
+              <div className="flex">
+                <Sidebar />
+                {children}
+              </div>
             </ClientProvider>
           </AppRouterCacheProvider>
         </AblyClientProvider>

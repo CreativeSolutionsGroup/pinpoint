@@ -5,27 +5,45 @@ import { Button } from "../ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import SideBarHelper from "./sidebar-helper";
 import Image from "next/image";
+import Logo from "@/public/pinpoint-logo-color.png";
+import { getRecents } from "@/lib/recents/read";
+import Link from "next/link";
 
 export default async function Sidebar() {
   const session = await getServerSession();
+  const recents = session?.user?.email
+    ? await getRecents(session.user?.email)
+    : [];
 
   return (
     <SideBarHelper>
-      <Image className="text-xl font-semibold mt-2.5 ml-4 antialiased" src="/pinpoint-logo-color.png" width={128} height={32} alt="Pinpoint" />
+      <Image
+        className="text-xl font-semibold mt-2.5 ml-4 antialiased"
+        src={Logo}
+        width={128}
+        height={32}
+        alt="Pinpoint"
+      />
       <div className="mt-3 ml-4 flex flex-col">
         <span className="font-semibold grow">Recent Maps</span>
-        <div className="flex flex-col pl-1 mt-1 ml-1 border-l-1 border-border">
-          <span className="text-sm">Event name</span>
-          <span className="text-sm text-muted-foreground ml-2 bg-sidebar hover:bg-secondary transition-colors px-1 rounded-md max-w-40 cursor-pointer">
-            Some location
+        {recents.length === 0 && (
+          <span className="text-sm text-muted-foreground mt-1">
+            No recent maps
           </span>
-        </div>
-        <div className="flex mt-1 flex-col pl-1 ml-1 border-l-1 border-border">
-          <span className="text-sm">Event name</span>
-          <span className="text-sm text-muted-foreground ml-2 bg-sidebar hover:bg-secondary transition-colors px-1 rounded-md max-w-40 cursor-pointer">
-            Some location that is very long and will continue to the next line
-          </span>
-        </div>
+        )}
+        {recents.map((recent) => (
+          <div
+            key={recent.locationId}
+            className="flex flex-col pl-1 mt-1 ml-1 border-l-1 border-border"
+          >
+            <span className="text-sm max-w-40 truncate">{recent.eventName}</span>
+            <Link href={`/event/edit/${recent.eventId}/${recent.locationId}`} className="flex items-center">
+              <span className="text-sm text-muted-foreground ml-2 bg-sidebar hover:bg-secondary transition-colors px-1 rounded-md max-w-40 cursor-pointer">
+                {recent.locationName}
+              </span>
+            </Link>
+          </div>
+        ))}
       </div>
       <div className="grow"></div>
       <div className="flex items-center mx-2 mb-1 bg-sidebar hover:bg-secondary transition-colors rounded-md cursor-pointer">
