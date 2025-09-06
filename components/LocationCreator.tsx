@@ -16,7 +16,7 @@ import {
 } from "@/lib/api/create/CreateLocation";
 import { GetAllLocations } from "@/lib/api/read/GetAllLocations";
 import { Location } from "@prisma/client";
-import { useEffect, useState } from "react";
+import { SetStateAction, useEffect, useState } from "react";
 import { Input } from "./ui/input";
 import { useRouter } from "next/navigation";
 
@@ -150,7 +150,7 @@ export default function LocationAdder({
         <Tabs
           defaultValue="add"
           className="w-full"
-          onValueChange={(value) => setCurrentTab(value)}
+          onValueChange={(value: SetStateAction<string>) => setCurrentTab(value)}
         >
           <TabsList className="w-full grid grid-cols-2 mb-4">
             <TabsTrigger value="add">Add Existing</TabsTrigger>
