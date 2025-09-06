@@ -39,13 +39,13 @@ export default function EventPageTransitionWrapper({
     setTimeout(() => after && after(), durationMs);
   };
 
-  const entryClass = entryDirection === "right" ? "translate-x-[180%]" : "-translate-x-full";
-  const exitClass = exitDirection === "right" ? "translate-x-[185%]" : "-translate-x-[185%]";
+  const entryClass = entryDirection === "right" ? "translate-x-[100vw]" : "-translate-x-[100vw]";
+  const exitClass = exitDirection === "right" ? "translate-x-[100vw]" : "-translate-x-[100vw]";
 
   return (
     <ExitContext.Provider value={triggerExit}>
       <div
-        className={`transform transition-transform ease-out duration-[${durationMs}ms] ${
+        className={`transform transition-transform ease duration-[${durationMs}ms] ${
           enter ? entryClass : exiting ? exitClass : "translate-x-0"
         } ${exiting ? "pointer-events-none" : ""}`}
       >
