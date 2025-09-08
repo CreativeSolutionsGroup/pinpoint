@@ -1,9 +1,13 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
 import { prisma } from "../api/db";
 
 export async function updateRecents(
   email: string,
+  eventId: string,
   locationId: string
-): Promise<void> {
+) {
   const currentRecents = await prisma.recents.findMany({
     where: { user: { email } },
     orderBy: { lastUsed: "desc" },
@@ -31,6 +35,7 @@ export async function updateRecents(
       data: {
         user: { connect: { email } },
         location: { connect: { id: locationId } },
+        event: { connect: { id: eventId } },
         lastUsed: new Date(),
       },
     });
@@ -42,4 +47,6 @@ export async function updateRecents(
       });
     }
   }
+
+  revalidatePath("/");
 }

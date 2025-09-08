@@ -12,6 +12,7 @@ model Event {
   name      String
   isGS      Boolean           @default(false)
   locations EventToLocation[]
+  Recents   Recents[]
 }
 
 model EventToLocation {
@@ -36,9 +37,11 @@ model Location {
 model Recents {
   id         String         @id @default(cuid())
   userId     String
+  eventId    String
   locationId String
   lastUsed   DateTime       @default(now()) @updatedAt
   user       AuthorizedUser @relation(fields: [userId], references: [id])
+  event      Event          @relation(fields: [eventId], references: [id])
   location   Location       @relation(fields: [locationId], references: [id])
 
   @@unique([userId, locationId])

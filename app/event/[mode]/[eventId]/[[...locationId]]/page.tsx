@@ -1,8 +1,7 @@
-import { prisma } from "@/lib/api/db";
-import { redirect } from "next/navigation";
 import EventFlow from "@/components/EventFlow";
+import { prisma } from "@/lib/api/db";
 import { getServerSession } from "next-auth";
-import { updateRecents } from "@/lib/recents";
+import { redirect } from "next/navigation";
 
 type EventPageParams = {
   mode: "view" | "edit";
@@ -67,10 +66,6 @@ export default async function EventPage({
   // append the url with the location slug of locations[0] if none is present
   if (!p.locationId?.[0]) {
     redirect(`/event/${p.mode}/${p.eventId}/${event.locations[0].locationId}`);
-  }
-
-  if (session?.user?.email) {
-    updateRecents(session.user.email, p.locationId[0]);
   }
 
   // so now we know this event exists and has a location,
