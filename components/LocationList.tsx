@@ -51,8 +51,8 @@ export default function LocationList({ eventId, eventName }: Props) {
         ]);
         const filtered =
           allLocations
-            ?.filter(l =>
-              eventData?.locations.some(evLoc => evLoc.locationId === l.id)
+            ?.filter((l) =>
+              eventData?.locations.some((evLoc) => evLoc.locationId === l.id)
             )
             .sort((a, b) => a.name.localeCompare(b.name)) || [];
         if (active) setLocations(filtered);
@@ -74,7 +74,7 @@ export default function LocationList({ eventId, eventName }: Props) {
 
   function deleteLocation(id: string) {
     DeleteEntity("location", id, eventId);
-    setLocations(prev => prev.filter(l => l.id !== id));
+    setLocations((prev) => prev.filter((l) => l.id !== id));
     setDeleteDialogOpen(false);
     setEntityToDelete(null);
   }
@@ -92,12 +92,6 @@ export default function LocationList({ eventId, eventName }: Props) {
           <div className="flex justify-center items-center p-6">
             <CircularProgress size={30} />
           </div>
-        ) : locations.length === 0 ? (
-          <div className="flex justify-center items-center p-6">
-            <Typography fontSize={14} color="text.secondary">
-              No locations linked to this event.
-            </Typography>
-          </div>
         ) : (
           <>
             {canEdit && (
@@ -113,30 +107,39 @@ export default function LocationList({ eventId, eventName }: Props) {
                 </div>
               </div>
             )}
-            {locations.map(location => (
-              <div
-                key={location.id}
-                className="flex flex-row items-center justify-between w-full hover:bg-gray-100 p-2 rounded-md transition-all duration-300 cursor-pointer"
-                onClick={(e) => {
-                  if ((e.target as HTMLElement).closest(".trash-button")) return;
-                  handleClick(location.id);
-                }}
-              >
-                <div className="flex-1 text-sm text-gray-600 h-full flex items-stretch">
-                  {location.name}
-                </div>
-                {canEdit && (
-                  <Trash
-                    className="trash-button h-4 w-4 text-red-500 cursor-pointer hover:text-red-600 hover:bg-red-100 transition-all duration-300 rounded-md"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setEntityToDelete(location);
-                      setDeleteDialogOpen(true);
-                    }}
-                  />
-                )}
+            {locations.length === 0 ? (
+              <div className="flex justify-center items-center p-6">
+                <Typography fontSize={14} color="text.secondary">
+                  No locations linked to this event.
+                </Typography>
               </div>
-            ))}
+            ) : (
+              locations.map((location) => (
+                <div
+                  key={location.id}
+                  className="flex flex-row items-center justify-between w-full hover:bg-gray-100 p-2 rounded-md transition-all duration-300 cursor-pointer"
+                  onClick={(e) => {
+                    if ((e.target as HTMLElement).closest(".trash-button"))
+                      return;
+                    handleClick(location.id);
+                  }}
+                >
+                  <div className="flex-1 text-sm text-gray-600 h-full flex items-stretch">
+                    {location.name}
+                  </div>
+                  {canEdit && (
+                    <Trash
+                      className="trash-button h-4 w-4 text-red-500 cursor-pointer hover:text-red-600 hover:bg-red-100 transition-all duration-300 rounded-md"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEntityToDelete(location);
+                        setDeleteDialogOpen(true);
+                      }}
+                    />
+                  )}
+                </div>
+              ))
+            )}
           </>
         )}
 
@@ -146,7 +149,7 @@ export default function LocationList({ eventId, eventName }: Props) {
           </div>
         )}
       </div>
-      
+
       {/* LocationAdder modal */}
       <LocationAdder
         eventId={eventId}
@@ -156,7 +159,7 @@ export default function LocationList({ eventId, eventName }: Props) {
         shouldUpdateDB={true}
         onClose={() => setLocationAdderOpen(false)}
         onLocationChange={(location) => {
-          setLocations(prev =>
+          setLocations((prev) =>
             [...prev, location].sort((a, b) => a.name.localeCompare(b.name))
           );
         }}
