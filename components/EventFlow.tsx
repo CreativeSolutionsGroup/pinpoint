@@ -186,22 +186,43 @@ function Flow({
     if (!isEditable) return;
 
     const handleKeyDown = async (event: KeyboardEvent) => {
-      // Copy
+      // Copy (multi-node)
       if (event.key === "c" && (event.ctrlKey || event.metaKey)) {
-        if (activeNodeId) {
-          const activeNode = rfInstance?.getNode(activeNodeId);
-          if (activeNode) {
-            try {
-              await navigator.clipboard.writeText(JSON.stringify([activeNode]));
-              console.log("Copied active node:", activeNode.id);
-            } catch (err) {
-              console.error("Failed to copy:", err);
-            }
-          } else {
-            console.log("No active node found with ID:", activeNodeId);
+        try {
+          const allNodes = rfInstance?.getNodes?.() || [];
+          // Collect all selected nodes
+          let nodesToCopy = allNodes.filter((n) => n.selected);
+
+            // Fallback to active node if none selected
+          if (nodesToCopy.length === 0 && activeNodeId) {
+            const activeNode = allNodes.find((n) => n.id === activeNodeId);
+            if (activeNode) nodesToCopy = [activeNode];
           }
-        } else {
-          console.log("No active node currently set");
+
+          // Exclude non-deletable/base nodes (e.g. map) if desired
+          //nodesToCopy = nodesToCopy.filter((n) => n.deletable !== false);
+
+          if (nodesToCopy.length === 0) {
+            console.log("No nodes selected to copy");
+          } else {
+            // Slim copy (omit transient/react-flow internals)
+            const exportNodes = nodesToCopy.map(
+              ({ id, position, type, data, draggable, deletable, selectable, zIndex }) => ({
+                // id intentionally kept; new ids assigned on paste
+                id,
+                position,
+                type,
+                data,
+                draggable,
+                deletable,
+                selectable,
+                zIndex,
+              })
+            );
+            await navigator.clipboard.writeText(JSON.stringify(exportNodes));
+          }
+        } catch (err) {
+          console.error("Failed to copy nodes:", err);
         }
       }
 
@@ -211,17 +232,17 @@ function Flow({
           const clipText = await navigator.clipboard.readText();
           const pastedNodes = JSON.parse(clipText);
 
-          if (!Array.isArray(pastedNodes)) return;
+          if (!Array.isArray(pastedNodes) || pastedNodes.length === 0) return;
 
           const position = screenToFlowPosition({
             x: mousePosition.x,
             y: mousePosition.y,
           });
 
-          // Calculate offset from first node to paste position
-          const firstNode = pastedNodes[0];
-          const xOffset = position.x - firstNode.position.x;
-          const yOffset = position.y - firstNode.position.y;
+          // Anchor to first node's original position
+          const anchor = pastedNodes[0].position;
+          const xOffset = position.x - anchor.x;
+          const yOffset = position.y - anchor.y;
 
           const newNodes = pastedNodes.map((node) => ({
             ...node,
@@ -231,11 +252,13 @@ function Flow({
               x: node.position.x + xOffset,
               y: node.position.y + yOffset,
             },
+            positionAbsoluteX: undefined,
+            positionAbsoluteY: undefined,
           }));
 
           setNodes((nds) => [...nds, ...newNodes]);
-        } catch (err) {
-          /* Default to normal paste operations */
+        } catch {
+          // Fall through to normal paste if JSON parse fails
         }
       }
     };
@@ -470,7 +493,7 @@ function Flow({
   
   return (
     <ActiveNodeContext.Provider value={activeNodeContextValue}>
-      <div style={{ width: "100vw", height: "100vh" }} ref={reactFlowWrapper}>
+      <div style={{ width: "100vw", height: "100vh" }} ref={reactFlowWrapper} className="select-none">
         <ReactFlow
           nodes={nodes}
           minZoom={0.1}
@@ -481,7 +504,8 @@ function Flow({
           nodeTypes={nodeTypes}
           nodesDraggable={isEditable}
           elementsSelectable={isEditable}
-          className="touch-none"
+          className="touch-none select-none"
+          selectionKeyCode={'Shift'}
         >
           <Background
             color="#ccc"
