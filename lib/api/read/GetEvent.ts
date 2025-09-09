@@ -11,5 +11,10 @@ export async function GetEvent(eventId: string) {
       locations: true,
     },
   });
+
+  if (!event) {
+    return null;
+  }
+
   return event;
 }
