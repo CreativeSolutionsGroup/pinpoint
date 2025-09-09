@@ -5,6 +5,7 @@ import Heading from "@/components/Heading";
 import { Box } from "@mui/material";
 import HomepageArrow from "@/components/svg/HomepageArrow";
 import BackToEventSelectButton from "@/components/BackToEventSelectButton";
+import type { EventWithLocations } from "@/types/Event";
 
 type EventPageParams = {
   eventId: string;
@@ -15,13 +16,14 @@ export default async function LocationSelectPage({
 }: {
   params: Promise<EventPageParams>;
 }) {
-  const event = await GetEvent((await params).eventId);
+  const eventId = (await params).eventId;
+  const event: EventWithLocations | null = await GetEvent(eventId);
 
   return (
     <>
       <Box width="45rem" mx="auto" display="flex" flexDirection="column">
         <Box mt={5}>
-          <Heading />
+          <Heading event={event} />
         </Box>
         {event && (
           <EventPageTransitionWrapper exitDirection="right" entryDirection="right">
