@@ -33,6 +33,8 @@ import ControlButtons from "./ControlButtons";
 import { CustomNode } from "@/types/CustomNode";
 import { LucideIcon } from "lucide-react";
 import { DraggableEvent } from "react-draggable";
+import { updateRecents } from "@/lib/recents";
+import { useSession } from "next-auth/react";
 
 const getId = () => createId();
 const clientId = createId();
@@ -72,12 +74,14 @@ function Flow({
   const eventLocations = useRef<Array<Location>>(
     event.locations.map((l) => l.location)
   ).current;
-  
+
   const [nodes, setNodes] = useState<CustomNode[]>(() => {
-    const savedState = eventLocation?.state ? JSON.parse(eventLocation.state) : {};
+    const savedState = eventLocation?.state
+      ? JSON.parse(eventLocation.state)
+      : {};
     return savedState?.nodes || [];
   });
-  
+
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const rfInstance = useReactFlow();
 
@@ -91,11 +95,11 @@ function Flow({
   // Subscribe to real-time updates with proper client ID filtering
   useChannel("event-updates", "subscribe", (message) => {
     const { eventId, locationId, senderClientId } = message.data;
-    
+
     // Skip processing messages from this client
     if (
       senderClientId === clientId ||
-      eventId !== event.id || 
+      eventId !== event.id ||
       locationId !== eventLocation?.locationId
     ) {
       return;
@@ -490,7 +494,7 @@ function Flow({
     () => ({ activeNodeId, setActiveNodeId }),
     [activeNodeId, setActiveNodeId]
   );
-  
+
   return (
     <ActiveNodeContext.Provider value={activeNodeContextValue}>
       <div style={{ width: "100vw", height: "100vh" }} ref={reactFlowWrapper} className="select-none">
@@ -530,7 +534,11 @@ function Flow({
             />
           )}
 
-          <EventMapSelect eventName={event.name} eventId={event.id} locations={eventLocations} />
+          <EventMapSelect
+            eventName={event.name}
+            eventId={event.id}
+            locations={eventLocations}
+          />
         </ReactFlow>
       </div>
     </ActiveNodeContext.Provider>
@@ -549,6 +557,14 @@ export default function EventFlow({
   location: string;
   isEditable: boolean;
 }) {
+  const session = useSession();
+
+  useEffect(() => {
+    if (session?.data?.user?.email) {
+      updateRecents(session.data.user.email, event.id, location);
+    }
+  }, [session, location, event.id]);
+
   return (
     <ReactFlowProvider>
       <ChannelProvider channelName="event-updates">

@@ -24,7 +24,10 @@ export default async function LocationSelectPage({
           <Heading />
         </Box>
         {event && (
-          <EventPageTransitionWrapper exitDirection="right" entryDirection="right">
+          <EventPageTransitionWrapper
+            exitDirection="right"
+            entryDirection="right"
+          >
             <div className="flex flex-col gap-4 mt-5">
               <BackToEventSelectButton />
               <LocationList eventId={event.id} eventName={event.name} />
@@ -32,18 +35,9 @@ export default async function LocationSelectPage({
           </EventPageTransitionWrapper>
         )}
       </Box>
-      <Box
-        sx={{
-          position: "fixed",
-          width: "75%",
-          left: 0,
-          bottom: 0,
-          zIndex: 0,
-          pointerEvents: "none",
-        }}
-      >
+      <div className="absolute w-3/4 left-0 bottom-0 pointer-events-none -z-30">
         <HomepageArrow />
-      </Box>
+      </div>
     </>
   );
 }
