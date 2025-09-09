@@ -14,7 +14,7 @@ export async function updateRecents(
   });
 
   const existingRecent = currentRecents.find(
-    (recent) => recent.locationId === locationId
+    (recent) => recent.locationId === locationId && recent.eventId === eventId
   );
 
   if (existingRecent) {
