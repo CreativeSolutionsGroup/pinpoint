@@ -525,8 +525,8 @@ export const IconNode = memo(function IconNode({
                 ? {
                     width: "80vw",
                     maxWidth: "90vw",
-                    height: "80dvh",
-                    maxHeight: "100dvh",
+                    height: "auto",
+                    maxHeight: "calc(100vh - 2rem)",
                     borderRadius: 0,
                     padding: "1rem",
                     display: "flex",
@@ -555,7 +555,7 @@ export const IconNode = memo(function IconNode({
                       defaultValue={data.notes}
                       onChange={handleNotesChange}
                       disabled={!isEditable}
-                      className="w-full resize-y h-32"
+                      className="w-full h-32 overflow-y-auto resize-none"
                     />
                   </div>
                   <div className="shrink-0 pt-1">
