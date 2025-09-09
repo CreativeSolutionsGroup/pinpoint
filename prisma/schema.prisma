@@ -44,7 +44,7 @@ model Recents {
   event      Event          @relation(fields: [eventId], references: [id])
   location   Location       @relation(fields: [locationId], references: [id])
 
-  @@unique([userId, locationId])
+  @@unique([userId, eventId, locationId])
 }
 
 model Account {

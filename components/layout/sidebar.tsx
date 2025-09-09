@@ -32,17 +32,18 @@ export default async function Sidebar() {
           </span>
         )}
         {recents.map((recent) => (
-          <div
-            key={recent.locationId}
-            className="flex flex-col pl-1 mt-1 ml-1 border-l-1 border-border"
+          <Link
+            key={recent.eventId + recent.locationId}
+            href={`/event/edit/${recent.eventId}/${recent.locationId}`}
+            className="flex flex-col pl-1 mt-1 ml-1 border-l-1 border-border no-underline hover:bg-secondary rounded-md transition-colors max-w-[10.5rem] pr-2 py-1"
           >
-            <span className="text-sm max-w-40 truncate">{recent.eventName}</span>
-            <Link href={`/event/edit/${recent.eventId}/${recent.locationId}`} className="flex items-center">
-              <span className="text-sm text-muted-foreground ml-2 bg-sidebar hover:bg-secondary transition-colors px-1 rounded-md max-w-40 cursor-pointer">
-                {recent.locationName}
-              </span>
-            </Link>
-          </div>
+            <span className="text-sm max-w-40 truncate">
+              {recent.eventName}
+            </span>
+            <span className="text-sm text-muted-foreground ml-2 bg-sidebar px-1 rounded-md max-w-40 cursor-pointer">
+              {recent.locationName}
+            </span>
+          </Link>
         ))}
       </div>
       <div className="grow"></div>

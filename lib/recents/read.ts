@@ -5,16 +5,13 @@ export async function getRecents(email: string) {
     where: { user: { email } },
     orderBy: { lastUsed: "desc" },
     include: {
-      location: {
-        include: {
-          events: { include: { event: { select: { id: true, name: true } } } },
-        },
-      },
+      location: true,
+      event: true,
     },
   });
   const displayRecents = recents.map((recent) => ({
-    eventName: recent.location.events[0]?.event.name || "Unknown Event",
-    eventId: recent.location.events[0]?.event.id || "",
+    eventName: recent.event.name || "Unknown Event",
+    eventId: recent.event.id || "",
     locationName: recent.location.name,
     locationId: recent.location.id,
   }));
