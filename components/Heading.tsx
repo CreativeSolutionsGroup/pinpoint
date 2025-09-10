@@ -30,7 +30,9 @@ export default function Heading({event, location}: HeaderProps) {
           priority
         />
       </Box>
-      <EventBreadcrumb event={event} location={location} />
+      <Box className="fixed left-4 top-4">
+        <EventBreadcrumb event={event} location={location} />
+      </Box>
     </Box>
   );
 }

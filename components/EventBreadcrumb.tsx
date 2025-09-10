@@ -13,6 +13,7 @@ export default function EventBreadcrumb({event, location}: BreadcrumbProps) {
     return (
         <Breadcrumb className="rounded border border-gray bg-white p-2 w-fit">
             <BreadcrumbList>
+                <BreadcrumbSeparator />
                 <BreadcrumbItem>
                 <BreadcrumbLink href="/home">
                     Home
