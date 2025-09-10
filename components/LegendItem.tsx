@@ -46,7 +46,7 @@ const LegendItem: React.FC<LegendItemProps> = ({
           isDragging || isHovering ? "bg-gray-100 rounded-md w-full h-full" : ""
         }`}
       >
-        <Icon className="w-6 h-6 mb-1 text-gray-700" />
+        <Icon className="w-6 h-6 mb-1 text-gray-700 m-auto" />
         <span className="text-xs text-center text-gray-600">{label}</span>
       </div>
 
@@ -72,7 +72,7 @@ const LegendItem: React.FC<LegendItemProps> = ({
             userSelect: "none", // Additional explicit styling to prevent selection
           }}
         >
-          <Icon className="w-6 h-6 mb-1 text-gray-700 justify-center" />
+          <Icon className="w-6 h-6 mb-1 text-gray-700 justify-center m-auto" />
           <span className="text-xs text-gray-600">{label}</span>
         </div>
       </Draggable>
