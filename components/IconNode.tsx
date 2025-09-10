@@ -1,16 +1,9 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Textarea } from "@/components/ui/textarea";
 import { CustomNode } from "@/types/CustomNode";
-import { NextPlan } from "@mui/icons-material";
-import ColorMenu from "@components/ColorMenu";
-import { Box, IconButton, Typography, Tooltip } from "@mui/material";
 import { createId } from "@paralleldrive/cuid2";
 import { NodeProps, useReactFlow } from "@xyflow/react";
 import * as Icons from "lucide-react";
-import { Trash, Clipboard, CopyPlus } from "lucide-react";
 import { useParams } from "next/navigation";
 import {
   createContext,
@@ -20,7 +13,6 @@ import {
   useRef,
   useState,
 } from "react";
-import ResizeMenu from "./ResizeMenu";
 import { memo } from "react";
 import MobileIconSettings from "./MobileIconSettings";
 import IconSettings from "./IconSettings";
