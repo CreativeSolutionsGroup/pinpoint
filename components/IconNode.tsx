@@ -1,17 +1,7 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { CustomNode } from "@/types/CustomNode";
 import { NextPlan } from "@mui/icons-material";
@@ -32,6 +22,8 @@ import {
 } from "react";
 import ResizeMenu from "./ResizeMenu";
 import { memo } from "react";
+import MobileIconSettings from "./MobileIconSettings";
+import IconSettings from "./IconSettings";
 
 export const ActiveNodeContext = createContext<{
   activeNodeId: string | null;
@@ -58,20 +50,16 @@ export const IconNode = memo(function IconNode({
   // Get the icon component from the Lucide icons
   const IconComponent = Icons[data.iconName as keyof typeof Icons.icons];
 
-  // When popover opens, set this node as active
+  // Prevent auto-focus flash when opening
   useEffect(() => {
-    if (isOpen) {
-      setActiveNodeId(id);
-
-      // Prevent auto-focus on form elements by removing focus after a brief delay
+    if (isOpen && document.activeElement instanceof HTMLElement) {
       setTimeout(() => {
-        // If an element is focused, blur it
         if (document.activeElement instanceof HTMLElement) {
           document.activeElement.blur();
         }
       }, 0);
     }
-  }, [isOpen, id, setActiveNodeId]);
+  }, [isOpen]);
 
   const handleCopy = useCallback(() => {
     try {
@@ -272,361 +260,63 @@ export const IconNode = memo(function IconNode({
   if (!isMobile) {
     return (
       <>
-        <Popover onOpenChange={setIsOpen}>
-          <PopoverTrigger
-            style={{
-              borderColor: data.color,
-            }}
-            className="popover-trigger flex flex-col items-center justify-center cursor-move"
-          >
-            {(activeNodeId === id || isOpen) && (
-              <>
-                <div
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevent popover from triggering
-                    handleRotateClockwise();
-                  }}
-                  style={{
-                    position: "absolute",
-                    top: "50%",
-                    left: "50%",
-                    transform: `translate(-50%, -50%) translate(${
-                      ((data.size == 1 ? 1.5 : data.size) ?? 3) * 15
-                    }px, 0) rotate(90deg)`,
-                    backgroundColor: "rgba(0, 0, 0, 0.8)",
-                    width: "15px",
-                    height: "15px",
-                    borderRadius: "50%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: "pointer",
-                    zIndex: 10,
-                  }}
-                  className="nodrag"
-                >
-                  <NextPlan sx={{ color: "white" }} />
-                </div>
-                <div
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevent popover from triggering
-                    handleRotateCounterClockwise();
-                  }}
-                  style={{
-                    position: "absolute",
-                    top: "50%",
-                    left: "50%",
-                    transform: `translate(-50%, -50%) translate(-${
-                      ((data.size == 1 ? 1.5 : data.size) ?? 3) * 15
-                    }px, 0) scale(-1, 1) rotate(90deg)`,
-                    backgroundColor: "rgba(0, 0, 0, 0.8)",
-                    width: "15px",
-                    height: "15px",
-                    borderRadius: "50%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: "pointer",
-                    zIndex: 10,
-                  }}
-                  className="nodrag"
-                >
-                  <NextPlan sx={{ color: "white" }} />
-                </div>
-              </>
-            )}
-            <div
-              style={{
-                transform: `rotate(${Math.round(data.rotation / 45) * 45}deg)`,
-              }}
-            >
-              <IconComponent
-                style={{
-                  color: data.color,
-                  width: `${data.size ?? 3}rem`,
-                  height: `${data.size ?? 3}rem`,
-                }}
-                className="text-gray-700"
-              />
-            </div>
-            <Typography
-              style={{
-                color: data.color,
-                width: "100%",
-                fontSize: `${(data.size ?? 3) / 3}rem`,
-                lineHeight: `${(data.size ?? 3) / 3}rem`,
-                textWrap: "wrap",
-                whiteSpace: "pre-wrap",
-                overflowWrap: "break-word",
-                maxWidth: `${(data.size ?? 3) * 3}rem`,
-              }}
-              className="text-center text-wrap"
-            >
-              {data.label}
-            </Typography>
-          </PopoverTrigger>
-          <PopoverContent className="w-fit">
-            <div className="grid gap-4">
-              {isEditable && (
-                <div className="justify-center">
-                  <Input value={data.label} onChange={handleLabelChange} />
-                </div>
-              )}
-              <Textarea
-                placeholder="Add notes"
-                defaultValue={data.notes}
-                onChange={handleNotesChange}
-                disabled={!isEditable}
-              />
-              {isEditable && (
-                <Box className="flex place-content-between">
-                  <ResizeMenu
-                    onResize={handleResize}
-                    currentSize={data.size ?? 2}
-                  />
-                  <Box>
-                    <Tooltip title="Copy Node">
-                      <IconButton
-                        onClick={() => handleCopy()}
-                        sx={{ color: "black" }}
-                      >
-                        <Clipboard />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Duplicate Node">
-                      <IconButton
-                        onClick={() => handleDup()}
-                        sx={{ color: "black" }}
-                      >
-                        <CopyPlus />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Delete Node">
-                      <IconButton onClick={handleDelete} sx={{ color: "red" }}>
-                        <Trash />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-                </Box>
-              )}
-              {isEditable && (
-                <ColorMenu
-                  x={0}
-                  y={0}
-                  currentColor={data.color ?? "#000000"}
-                  changeColor={colorChange}
-                />
-              )}
-            </div>
-          </PopoverContent>
-        </Popover>
+        <IconSettings
+          isOpen={isOpen}
+          setIsOpen={(open: boolean) => {
+            setIsOpen(open);
+            if (open) {
+              setActiveNodeId(id);
+            } else if (activeNodeId === id) {
+              setActiveNodeId(null);
+            }
+          }}
+          isEditable={isEditable}
+          activeNodeId={activeNodeId}
+          id={id}
+          data={data}
+          IconComponent={IconComponent}
+          handleLabelChange={handleLabelChange}
+          handleNotesChange={handleNotesChange}
+          handleResize={handleResize}
+          handleCopy={handleCopy}
+          handleDup={handleDup}
+          handleDelete={handleDelete}
+          colorChange={colorChange}
+          handleRotateClockwise={handleRotateClockwise}
+          handleRotateCounterClockwise={handleRotateCounterClockwise}
+          setActiveNodeId={setActiveNodeId}
+        />
       </>
     );
   } else {
     return (
       <>
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
-          <DialogTrigger
-            style={{
-              borderColor: data.color,
-            }}
-            className="popover-trigger flex flex-col items-center justify-center cursor-move"
-          >
-            {(activeNodeId === id || isOpen) && (
-              <>
-                <div
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevent popover from triggering
-                    handleRotateClockwise();
-                  }}
-                  style={{
-                    position: "absolute",
-                    top: "50%",
-                    left: "50%",
-                    transform: `translate(-50%, -50%) translate(${
-                      ((data.size == 1 ? 1.5 : data.size) ?? 3) * 15
-                    }px, 0) rotate(90deg)`,
-                    backgroundColor: "rgba(0, 0, 0, 0.8)",
-                    width: "15px",
-                    height: "15px",
-                    borderRadius: "50%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: "pointer",
-                    zIndex: 10,
-                  }}
-                  className="nodrag"
-                >
-                  <NextPlan sx={{ color: "white" }} />
-                </div>
-                <div
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevent popover from triggering
-                    handleRotateCounterClockwise();
-                  }}
-                  style={{
-                    position: "absolute",
-                    top: "50%",
-                    left: "50%",
-                    transform: `translate(-50%, -50%) translate(-${
-                      ((data.size == 1 ? 1.5 : data.size) ?? 3) * 15
-                    }px, 0) scale(-1, 1) rotate(90deg)`,
-                    backgroundColor: "rgba(0, 0, 0, 0.8)",
-                    width: "15px",
-                    height: "15px",
-                    borderRadius: "50%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: "pointer",
-                    zIndex: 10,
-                  }}
-                  className="nodrag"
-                >
-                  <NextPlan sx={{ color: "white" }} />
-                </div>
-              </>
-            )}
-            <div
-              style={{
-                transform: `rotate(${Math.round(data.rotation / 45) * 45}deg)`,
-              }}
-            >
-              <IconComponent
-                style={{
-                  color: data.color,
-                  width: `${data.size ?? 3}rem`,
-                  height: `${data.size ?? 3}rem`,
-                }}
-                className="text-gray-700"
-              />
-            </div>
-            <Typography
-              style={{
-                color: data.color,
-                width: "100%",
-                fontSize: `${(data.size ?? 3) / 3}rem`,
-                lineHeight: `${(data.size ?? 3) / 3}rem`,
-                textWrap: "wrap",
-                whiteSpace: "pre-wrap",
-                overflowWrap: "break-word",
-                maxWidth: `${(data.size ?? 3) * 3}rem`,
-              }}
-              className="text-center text-wrap"
-            >
-              {data.label}
-            </Typography>
-          </DialogTrigger>
-          <DialogContent
-            className="w-fit"
-            style={
-              isLandscape
-                ? {
-                    width: "80vw",
-                    maxWidth: "90vw",
-                    height: "auto",
-                    maxHeight: "calc(100vh - 2rem)",
-                    borderRadius: 0,
-                    padding: "1rem",
-                    display: "flex",
-                    flexDirection: "column",
-                  }
-                : {
-                    maxWidth: "90vw",
-                    maxHeight: "100vh",
-                  }
+        <MobileIconSettings
+          isOpen={isOpen}
+          setIsOpen={(open: boolean) => {
+            setIsOpen(open);
+            if (open) {
+              setActiveNodeId(id);
+            } else if (activeNodeId === id) {
+              setActiveNodeId(null);
             }
-          >
-            <DialogTitle className="text-lg font-semibold">
-              Icon Settings
-            </DialogTitle>
-            <div className="grid gap-4">
-              {isEditable && isLandscape && (
-                <div className="grid gap-2 grid-cols-[1fr_auto] w-full items-start">
-                  <div className="flex flex-col gap-2 w-full">
-                    <Input
-                      value={data.label}
-                      onChange={handleLabelChange}
-                      className="w-full"
-                    />
-                    <Textarea
-                      placeholder="Add notes"
-                      defaultValue={data.notes}
-                      onChange={handleNotesChange}
-                      disabled={!isEditable}
-                      className="w-full h-32 overflow-y-auto resize-none"
-                    />
-                  </div>
-                  <div className="shrink-0 pt-1">
-                    <ColorMenu
-                      x={0}
-                      y={0}
-                      currentColor={data.color ?? "#000000"}
-                      changeColor={colorChange}
-                    />
-                  </div>
-                </div>
-              )}
-              {isEditable && !isLandscape && (
-                <div className="justify-center">
-                  <Input value={data.label} onChange={handleLabelChange} />
-                </div>
-              )}
-              {!isLandscape && (
-                <div className="flex-1 flex min-h-0">
-                  <Textarea
-                    placeholder="Add notes"
-                    defaultValue={data.notes}
-                    onChange={handleNotesChange}
-                    disabled={!isEditable}
-                    className="flex-1 h-full w-full resize-none"
-                    style={{ minHeight: 0 }}
-                  />
-                </div>
-              )}
-              {isEditable && (
-                <Box className="flex place-content-between">
-                  <ResizeMenu
-                    onResize={handleResize}
-                    currentSize={data.size ?? 2}
-                  />
-                  <Box>
-                    <Tooltip title="Copy Node">
-                      <IconButton
-                        onClick={() => handleCopy()}
-                        sx={{ color: "black" }}
-                      >
-                        <Clipboard />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Duplicate Node">
-                      <IconButton
-                        onClick={() => handleDup()}
-                        sx={{ color: "black" }}
-                      >
-                        <CopyPlus />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Delete Node">
-                      <IconButton onClick={handleDelete} sx={{ color: "red" }}>
-                        <Trash />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-                </Box>
-              )}
-              {isEditable && !isLandscape && (
-                <ColorMenu
-                  x={0}
-                  y={0}
-                  currentColor={data.color ?? "#000000"}
-                  changeColor={colorChange}
-                />
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
+          }}
+          isLandscape={isLandscape}
+          isEditable={isEditable}
+          activeNodeId={activeNodeId}
+          id={id}
+          data={data}
+          IconComponent={IconComponent}
+          handleLabelChange={handleLabelChange}
+          handleNotesChange={handleNotesChange}
+          handleResize={handleResize}
+          handleCopy={handleCopy}
+          handleDup={handleDup}
+          handleDelete={handleDelete}
+          colorChange={colorChange}
+          handleRotateClockwise={handleRotateClockwise}
+          handleRotateCounterClockwise={handleRotateCounterClockwise}
+        />
       </>
     );
   }
