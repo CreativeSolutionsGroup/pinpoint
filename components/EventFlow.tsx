@@ -35,6 +35,7 @@ import { LucideIcon } from "lucide-react";
 import { DraggableEvent } from "react-draggable";
 import { updateRecents } from "@/lib/recents";
 import { useSession } from "next-auth/react";
+import EventBreadcrumb from "./EventBreadcrumb";
 
 const getId = () => createId();
 const clientId = createId();
@@ -520,11 +521,13 @@ function Flow({
           <Controls position="bottom-left" showInteractive={false} />
 
           {/* Hide legend on view only mode */}
+          <Panel position="top-left">
+            <EventBreadcrumb event={event} location={eventLocation?.location} />
           {isEditable && (
-            <Panel position="top-left">
-              <Legend onDrop={onDrop} isGettingStarted={event.isGS} />
-            </Panel>
-          )}
+               <Legend onDrop={onDrop} isGettingStarted={event.isGS} />
+           )}
+           </Panel>
+
           {isEditable && (
             <ControlButtons
               undo={onUndo}
