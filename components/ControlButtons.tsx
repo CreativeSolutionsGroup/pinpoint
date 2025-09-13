@@ -6,6 +6,7 @@ import EventSettings from "@/components/EventSettings";
 import { Event, Location } from "@prisma/client";
 import { useRouter } from "next/navigation";
 import { Undo, Redo, Save, Home } from "lucide-react";
+import PrintButton from "./PrintButton";
 
 export default function ControlButtons(props: {
   undo: () => void;
@@ -35,6 +36,9 @@ export default function ControlButtons(props: {
           <IconButton style={{ color: "black" }}>
             <Save />
           </IconButton>
+        </Tooltip>
+        <Tooltip title="Print">
+          <PrintButton />
         </Tooltip>
         <Tooltip title="Home">
           <IconButton
