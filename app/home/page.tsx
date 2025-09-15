@@ -36,7 +36,7 @@ export default async function EventSelect() {
   return (
     <>
       <Box
-        width="45rem"
+        width="35rem"
         mx="auto"
         display="flex"
         flexDirection="column"
