@@ -35,12 +35,12 @@ export default async function Sidebar() {
           <Link
             key={recent.eventId + recent.locationId}
             href={`/event/edit/${recent.eventId}/${recent.locationId}`}
-            className="flex flex-col pl-1 mt-1 ml-1 border-l-1 border-border no-underline hover:bg-secondary rounded-md transition-colors max-w-[10.5rem] pr-2 py-1"
+            className="flex flex-col pl-1 mt-1 ml-1 border-l-1 border-border no-underline hover:bg-secondary rounded-md transition-colors w-full sm:max-w-[10.5rem] pr-2 py-1"
           >
-            <span className="text-sm max-w-40 truncate">
+            <span className="text-sm w-full sm:max-w-40 sm:truncate">
               {recent.eventName}
             </span>
-            <span className="text-sm text-muted-foreground ml-2 bg-sidebar px-1 rounded-md max-w-40 cursor-pointer">
+            <span className="text-sm text-muted-foreground ml-2 bg-sidebar px-1 rounded-md w-full sm:max-w-40 cursor-pointer">
               {recent.locationName}
             </span>
           </Link>

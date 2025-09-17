@@ -19,7 +19,7 @@ export default async function LocationSelectPage({
 
   return (
     <>
-      <Box width="45rem" mx="auto" display="flex" flexDirection="column">
+      <Box width={{ xs: "100%", sm: "40rem", md: "45rem" }} mx="auto" display="flex" flexDirection="column" px={{ xs: 2, sm: 0 }}>
         <Box mt={5}>
           <Heading />
         </Box>
