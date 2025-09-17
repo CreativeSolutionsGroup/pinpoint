@@ -1,6 +1,6 @@
 import { Box } from "@mui/material";
 import Image from "next/image";
-import PinpointLogoColor from "@/public/pinpoint-logo-color.png";
+import Logo from "@/public/pinpoint-logo-color.png";
 import EventBreadcrumb from "./EventBreadcrumb";
 import { Location } from "@prisma/client";
 import { EventWithLocations } from "@/types/Event";
@@ -23,14 +23,14 @@ export default function Heading({event, location}: HeaderProps) {
       >
         <Image
           fill
-          src={PinpointLogoColor}
+          src={Logo}
           alt="Pinpoint"
           sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 33vw"
           style={{ objectFit: "contain" }}
           priority
         />
       </Box>
-      <Box className="fixed left-4 top-4">
+      <Box className="absolute left-4 top-4">
         <EventBreadcrumb event={event} location={location} />
       </Box>
     </Box>

@@ -1,9 +1,9 @@
 {
-  "name": "project-dora",
+  "name": "pinpoint",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "doppler run -- next dev",
+    "dev": "doppler run -- next dev --turbo",
     "build": "doppler run -- next build",
     "prodBuild": "prisma generate && next build",
     "start": "next start",
