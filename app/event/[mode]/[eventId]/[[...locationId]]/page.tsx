@@ -1,7 +1,7 @@
-import { prisma } from "@/lib/api/db";
-import { redirect } from "next/navigation";
 import EventFlow from "@/components/EventFlow";
+import { prisma } from "@/lib/api/db";
 import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
 
 type EventPageParams = {
   mode: "view" | "edit";
