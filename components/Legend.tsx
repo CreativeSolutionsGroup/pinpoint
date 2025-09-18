@@ -97,6 +97,8 @@ const Legend: React.FC<LegendProps> = ({ isGettingStarted, onDrop }) => {
         onClick={() => setMobileOpen(true)}
         className="!p-2"
         aria-label="Open icons legend"
+        position="fixed"
+        style={{ top: 25, right: 3 }}
       >
         <MenuIcon />
       </IconButton>
