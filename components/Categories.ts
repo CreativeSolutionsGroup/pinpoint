@@ -1,17 +1,17 @@
 import {
   Armchair,
+  Circle,
   Coffee,
+  Cylinder,
   Fence,
   Flag,
-  Gamepad2,
   Gift,
+  Grid3X3,
   Lightbulb,
-  Pickaxe,
   Radio,
   Recycle,
   Signpost,
   Speaker,
-  Table,
   Tent,
   Theater,
   TrafficCone,
@@ -20,6 +20,11 @@ import {
   Truck,
   Tv,
 } from "lucide-react";
+import bistroIcon from "./icons/bistroTable";
+import SixFootTable from "./icons/sixFootTable";
+import SpikeBall from "./icons/spikeBall";
+import PingPong from "./icons/pingPong";
+import CornHole from "./icons/cornHole";
 
 const categories = [
   {
@@ -71,11 +76,11 @@ const categories = [
     title: "Yard Games",
     value: "yard-games",
     items: [
-      { icon: Gamepad2, label: "Cornhole" },
-      { icon: Gamepad2, label: "Spikeball" },
-      { icon: Gamepad2, label: "Ping Pong" },
-      { icon: Gamepad2, label: "9-Square" },
-      { icon: Gamepad2, label: "Can-Jam" },
+      { icon: CornHole, label: "Corn Hole" },
+      { icon: SpikeBall, label: "Spikeball" },
+      { icon: PingPong, label: "Ping Pong" },
+      { icon: Grid3X3, label: "9-Square" },
+      { icon: Cylinder, label: "Can-Jam" },
     ],
   },
   {
@@ -84,9 +89,9 @@ const categories = [
     items: [
       { icon: Coffee, label: "Coffee Cart" },
       { icon: Truck, label: "Food Trucks" },
-      { icon: Table, label: "6ft Table" },
-      { icon: Table, label: "Bistro Table" },
-      { icon: Pickaxe, label: "Round Table" },
+      { icon: SixFootTable, label: "6ft Table" },
+      { icon: bistroIcon, label: "Bistro Table" },
+      { icon: Circle, label: "Round Table" },
     ],
   },
 ];

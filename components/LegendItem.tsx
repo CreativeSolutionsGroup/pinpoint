@@ -1,13 +1,13 @@
 "use client";
 
-import { LucideIcon } from "lucide-react";
 import React, { useRef, useState } from "react";
 import Draggable, { DraggableEvent } from "react-draggable";
+import { FlexibleIcon } from "@/types/IconTypes";
 
 interface LegendItemProps {
-  icon: LucideIcon;
+  icon: FlexibleIcon;
   label: string;
-  onDrop: (event: DraggableEvent, icon: LucideIcon, label: string) => void;
+  onDrop: (event: DraggableEvent, icon: FlexibleIcon, label: string) => void;
 }
 
 const LegendItem: React.FC<LegendItemProps> = ({
