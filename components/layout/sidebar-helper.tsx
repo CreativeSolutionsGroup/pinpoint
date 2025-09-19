@@ -6,21 +6,31 @@ import { Button } from "../ui/button";
 
 export default function SideBarHelper({ children }: PropsWithChildren) {
   const [open, setOpen] = useState(false);
+  const isMobile = /Mobi|Android/i.test(navigator?.userAgent);
+
   return (
     <>
       <div
         className={`float-left h-screen ${
-          open ? "max-w-64 min-w-64" : "w-16"
+          isMobile ?
+            open ? "w-screen" : "w-0"
+            : open ? "max-w-64 min-w-64" : "w-16"
         } transition-all duration-300`}
       ></div>
       <div
-        className={`absolute h-screen bg-sidebar text-sidebar-foreground transition-all duration-300 flex flex-col w-64 ${
-          open ? "left-0" : "left-[-12rem]"
+        className={`absolute h-screen bg-sidebar text-sidebar-foreground transition-all duration-300 flex flex-col ${
+          isMobile ? 
+            open ? "left-0 w-screen" : "left-[-100vw] w-screen"
+            : open ? "left-0 w-64" : "left-[-12rem] w-64"
         }`}
       >
         <Button
           onClick={() => setOpen(!open)}
-          className="w-min m-1.5 cursor-pointer absolute top-0 right-0 z-20"
+          className={`sidebar-button w-min m-1.5 cursor-pointer absolute top-0 z-20 ${
+            isMobile ? 
+              open ? "right-0" : "right-[-4rem]"
+              : "right-0"
+          }`}
           variant="outline"
         >
           <div className="relative h-4 w-4">
