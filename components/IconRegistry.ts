@@ -5,6 +5,7 @@ import SixFootTable from "./icons/sixFootTable";
 import SpikeBall from "./icons/spikeBall";
 import PingPong from "./icons/pingPong";
 import CornHole from "./icons/cornHole";
+import Canopy from "./icons/Canopy";
 
 // Import your custom icons here
 const customIcons = {
@@ -13,6 +14,7 @@ const customIcons = {
   SpikeBall,
   PingPong,
   CornHole,
+  Canopy,
   // Add more custom icons here as you create them
   // CustomIcon3,
   // CustomIcon4,
