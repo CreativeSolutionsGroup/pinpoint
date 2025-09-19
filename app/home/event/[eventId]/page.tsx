@@ -5,6 +5,7 @@ import Heading from "@/components/Heading";
 import { Box } from "@mui/material";
 import HomepageArrow from "@/components/svg/HomepageArrow";
 import BackToEventSelectButton from "@/components/BackToEventSelectButton";
+import type { EventWithLocations } from "@/types/Event";
 
 type EventPageParams = {
   eventId: string;
@@ -15,29 +16,27 @@ export default async function LocationSelectPage({
 }: {
   params: Promise<EventPageParams>;
 }) {
-  const event = await GetEvent((await params).eventId);
+  const eventId = (await params).eventId;
+  const event: EventWithLocations | null = await GetEvent(eventId);
 
   return (
-    <>
-      <Box width={{ xs: "100%", sm: "40rem", md: "45rem" }} mx="auto" display="flex" flexDirection="column" px={{ xs: 2, sm: 0 }}>
-        <Box mt={5}>
-          <Heading />
-        </Box>
+    <Box width={{ xs: "100%", sm: "40rem", md: "45rem" }} mx="auto" display="flex" flexDirection="column" px={{ xs: 2, sm: 0 }}>
+      <Box mt={5}>
+        <Heading event={event} />
+      </Box>
+      <Box>
         {event && (
-          <EventPageTransitionWrapper
-            exitDirection="right"
-            entryDirection="right"
-          >
-            <div className="flex flex-col gap-4 mt-5">
+          <EventPageTransitionWrapper exitDirection="right" entryDirection="right">
+            <div className="relative flex flex-col gap-4 mt-5">
               <BackToEventSelectButton />
               <LocationList eventId={event.id} eventName={event.name} />
             </div>
           </EventPageTransitionWrapper>
         )}
       </Box>
-      <div className="absolute w-3/4 left-0 bottom-0 pointer-events-none -z-30">
+      <Box className="absolute w-3/4 left-0 bottom-0 pointer-events-none -z-30">
         <HomepageArrow />
-      </div>
-    </>
+      </Box>
+    </Box>
   );
 }

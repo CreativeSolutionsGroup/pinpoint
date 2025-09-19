@@ -99,7 +99,7 @@ export default function EventSelectForm({
   const canEdit = session?.role === "ADMIN" || session?.role === "EDITOR";
 
   return (
-    <div className="p-8 w-full flex flex-col">
+    <div className="p-8 w-full max-w-3xl mx-auto flex flex-col">
       <Typography
         variant="h6"
         align="center"
