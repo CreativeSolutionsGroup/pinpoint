@@ -9,6 +9,7 @@ import {
 import { LucideIcon } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { IconButton } from "@mui/material";
+import { Button } from "@/components/ui/button";
 import { Menu as MenuIcon, X as CloseIcon } from "lucide-react";
 import { DraggableEvent } from "react-draggable";
 import categories from "./Categories";
@@ -93,18 +94,18 @@ const Legend: React.FC<LegendProps> = ({ isGettingStarted, onDrop }) => {
   // Mobile: show hamburger that opens a slide-over
   return (
     <>
-      <IconButton
+      <Button
         onClick={() => setMobileOpen(true)}
-        className="!p-2"
+        className="w-min fixed top-12 left-[0.5rem]"
         aria-label="Open icons legend"
-        position="fixed"
-        style={{ top: 25, right: 3 }}
+        style={{ color: "black", background: "white" }}
+        variant="outline"
       >
         <MenuIcon />
-      </IconButton>
+      </Button>
 
       {mobileOpen && (
-        <div className="fixed inset-0 z-50">
+        <div className="fixed inset-0 z-100">
           <div
             className="fixed inset-0 bg-black/40"
             onClick={() => setMobileOpen(false)}
