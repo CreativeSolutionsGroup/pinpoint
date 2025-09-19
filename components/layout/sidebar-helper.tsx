@@ -26,7 +26,7 @@ export default function SideBarHelper({ children }: PropsWithChildren) {
       >
         <Button
           onClick={() => setOpen(!open)}
-          className={`w-min m-1.5 cursor-pointer absolute top-0 z-20 ${
+          className={`sidebar-button w-min m-1.5 cursor-pointer absolute top-0 z-20 ${
             isMobile ? 
               open ? "right-0" : "right-[-4rem]"
               : "right-0"

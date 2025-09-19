@@ -24,37 +24,60 @@ interface LegendProps {
 const Legend: React.FC<LegendProps> = ({ isGettingStarted, onDrop }) => {
   const isMobile = /Mobi|Android/i.test(navigator?.userAgent);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileVisible, setMobileVisible] = useState(false);
+
+  // Handle opening/closing with animation
+  const openMobileMenu = () => {
+    setMobileVisible(true);
+    // Small delay to ensure the element is rendered before animating
+    setTimeout(() => setMobileOpen(true), 10);
+  };
+
+  const closeMobileMenu = () => {
+    setMobileOpen(false);
+    // Wait for animation to complete before hiding
+    setTimeout(() => setMobileVisible(false), 300);
+  };
 
   // complicated (but only) way of effectively forcing the panel open
   // so mobile users see it before it hides. any interaction with the page
   // auto hides it. click on it to re open
   useEffect(() => {
-    // Only run the forced-open nudges on non-mobile where the panel is visible
-    if (isMobile) return;
+    // Always call the hook, but only run forced-open logic if not mobile
+    if (!isMobile) {
+      const panel = document.getElementById("icon-legend-panel");
+      if (panel) {
+        // Force panel open
+        panel.classList.add("translate-x-0");
 
-    const panel = document.getElementById("icon-legend-panel");
-    if (panel) {
-      // Force panel open
-      panel.classList.add("translate-x-0");
+        const removeTranslate = () => {
+          panel.classList.remove("translate-x-0");
+          // Remove the event listeners after first interaction
+          document.removeEventListener("touchstart", removeTranslate);
+          document.removeEventListener("click", removeTranslate);
+        };
 
-      const removeTranslate = () => {
-        panel.classList.remove("translate-x-0");
-        // Remove the event listeners after first interaction
-        document.removeEventListener("touchstart", removeTranslate);
-        document.removeEventListener("click", removeTranslate);
-      };
+        // Add listeners for both touch and click events
+        document.addEventListener("touchstart", removeTranslate);
+        document.addEventListener("click", removeTranslate);
 
-      // Add listeners for both touch and click events
-      document.addEventListener("touchstart", removeTranslate);
-      document.addEventListener("click", removeTranslate);
-
-      // Clean up listeners when component unmounts
-      return () => {
-        document.removeEventListener("touchstart", removeTranslate);
-        document.removeEventListener("click", removeTranslate);
-      };
+        // Clean up listeners when component unmounts
+        return () => {
+          document.removeEventListener("touchstart", removeTranslate);
+          document.removeEventListener("click", removeTranslate);
+        };
+      }
     }
   }, [isMobile]);
+
+  // Hide sidebar button when mobile icons menu is open
+  useEffect(() => {
+    if (isMobile && mobileOpen) {
+      document.getElementsByClassName("sidebar-button")[0]?.classList.add("hidden");
+    } else if (isMobile) {
+      document.getElementsByClassName("sidebar-button")[0]?.classList.remove("hidden");
+    }
+  }, [isMobile, mobileOpen]);
 
   // Desktop / large screens: show inline panel
   if (!isMobile) {
@@ -91,29 +114,31 @@ const Legend: React.FC<LegendProps> = ({ isGettingStarted, onDrop }) => {
     );
   }
 
-  // Mobile: show hamburger that opens a slide-over
   return (
     <>
       <Button
-        onClick={() => setMobileOpen(true)}
+        onClick={openMobileMenu}
         className="w-min fixed top-12 left-[0.5rem]"
         aria-label="Open icons legend"
-        style={{ color: "black", background: "white" }}
         variant="outline"
       >
         <MenuIcon />
       </Button>
 
-      {mobileOpen && (
+      {mobileVisible && (
         <div className="fixed inset-0 z-100">
           <div
-            className="fixed inset-0 bg-black/40"
-            onClick={() => setMobileOpen(false)}
+            className={`fixed inset-0 bg-black/40 transition-opacity duration-300 ${
+              mobileOpen ? 'opacity-100' : 'opacity-0'
+            }`}
+            onClick={closeMobileMenu}
           />
-          <div className="fixed left-0 top-0 h-full w-72 bg-white p-4 shadow-lg overflow-auto">
+          <div className={`fixed left-0 top-0 h-full w-72 bg-white p-4 shadow-lg transition-transform duration-300 ${
+            mobileOpen ? 'translate-x-0' : '-translate-x-full'
+          }`} style={{ overflow: 'visible' }}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold">ICONS</h2>
-              <IconButton onClick={() => setMobileOpen(false)}>
+              <IconButton onClick={closeMobileMenu}>
                 <CloseIcon />
               </IconButton>
             </div>
