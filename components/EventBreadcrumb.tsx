@@ -11,7 +11,7 @@ interface BreadcrumbProps {
 export default function EventBreadcrumb({event, location}: BreadcrumbProps) {
 
     return (
-        <Breadcrumb className="rounded border border-gray bg-white p-2 w-fit">
+        <Breadcrumb className="rounded border border-gray bg-white p-2 md:w-fit fixed m-1.5 top-0 left-14 h-9 overflow-hidden">
             <BreadcrumbList>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
