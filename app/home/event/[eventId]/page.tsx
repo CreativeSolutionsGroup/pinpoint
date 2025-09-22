@@ -20,11 +20,11 @@ export default async function LocationSelectPage({
   const event: EventWithLocations | null = await GetEvent(eventId);
 
   return (
-    <Box width={{ xs: "100%", sm: "40rem", md: "45rem" }} mx="auto" display="flex" flexDirection="column" px={{ xs: 2, sm: 0 }}>
+    <Box className="w-full relative">
       <Box mt={5}>
         <Heading event={event} />
       </Box>
-      <Box>
+      <Box className="md:w-[45rem] w-[90vw] mx-auto flex flex-col z-1">
         {event && (
           <EventPageTransitionWrapper exitDirection="right" entryDirection="right">
             <div className="relative flex flex-col gap-4 mt-5">
