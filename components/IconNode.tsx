@@ -3,7 +3,6 @@
 import { CustomNode } from "@/types/CustomNode";
 import { createId } from "@paralleldrive/cuid2";
 import { NodeProps, useReactFlow } from "@xyflow/react";
-import { Trash, Clipboard, CopyPlus } from "lucide-react";
 import { useParams } from "next/navigation";
 import {
   createContext,
