@@ -11,9 +11,9 @@ interface BreadcrumbProps {
 export default function EventBreadcrumb({event, location}: BreadcrumbProps) {
 
     return (
-        <Breadcrumb className="rounded border border-gray bg-white p-2 w-fit 
-                               md:static md:m-0 md:top-auto md:left-auto md:h-auto md:overflow-auto 
-                               fixed m-1.5 top-0 left-14 h-9 overflow-hidden">
+        <Breadcrumb className="rounded border border-gray bg-white p-2 
+                               md:max-w-[100vw] md:w-fit md:static md:m-0 md:top-auto md:left-auto md:h-auto md:overflow-auto 
+                               max-w-[calc(100%-8rem)] fixed m-1.5 top-0 left-14 overflow-hidden">
             <BreadcrumbList>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
