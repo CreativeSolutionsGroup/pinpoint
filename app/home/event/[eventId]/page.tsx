@@ -24,7 +24,7 @@ export default async function LocationSelectPage({
       <Box mt={5}>
         <Heading event={event} />
       </Box>
-      <Box className="w-[45rem] mx-auto flex flex-col z-1">
+      <Box className="md:w-[45rem] w-[90vw] mx-auto flex flex-col z-1">
         {event && (
           <EventPageTransitionWrapper exitDirection="right" entryDirection="right">
             <div className="relative flex flex-col gap-4 mt-5">
