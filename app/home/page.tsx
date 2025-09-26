@@ -35,18 +35,14 @@ export default async function EventSelect() {
 
   return (
     <>
-      <Box
-        width="45rem"
-        mx="auto"
-        display="flex"
-        flexDirection="column"
-        sx={{ position: "relative", zIndex: 1 }}
-      >
+      <Box className="w-full mx-auto flex flex-col relative z-1">
         <Box mt={5}>
           <Heading />
         </Box>
-        <EventPageTransitionWrapper exitDirection="left" entryDirection="left">
-          <EventSelectForm events={events} />
+        <EventPageTransitionWrapper exitDirection="left" entryDirection="right">
+          <div className="relative">
+            <EventSelectForm events={events} />
+          </div>
         </EventPageTransitionWrapper>
         <Suspense>
           <ErrorToast />

@@ -7,11 +7,10 @@ import {
   Flag,
   Gift,
   Grid3X3,
+  KeyboardMusic,
   Lightbulb,
-  Radio,
   Recycle,
   Speaker,
-  Tent,
   Theater,
   TrafficCone,
   Trash2,
@@ -24,6 +23,7 @@ import SixFootTable from "./icons/sixFootTable";
 import SpikeBall from "./icons/spikeBall";
 import PingPong from "./icons/pingPong";
 import CornHole from "./icons/cornHole";
+import Canopy from "./icons/Canopy";
 import aFrame from "./icons/aFrame";
 
 const categories = [
@@ -50,7 +50,7 @@ const categories = [
     title: "Tech",
     value: "tech",
     items: [
-      { icon: Radio, label: "Soundboard" },
+      { icon: KeyboardMusic, label: "Soundboard" },
       { icon: Speaker, label: "Speakers" },
       { icon: Lightbulb, label: "Lights" },
       { icon: Tv, label: "TVs" },
@@ -60,7 +60,7 @@ const categories = [
     title: "Getting Started",
     value: "getting-started",
     items: [
-      { icon: Tent, label: "Tents" },
+      { icon: Canopy, label: "Tents" },
       { icon: Flag, label: "Flags" },
     ],
   },
