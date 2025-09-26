@@ -3,7 +3,6 @@
 import { CustomNode } from "@/types/CustomNode";
 import { createId } from "@paralleldrive/cuid2";
 import { NodeProps, useReactFlow } from "@xyflow/react";
-import * as Icons from "lucide-react";
 import { useParams } from "next/navigation";
 import {
   createContext,
@@ -16,6 +15,7 @@ import {
 import { memo } from "react";
 import MobileIconSettings from "./MobileIconSettings";
 import IconSettings from "./IconSettings";
+import IconRegistry from "./IconRegistry";
 
 export const ActiveNodeContext = createContext<{
   activeNodeId: string | null;
@@ -39,8 +39,9 @@ export const IconNode = memo(function IconNode({
 
   const timeoutId = useRef<NodeJS.Timeout>();
 
-  // Get the icon component from the Lucide icons
-  const IconComponent = Icons[data.iconName as keyof typeof Icons.icons];
+  // Get the icon component from the icon registry with fallback
+  const iconName = data.iconName || 'HelpCircle';
+  const IconComponent = IconRegistry[iconName] || null;
 
   // Prevent auto-focus flash when opening
   useEffect(() => {
