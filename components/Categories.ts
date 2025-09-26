@@ -10,7 +10,6 @@ import {
   Lightbulb,
   Radio,
   Recycle,
-  Signpost,
   Speaker,
   Tent,
   Theater,
@@ -25,6 +24,7 @@ import SixFootTable from "./icons/sixFootTable";
 import SpikeBall from "./icons/spikeBall";
 import PingPong from "./icons/pingPong";
 import CornHole from "./icons/cornHole";
+import aFrame from "./icons/aFrame";
 
 const categories = [
   {
@@ -32,7 +32,7 @@ const categories = [
     value: "outdoor-equipment",
     items: [
       { icon: TrafficCone, label: "Cone" },
-      { icon: Signpost, label: "A-Frame" },
+      { icon: aFrame, label: "A-Frame" },
     ],
   },
   {
