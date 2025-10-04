@@ -14,6 +14,11 @@ body {
   user-select: none;
 }
 
+/* Force edges to render above the map node by adjusting z-index */
+.react-flow__edges {
+  z-index: 2 !important;
+}
+
 .rotatable-node__handle {
   position: absolute;
   width: 10px;

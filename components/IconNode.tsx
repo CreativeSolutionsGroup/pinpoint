@@ -259,7 +259,7 @@ export const IconNode = memo(function IconNode({
             background: '#555',
             width: 8,
             height: 8,
-            top: '50%',
+            top: '40%',
             left: '50%',
             right: 'auto',
             bottom: 'auto',
@@ -271,10 +271,11 @@ export const IconNode = memo(function IconNode({
           type="source"
           position={Position.Top}
           style={{
+            opacity: 0,
             background: '#555',
             width: 8,
             height: 8,
-            top: '50%',
+            top: '45%',
             left: '50%',
             right: 'auto',
             bottom: 'auto',

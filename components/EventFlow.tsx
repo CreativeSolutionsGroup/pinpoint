@@ -15,6 +15,8 @@ import {
   Background,
   addEdge,
   Connection,
+  EdgeChange,
+  applyEdgeChanges,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { ChannelProvider, useChannel } from "ably/react";
@@ -351,19 +353,51 @@ function Flow({
     ]
   );
 
-  // Handle edge changes
+  /**
+   * Handle edge changes and save state with debouncing
+   */
   const onEdgesChange = useCallback(
-    () => {
+    (changes: EdgeChange[]) => {
       if (!isEditable) return;
       
-      setEdges((eds) => {
-        // Apply edge changes (similar to how nodes work)
-        return eds; // You might need to import and use applyEdgeChanges here
-      });
+      setEdges((eds) => applyEdgeChanges(changes, eds));
+      
+      // Skip saving during initial load
+      if (isInitialLoad.current) {
+        return;
+      }
+
+      // Debounce save (same pattern as onNodesChange)
+      clearTimeout(timeoutId.current);
+      timeoutId.current = setTimeout(() => {
+        if (!rfInstance || !eventLocation) return;
+
+        // Save current state to undo stack
+        const currentState = JSON.stringify(rfInstance.toObject());
+        if (
+          changes.length > 0 &&
+          (undoStack.length === 0 ||
+            currentState !== undoStack[undoStack.length - 1])
+        ) {
+          setUndoStack((stack) => [...stack, currentState]);
+          setRedoStack([]); // Clear redo stack when new changes occur
+        }
+
+        // Save state to server
+        SaveState(
+          event.id,
+          eventLocation.locationId,
+          currentState,
+          clientId
+        );
+      }, 500);
     },
-    [isEditable]
+    [isEditable, rfInstance, eventLocation, event.id, undoStack]
   );
 
+  /**
+   * Handle new connections
+   */
   const onConnect = useCallback(
     (params: Connection) => {
       const newEdge: CustomEdge = {
@@ -376,9 +410,25 @@ function Flow({
         },
       };
       setEdges((eds) => addEdge(newEdge, eds));
-      console.log("Edge connected:", params);
+      
+      // Save to undo stack and server (same pattern)
+      clearTimeout(timeoutId.current);
+      timeoutId.current = setTimeout(() => {
+        if (!rfInstance || !eventLocation) return;
+
+        const currentState = JSON.stringify(rfInstance.toObject());
+        setUndoStack((stack) => [...stack, currentState]);
+        setRedoStack([]);
+
+        SaveState(
+          event.id,
+          eventLocation.locationId,
+          currentState,
+          clientId
+        );
+      }, 500);
     },
-    [setEdges]
+    [setEdges, rfInstance, eventLocation, event.id]
   );
 
   /**
@@ -401,6 +451,7 @@ function Flow({
     if (previousState) {
       const parsedState = JSON.parse(previousState);
       setNodes(parsedState.nodes || []);
+      setEdges(parsedState.edges || []); // ✅ Also restore edges!
 
       // Save state to server
       eventLocation &&
@@ -431,8 +482,9 @@ function Flow({
     if (nextState) {
       const parsedState = JSON.parse(nextState);
       setNodes(parsedState.nodes || []);
+      setEdges(parsedState.edges || []); // ✅ Also restore edges!
     }
-  }, [redoStack, rfInstance, setNodes, setUndoStack]);
+  }, [redoStack, rfInstance, setNodes, setEdges]);
 
   const hasInitialNodesLoaded = useRef(false);
 
