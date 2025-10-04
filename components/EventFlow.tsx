@@ -13,6 +13,8 @@ import {
   applyNodeChanges,
   BackgroundVariant,
   Background,
+  addEdge,
+  Connection,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { ChannelProvider, useChannel } from "ably/react";
@@ -31,11 +33,13 @@ import ControlButtons from "./ControlButtons";
 
 // Types
 import { CustomNode } from "@/types/CustomNode";
+import { ConnectorEdge } from "./ConnectorEdge";
 import { LucideIcon } from "lucide-react";
 import { DraggableEvent } from "react-draggable";
 import { updateRecents } from "@/lib/recents";
 import { useSession } from "next-auth/react";
 import EventBreadcrumb from "./EventBreadcrumb";
+import { CustomEdge } from "@/types/CustomEdge";
 
 const getId = () => createId();
 const clientId = createId();
@@ -44,6 +48,10 @@ const clientId = createId();
 const nodeTypes = {
   iconNode: IconNode,
   customImageNode: CustomImageNode,
+};
+
+const edgeTypes = {
+  connector: ConnectorEdge,
 };
 
 interface EventWithLocation extends Event {
@@ -85,6 +93,13 @@ function Flow({
 
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const rfInstance = useReactFlow();
+
+  const [edges, setEdges] = useState<CustomEdge[]>(() => {
+    const savedState = eventLocation?.state
+      ? JSON.parse(eventLocation.state)
+      : {};
+    return savedState?.edges || [];
+  });
 
   // History management
   const [undoStack, setUndoStack] = useState<string[]>([]);
@@ -336,6 +351,36 @@ function Flow({
     ]
   );
 
+  // Handle edge changes
+  const onEdgesChange = useCallback(
+    () => {
+      if (!isEditable) return;
+      
+      setEdges((eds) => {
+        // Apply edge changes (similar to how nodes work)
+        return eds; // You might need to import and use applyEdgeChanges here
+      });
+    },
+    [isEditable]
+  );
+
+  const onConnect = useCallback(
+    (params: Connection) => {
+      const newEdge: CustomEdge = {
+        ...params,
+        id: getId(),
+        type: 'connector',
+        data: {
+          label: 'Wire',
+          color: '#57B9FF',
+        },
+      };
+      setEdges((eds) => addEdge(newEdge, eds));
+      console.log("Edge connected:", params);
+    },
+    [setEdges]
+  );
+
   /**
    * Handle undo action
    */
@@ -501,14 +546,18 @@ function Flow({
       <div style={{ width: "100vw", height: "100vh" }} ref={reactFlowWrapper} className="select-none">
         <ReactFlow
           nodes={nodes}
+          edges={edges}
+          edgeTypes={edgeTypes}
           minZoom={0.1}
           onNodesChange={onNodesChange}
-          //onNodeClick={(_, node) => setActiveNodeId(node.id)} // Fix the onNodeClick handler
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
           zoomOnScroll={false}
           panOnScroll={false}
           nodeTypes={nodeTypes}
           nodesDraggable={isEditable}
           elementsSelectable={isEditable}
+          nodesConnectable={isEditable}
           className="touch-none select-none"
           selectionKeyCode={'Shift'}
         >
