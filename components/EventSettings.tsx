@@ -25,6 +25,7 @@ import {
 import {
   SyncLocations,
   UpdateGettingStarted,
+  UpdateCampusChristmas,
   UpdateName,
 } from "@/lib/api/update/Event";
 import { useParams, useRouter } from "next/navigation";
@@ -38,6 +39,7 @@ const formSchema = z.object({
   eventName: z.string().min(1, "Event name is required"),
   eventLocations: z.array(z.string()).optional(),
   isGettingStarted: z.boolean(),
+  isCampusChristmas: z.boolean(),
 });
 
 export default function EventSettings({
@@ -71,6 +73,7 @@ export default function EventSettings({
     await SyncLocations(event, data.eventLocations ?? []);
     await UpdateName(event.id, data.eventName);
     await UpdateGettingStarted(event.id, data.isGettingStarted);
+    await UpdateCampusChristmas(event.id, data.isCampusChristmas);
     setIsOpen(false);
     setLocationAdderOpen(false);
     if (!data.eventLocations?.find((v) => v === locationId)) {
@@ -84,10 +87,11 @@ export default function EventSettings({
       currentLocations.map((location) => location.id)
     );
     form.setValue("isGettingStarted", event.isGS);
+    form.setValue("isCampusChristmas", event.isCC);
     setCurrentLocations(
       currentLocations.sort((a, b) => a.name.localeCompare(b.name))
     );
-  }, [currentLocations, form, event.isGS]);
+  }, [currentLocations, form, event.isGS, event.isCC]);
 
   return (
     <Tooltip title="Settings">
@@ -182,6 +186,29 @@ export default function EventSettings({
                         </FormLabel>
                         <FormDescription>
                           Is this event related to Getting Started weekend?
+                        </FormDescription>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                {/* Campus Christmas switch */}
+                <FormField
+                  control={form.control}
+                  name="isCampusChristmas"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                      <div className="space-y-0.5">
+                        <FormLabel className="font-semibold">
+                          Campus Christmas
+                        </FormLabel>
+                        <FormDescription>
+                          Is this event related to Campus Christmas?
                         </FormDescription>
                       </div>
                       <FormControl>

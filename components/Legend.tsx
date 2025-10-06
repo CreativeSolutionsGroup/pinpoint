@@ -18,10 +18,11 @@ import LegendItem from "./LegendItem";
 // Updated interface with generics
 interface LegendProps {
   isGettingStarted: boolean;
+  isCampusChristmas: boolean;
   onDrop: (event: DraggableEvent, icon: LucideIcon, label: string) => void;
 }
 
-const Legend: React.FC<LegendProps> = ({ isGettingStarted, onDrop }) => {
+const Legend: React.FC<LegendProps> = ({ isGettingStarted, isCampusChristmas, onDrop }) => {
   const isMobile = /Mobi|Android/i.test(navigator?.userAgent);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileVisible, setMobileVisible] = useState(false);
@@ -88,27 +89,35 @@ const Legend: React.FC<LegendProps> = ({ isGettingStarted, onDrop }) => {
       >
         <h2 className="text-lg font-bold mb-4">ICONS</h2>
         <Accordion type="single" collapsible className="w-full">
-          {categories.map(
-            (category) =>
-              (category.value !== "getting-started" ||
-                (category.value === "getting-started" && isGettingStarted)) && (
-                <AccordionItem key={category.value} value={category.value}>
-                  <AccordionTrigger>{category.title}</AccordionTrigger>
-                  <AccordionContent>
-                    <div className="grid grid-cols-3 gap-2">
-                      {category.items.map((item, index) => (
-                        <LegendItem
-                          key={`${category.value}-${item.label}-${index}`}
-                          icon={item.icon}
-                          label={item.label}
-                          onDrop={onDrop}
-                        />
-                      ))}
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              )
-          )}
+          {categories.map((category) => {
+            // Skip getting-started if not enabled
+            if (category.value === "getting-started" && !isGettingStarted) {
+              return null;
+            }
+
+            // Skip campus-xmas if not enabled
+            if (category.value === "campus-xmas" && !isCampusChristmas) {
+              return null;
+            }
+            
+            return (
+              <AccordionItem key={category.value} value={category.value}>
+                <AccordionTrigger>{category.title}</AccordionTrigger>
+                <AccordionContent>
+                  <div className="grid grid-cols-3 gap-2">
+                    {category.items.map((item, index) => (
+                      <LegendItem
+                        key={`${category.value}-${item.label}-${index}`}
+                        icon={item.icon}
+                        label={item.label}
+                        onDrop={onDrop}
+                      />
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            );
+          })}
         </Accordion>
       </div>
     );
@@ -143,27 +152,35 @@ const Legend: React.FC<LegendProps> = ({ isGettingStarted, onDrop }) => {
               </IconButton>
             </div>
             <Accordion type="single" collapsible className="w-full">
-              {categories.map(
-                (category) =>
-                  (category.value !== "getting-started" ||
-                    (category.value === "getting-started" && isGettingStarted)) && (
-                    <AccordionItem key={category.value} value={category.value}>
-                      <AccordionTrigger>{category.title}</AccordionTrigger>
-                      <AccordionContent>
-                        <div className="grid grid-cols-3 gap-2">
-                          {category.items.map((item, index) => (
-                            <LegendItem
-                              key={`${category.value}-${item.label}-${index}`}
-                              icon={item.icon}
-                              label={item.label}
-                              onDrop={onDrop}
-                            />
-                          ))}
-                        </div>
-                      </AccordionContent>
-                    </AccordionItem>
-                  )
-              )}
+              {categories.map((category) => {
+                // Skip getting-started if not enabled
+                if (category.value === "getting-started" && !isGettingStarted) {
+                  return null;
+                }
+                
+                // Skip campus-christmas if not enabled
+                if (category.value === "campus-christmas" && !isCampusChristmas) {
+                  return null;
+                }
+                
+                return (
+                  <AccordionItem key={category.value} value={category.value}>
+                    <AccordionTrigger>{category.title}</AccordionTrigger>
+                    <AccordionContent>
+                      <div className="grid grid-cols-3 gap-2">
+                        {category.items.map((item, index) => (
+                          <LegendItem
+                            key={`${category.value}-${item.label}-${index}`}
+                            icon={item.icon}
+                            label={item.label}
+                            onDrop={onDrop}
+                          />
+                        ))}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                );
+              })}
             </Accordion>
           </div>
         </div>

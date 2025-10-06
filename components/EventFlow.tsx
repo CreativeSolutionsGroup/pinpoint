@@ -524,7 +524,7 @@ function Flow({
           <Panel position="top-left">
             <EventBreadcrumb event={event} location={eventLocation?.location} />
           {isEditable && (
-               <Legend onDrop={onDrop} isGettingStarted={event.isGS} />
+               <Legend onDrop={onDrop} isGettingStarted={event.isGS} isCampusChristmas={event.isCC} />
            )}
            </Panel>
 
