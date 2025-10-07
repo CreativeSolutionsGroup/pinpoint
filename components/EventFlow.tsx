@@ -35,12 +35,12 @@ import ControlButtons from "./ControlButtons";
 
 // Types
 import { CustomNode } from "@/types/CustomNode";
-import { ConnectorEdge } from "./ConnectorEdge";
 import { LucideIcon } from "lucide-react";
 import { DraggableEvent } from "react-draggable";
 import { updateRecents } from "@/lib/recents";
 import { useSession } from "next-auth/react";
 import EventBreadcrumb from "./EventBreadcrumb";
+import { FlexibleIcon } from "@/types/IconTypes";
 import { CustomEdge } from "@/types/CustomEdge";
 
 const getId = () => createId();
@@ -507,7 +507,7 @@ function Flow({
   }, [nodes, fitView]);
 
   const onDrop = useCallback(
-    (event: DraggableEvent, icon: LucideIcon, label: string) => {
+    (event: DraggableEvent, icon: FlexibleIcon, label: string) => {
       if (!reactFlowWrapper.current) return;
 
       // Get bounds of react flow wrapper
