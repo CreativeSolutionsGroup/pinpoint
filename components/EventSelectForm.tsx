@@ -35,7 +35,15 @@ import CreateEvent from "@/lib/api/create/createEvent";
 import DeleteEntity from "@/lib/api/delete/DeleteEntity";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
+import { CopyPlus } from "lucide-react";
 import { EventWithLocationIds } from "@/types/Event";
+import {
+  SyncLocations,
+  UpdateGettingStarted,
+  UpdateCampusChristmas,
+} from "@/lib/api/update/Event";
+import { GetEventLocationInfo } from "@/lib/api/read/GetEventLocationInfo";
+import SaveState from "@/lib/api/update/ReactFlowSave";
 
 export default function EventSelectForm({
   events,
@@ -74,6 +82,60 @@ export default function EventSelectForm({
     setDropdownEvents([...dropdownEvents, event]);
     setEventId(event.id);
     setSelectedEventLocations([]);
+  }
+
+  async function duplicateEvent(id: string) {
+    const eventToCopy = events.find((e) => e.id === id);
+    if (!eventToCopy) return;
+
+    // Create the new event
+    const newEvent = await CreateEvent(eventToCopy.name + " (Copy)");
+
+    // Copy all locations and their states
+    const locationLinks = eventToCopy.locations;
+    console.log(locationLinks, eventToCopy);
+
+    if (locationLinks && locationLinks.length > 0) {
+      // Extract location IDs directly from the links
+      const locationIds = locationLinks.map(link => link.locationId);
+
+      console.log(locationIds);
+      if (locationIds.length > 0) {
+        await SyncLocations(newEvent, locationIds);
+
+        // For each location, copy the state from the original event
+        for (const locationId of locationIds) {
+          // Get the original event's state for this location
+          const originalEventLocation = await GetEventLocationInfo(
+            id,
+            locationId
+          );
+
+          if (originalEventLocation?.state) {
+            // Save the same state to the new event's location
+            await SaveState(
+              newEvent.id,
+              locationId,
+              originalEventLocation.state,
+              "" // Empty client ID since this is a copy operation
+            );
+          }
+        }
+      }
+    }
+
+    // Copy the isGS and isCC flags
+    if (eventToCopy.isGS !== undefined) {
+      await UpdateGettingStarted(newEvent.id, eventToCopy.isGS);
+    }
+    if (eventToCopy.isCC !== undefined) {
+      await UpdateCampusChristmas(newEvent.id, eventToCopy.isCC);
+    }
+
+    setDropdownEvents([...dropdownEvents, newEvent]);
+    setEventId(newEvent.id);
+    setSelectedEventLocations([]);
+    router.push(`/home/event/${newEvent.id}`);
   }
 
   function deleteLocation(id: string, eventId: string) {
@@ -133,17 +195,28 @@ export default function EventSelectForm({
                 <div className="flex flex-row items-center justify-between w-full">
                   <Typography fontSize={15}>{event.name}</Typography>
                   {canEdit && (
-                    <Button
-                      color="warning"
-                      size="small"
-                      className="ml-2"
-                      onClick={() => {
-                        setDeleteDialogOpen(true);
-                        setEntityToDelete({ entity: event, type: "event" });
-                      }}
-                    >
-                      <RemoveIcon />
-                    </Button>
+                    <div className="flex flex-row items-center ml-auto">
+                      <Button
+                        size="small"
+                        sx={{ color: muiTheme.palette.lightblue.main }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          duplicateEvent(event.id);
+                        }}
+                      >
+                        <CopyPlus />
+                      </Button>
+                      <Button
+                        color="warning"
+                        size="small"
+                        onClick={() => {
+                          setDeleteDialogOpen(true);
+                          setEntityToDelete({ entity: event, type: "event" });
+                        }}
+                      >
+                        <RemoveIcon />
+                      </Button>
+                    </div>
                   )}
                 </div>
               </MenuItem>
