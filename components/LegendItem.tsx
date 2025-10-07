@@ -57,6 +57,7 @@ const LegendItem: React.FC<LegendItemProps> = ({
         onStop={handleDragEnd}
         position={{ x: 0, y: 0 }}
         enableUserSelectHack={true}
+        bounds="body"
       >
         <div
           ref={nodeRef}

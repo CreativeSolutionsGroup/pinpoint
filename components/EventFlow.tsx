@@ -13,6 +13,10 @@ import {
   applyNodeChanges,
   BackgroundVariant,
   Background,
+  addEdge,
+  Connection,
+  EdgeChange,
+  applyEdgeChanges,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { ChannelProvider, useChannel } from "ably/react";
@@ -31,11 +35,13 @@ import ControlButtons from "./ControlButtons";
 
 // Types
 import { CustomNode } from "@/types/CustomNode";
+import { LucideIcon } from "lucide-react";
 import { DraggableEvent } from "react-draggable";
 import { updateRecents } from "@/lib/recents";
 import { useSession } from "next-auth/react";
 import EventBreadcrumb from "./EventBreadcrumb";
 import { FlexibleIcon } from "@/types/IconTypes";
+import { CustomEdge } from "@/types/CustomEdge";
 
 const getId = () => createId();
 const clientId = createId();
@@ -44,6 +50,10 @@ const clientId = createId();
 const nodeTypes = {
   iconNode: IconNode,
   customImageNode: CustomImageNode,
+};
+
+const edgeTypes = {
+  connector: ConnectorEdge,
 };
 
 interface EventWithLocation extends Event {
@@ -85,6 +95,13 @@ function Flow({
 
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const rfInstance = useReactFlow();
+
+  const [edges, setEdges] = useState<CustomEdge[]>(() => {
+    const savedState = eventLocation?.state
+      ? JSON.parse(eventLocation.state)
+      : {};
+    return savedState?.edges || [];
+  });
 
   // History management
   const [undoStack, setUndoStack] = useState<string[]>([]);
@@ -337,6 +354,84 @@ function Flow({
   );
 
   /**
+   * Handle edge changes and save state with debouncing
+   */
+  const onEdgesChange = useCallback(
+    (changes: EdgeChange[]) => {
+      if (!isEditable) return;
+      
+      setEdges((eds) => applyEdgeChanges(changes, eds));
+      
+      // Skip saving during initial load
+      if (isInitialLoad.current) {
+        return;
+      }
+
+      // Debounce save (same pattern as onNodesChange)
+      clearTimeout(timeoutId.current);
+      timeoutId.current = setTimeout(() => {
+        if (!rfInstance || !eventLocation) return;
+
+        // Save current state to undo stack
+        const currentState = JSON.stringify(rfInstance.toObject());
+        if (
+          changes.length > 0 &&
+          (undoStack.length === 0 ||
+            currentState !== undoStack[undoStack.length - 1])
+        ) {
+          setUndoStack((stack) => [...stack, currentState]);
+          setRedoStack([]); // Clear redo stack when new changes occur
+        }
+
+        // Save state to server
+        SaveState(
+          event.id,
+          eventLocation.locationId,
+          currentState,
+          clientId
+        );
+      }, 500);
+    },
+    [isEditable, rfInstance, eventLocation, event.id, undoStack]
+  );
+
+  /**
+   * Handle new connections
+   */
+  const onConnect = useCallback(
+    (params: Connection) => {
+      const newEdge: CustomEdge = {
+        ...params,
+        id: getId(),
+        type: 'connector',
+        data: {
+          label: 'Wire',
+          color: '#57B9FF',
+        },
+      };
+      setEdges((eds) => addEdge(newEdge, eds));
+      
+      // Save to undo stack and server (same pattern)
+      clearTimeout(timeoutId.current);
+      timeoutId.current = setTimeout(() => {
+        if (!rfInstance || !eventLocation) return;
+
+        const currentState = JSON.stringify(rfInstance.toObject());
+        setUndoStack((stack) => [...stack, currentState]);
+        setRedoStack([]);
+
+        SaveState(
+          event.id,
+          eventLocation.locationId,
+          currentState,
+          clientId
+        );
+      }, 500);
+    },
+    [setEdges, rfInstance, eventLocation, event.id]
+  );
+
+  /**
    * Handle undo action
    */
   const onUndo = useCallback(() => {
@@ -356,6 +451,7 @@ function Flow({
     if (previousState) {
       const parsedState = JSON.parse(previousState);
       setNodes(parsedState.nodes || []);
+      setEdges(parsedState.edges || []); // ✅ Also restore edges!
 
       // Save state to server
       eventLocation &&
@@ -386,8 +482,9 @@ function Flow({
     if (nextState) {
       const parsedState = JSON.parse(nextState);
       setNodes(parsedState.nodes || []);
+      setEdges(parsedState.edges || []); // ✅ Also restore edges!
     }
-  }, [redoStack, rfInstance, setNodes, setUndoStack]);
+  }, [redoStack, rfInstance, setNodes, setEdges]);
 
   const hasInitialNodesLoaded = useRef(false);
 
@@ -501,14 +598,18 @@ function Flow({
       <div style={{ width: "100vw", height: "100vh" }} ref={reactFlowWrapper} className="select-none">
         <ReactFlow
           nodes={nodes}
+          edges={edges}
+          edgeTypes={edgeTypes}
           minZoom={0.1}
           onNodesChange={onNodesChange}
-          //onNodeClick={(_, node) => setActiveNodeId(node.id)} // Fix the onNodeClick handler
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
           zoomOnScroll={false}
           panOnScroll={false}
           nodeTypes={nodeTypes}
           nodesDraggable={isEditable}
           elementsSelectable={isEditable}
+          nodesConnectable={isEditable}
           className="touch-none select-none"
           selectionKeyCode={'Shift'}
         >
