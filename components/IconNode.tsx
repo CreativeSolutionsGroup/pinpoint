@@ -2,7 +2,7 @@
 
 import { CustomNode } from "@/types/CustomNode";
 import { createId } from "@paralleldrive/cuid2";
-import { NodeProps, useReactFlow } from "@xyflow/react";
+import { NodeProps, useReactFlow, Handle, Position } from "@xyflow/react";
 import * as Icons from "lucide-react";
 import { useParams } from "next/navigation";
 import {
@@ -252,6 +252,37 @@ export const IconNode = memo(function IconNode({
   if (!isMobile) {
     return (
       <>
+        <Handle
+          type="target"
+          position={Position.Top}
+          style={{
+            background: '#555',
+            width: 8,
+            height: 8,
+            top: '40%',
+            left: '50%',
+            right: 'auto',
+            bottom: 'auto',
+            transform: 'translate(-50%, -50%)',
+            zIndex: 1000,
+          }}
+        />
+        <Handle
+          type="source"
+          position={Position.Top}
+          style={{
+            opacity: 0,
+            background: '#555',
+            width: 8,
+            height: 8,
+            top: '45%',
+            left: '50%',
+            right: 'auto',
+            bottom: 'auto',
+            transform: 'translate(-50%, -50%)',
+            zIndex: 1000,
+          }}
+        />
         <IconSettings
           isOpen={isOpen}
           setIsOpen={(open: boolean) => {
