@@ -63,6 +63,18 @@ export async function UpdateGettingStarted(eventId: string, isGS: boolean) {
   });
 }
 
+export async function UpdateArchive(eventId: string, isArchived: boolean) {
+  revalidatePath("event/");
+  return await prisma.event.update({
+    where: {
+      id: eventId,
+    },
+    data: {
+      isArchived,
+    },
+  });
+}
+
 export async function UpdateCampusChristmas(eventId: string, isCC: boolean) {
   revalidatePath("event/");
   return await prisma.event.update({

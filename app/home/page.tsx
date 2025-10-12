@@ -18,14 +18,18 @@ import { prisma } from "@/lib/api/db";
 import { Box } from "@mui/material";
 import { Suspense } from "react";
 
-// Collect all events from doradev database
+// Collect all unarchived events from doradev database
 export default async function EventSelect() {
   const events = await prisma.event.findMany({
+    where: {
+      isArchived: false,
+    },
     select: {
       id: true,
       name: true,
       isGS: true,
       isCC: true,
+      isArchived: true,
       locations: {
         select: {
           id: true,

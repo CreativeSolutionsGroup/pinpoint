@@ -8,12 +8,13 @@ datasource db {
 }
 
 model Event {
-  id        String            @id @default(cuid())
-  name      String
-  isGS      Boolean           @default(false)
-  isCC      Boolean           @default(false)
-  locations EventToLocation[]
-  Recents   Recents[]
+  id         String            @id @default(cuid())
+  name       String
+  isGS       Boolean           @default(false)
+  isCC       Boolean           @default(false)
+  isArchived Boolean           @default(false)
+  locations  EventToLocation[]
+  Recents    Recents[]
 }
 
 model EventToLocation {

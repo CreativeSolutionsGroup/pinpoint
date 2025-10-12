@@ -35,12 +35,13 @@ import CreateEvent from "@/lib/api/create/createEvent";
 import DeleteEntity from "@/lib/api/delete/DeleteEntity";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
-import { CopyPlus } from "lucide-react";
+import { CopyPlus, Archive } from "lucide-react";
 import { EventWithLocationIds } from "@/types/Event";
 import {
   SyncLocations,
   UpdateGettingStarted,
   UpdateCampusChristmas,
+  UpdateArchive,
 } from "@/lib/api/update/Event";
 import { GetEventLocationInfo } from "@/lib/api/read/GetEventLocationInfo";
 import SaveState from "@/lib/api/update/ReactFlowSave";
@@ -55,6 +56,7 @@ export default function EventSelectForm({
   const [eventId, setEventId] = useState("");
   const [locationAdderOpen, setLocationAdderOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
   const [insertDialogOpen, setInsertDialogOpen] = useState(false);
   const [eventToCreate, setEventToCreate] = useState<string>("");
   const [dropdownEvents, setDropdownEvents] = useState<Event[]>(events);
@@ -63,6 +65,10 @@ export default function EventSelectForm({
   const [entityToDelete, setEntityToDelete] = useState<{
     entity: Event | Location;
     type: "event" | "location";
+  }>();
+  const [eventToArchive, setEventToArchive] = useState<{
+    entity: Event;
+    type: "event";
   }>();
   const [selectedEventLocations, setSelectedEventLocations] = useState<
     Location[]
@@ -138,6 +144,16 @@ export default function EventSelectForm({
     router.push(`/home/event/${newEvent.id}`);
   }
 
+  async function archiveEvent(id: string) {
+    setArchiveDialogOpen(false);
+    
+    // Archive the event in the database
+    await UpdateArchive(id, true);
+
+    // Remove the event from the dropdown list
+    setDropdownEvents(dropdownEvents.filter((e) => e.id !== id));
+  }
+
   function deleteLocation(id: string, eventId: string) {
     DeleteEntity("location", id, eventId);
     setDeleteDialogOpen(false);
@@ -205,6 +221,17 @@ export default function EventSelectForm({
                         }}
                       >
                         <CopyPlus />
+                      </Button>
+                      <Button
+                        size="small"
+                        className="ml-2"
+                        sx={{ color: muiTheme.palette.lightblue.main }}
+                        onClick={() => {
+                          setArchiveDialogOpen(true);
+                          setEventToArchive({ entity: event, type: "event" });
+                        }}
+                      >
+                        <Archive />
                       </Button>
                       <Button
                         color="warning"
@@ -282,6 +309,29 @@ export default function EventSelectForm({
                 } else {
                   deleteEvent(entityToDelete!.entity.id);
                 }
+              }}
+            >
+              Confirm
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={archiveDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Archive Event</AlertDialogTitle>
+            <AlertDialogDescription>
+              {`Are you sure you want to archive "${eventToArchive?.entity.name}"?`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setArchiveDialogOpen(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                archiveEvent(eventToArchive!.entity.id);
               }}
             >
               Confirm
