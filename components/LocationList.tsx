@@ -32,8 +32,9 @@ export default function LocationList({ eventId, eventName }: Props) {
   const [locations, setLocations] = useState<Location[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [event, setEvent] = useState<{ isArchived: boolean } | null>(null);
   const { data: session } = useSession();
-  const canEdit = session?.role === "ADMIN" || session?.role === "EDITOR";
+  const canEdit = (session?.role === "ADMIN" || session?.role === "EDITOR") && !event?.isArchived;
 
   // added state
   const [locationAdderOpen, setLocationAdderOpen] = useState(false);
@@ -55,7 +56,10 @@ export default function LocationList({ eventId, eventName }: Props) {
               eventData?.locations.some((evLoc) => evLoc.locationId === l.id)
             )
             .sort((a, b) => a.name.localeCompare(b.name)) || [];
-        if (active) setLocations(filtered);
+        if (active) {
+          setLocations(filtered);
+          setEvent(eventData ? { isArchived: eventData.isArchived } : null);
+        }
       } finally {
         if (active) setIsLoading(false);
       }

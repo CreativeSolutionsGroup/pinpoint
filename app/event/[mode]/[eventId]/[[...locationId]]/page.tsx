@@ -74,7 +74,7 @@ export default async function EventPage({
     <EventFlow
       event={event}
       location={p.locationId?.[0] ?? event.locations[0].locationId}
-      isEditable={p.mode === "edit" && canEditContent}
+      isEditable={p.mode === "edit" && canEditContent && !event.isArchived}
     />
   );
 }
