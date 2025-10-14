@@ -35,13 +35,13 @@ import ControlButtons from "./ControlButtons";
 
 // Types
 import { CustomNode } from "@/types/CustomNode";
-import { LucideIcon } from "lucide-react";
 import { DraggableEvent } from "react-draggable";
 import { updateRecents } from "@/lib/recents";
 import { useSession } from "next-auth/react";
 import EventBreadcrumb from "./EventBreadcrumb";
 import { FlexibleIcon } from "@/types/IconTypes";
 import { CustomEdge } from "@/types/CustomEdge";
+import { ConnectorEdge } from "./ConnectorEdge";
 
 const getId = () => createId();
 const clientId = createId();
