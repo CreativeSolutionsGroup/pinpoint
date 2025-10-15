@@ -136,8 +136,9 @@ export default function EventSelectForm({
                     <Button
                       color="warning"
                       size="small"
-                      className="ml-2"
-                      onClick={() => {
+                      className="ml-2 trash-button"
+                      onClick={(e) => {
+                        e.stopPropagation();
                         setDeleteDialogOpen(true);
                         setEntityToDelete({ entity: event, type: "event" });
                       }}
@@ -185,7 +186,7 @@ export default function EventSelectForm({
       </FormControl>
 
       <AlertDialog open={deleteDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent style={{ zIndex: 1400 }}>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete</AlertDialogTitle>
             <AlertDialogDescription>
@@ -218,7 +219,7 @@ export default function EventSelectForm({
       </AlertDialog>
 
       <AlertDialog open={insertDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent style={{ zIndex: 1400 }}>
           <form
             onSubmit={(e) => {
               e.preventDefault();

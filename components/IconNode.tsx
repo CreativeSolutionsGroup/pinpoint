@@ -1,9 +1,8 @@
 "use client";
 
 import { CustomNode } from "@/types/CustomNode";
-import { createId } from "@paralleldrive/cuid2";=
+import { createId } from "@paralleldrive/cuid2";
 import { NodeProps, useReactFlow, Handle, Position } from "@xyflow/react";
-import * as Icons from "lucide-react";
 import { useParams } from "next/navigation";
 import {
   createContext,

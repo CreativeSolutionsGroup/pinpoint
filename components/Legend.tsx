@@ -7,7 +7,6 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-import { LucideIcon } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { IconButton } from "@mui/material";
 import { Button } from "@/components/ui/button";
