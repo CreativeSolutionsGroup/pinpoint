@@ -38,13 +38,9 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import { CopyPlus, Archive } from "lucide-react";
 import { EventWithLocationIds } from "@/types/Event";
 import {
-  SyncLocations,
-  UpdateGettingStarted,
-  UpdateCampusChristmas,
   UpdateArchive,
 } from "@/lib/api/update/Event";
-import { GetEventLocationInfo } from "@/lib/api/read/GetEventLocationInfo";
-import SaveState from "@/lib/api/update/ReactFlowSave";
+import { duplicateEvent as duplicateEventUtil } from "@/lib/api/create/duplicateEvent";
 
 export default function EventSelectForm({
   events,
@@ -94,49 +90,8 @@ export default function EventSelectForm({
     const eventToCopy = events.find((e) => e.id === id);
     if (!eventToCopy) return;
 
-    // Create the new event
-    const newEvent = await CreateEvent(eventToCopy.name + " (Copy)");
-
-    // Copy all locations and their states
-    const locationLinks = eventToCopy.locations;
-    console.log(locationLinks, eventToCopy);
-
-    if (locationLinks && locationLinks.length > 0) {
-      // Extract location IDs directly from the links
-      const locationIds = locationLinks.map(link => link.locationId);
-
-      console.log(locationIds);
-      if (locationIds.length > 0) {
-        await SyncLocations(newEvent, locationIds);
-
-        // For each location, copy the state from the original event
-        for (const locationId of locationIds) {
-          // Get the original event's state for this location
-          const originalEventLocation = await GetEventLocationInfo(
-            id,
-            locationId
-          );
-
-          if (originalEventLocation?.state) {
-            // Save the same state to the new event's location
-            await SaveState(
-              newEvent.id,
-              locationId,
-              originalEventLocation.state,
-              "" // Empty client ID since this is a copy operation
-            );
-          }
-        }
-      }
-    }
-
-    // Copy the isGS and isCC flags
-    if (eventToCopy.isGS !== undefined) {
-      await UpdateGettingStarted(newEvent.id, eventToCopy.isGS);
-    }
-    if (eventToCopy.isCC !== undefined) {
-      await UpdateCampusChristmas(newEvent.id, eventToCopy.isCC);
-    }
+    // Use the shared utility function
+    const newEvent = await duplicateEventUtil(eventToCopy);
 
     setDropdownEvents([...dropdownEvents, newEvent]);
     setEventId(newEvent.id);

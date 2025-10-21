@@ -6,7 +6,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { ArchiveRestore, Trash } from "lucide-react";
+import { ArchiveRestore, CopyPlus, Trash } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   AlertDialog,
@@ -21,6 +21,7 @@ import {
 import { GetArchivedEvents } from "@/lib/api/read/GetArchivedEvents";
 import { UpdateArchive } from "@/lib/api/update/Event";
 import DeleteEntity from "@/lib/api/delete/DeleteEntity";
+import { duplicateEvent } from "@/lib/api/create/duplicateEvent";
 import Link from "next/link";
 import { EventWithLocationIds } from "@/types/Event";
 
@@ -134,6 +135,17 @@ export default function ArchivedEventsDialog({ open, onOpenChange }: ArchivedEve
                         </div>
                       </Link>
                       <div className="flex gap-2">
+                        <button
+                          className="p-2 text-blue-500 hover:bg-blue-50 rounded-md transition-all duration-300"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedEvent(event);
+                            duplicateEvent(event);
+                          }}
+                          title="Copy Event"
+                        >
+                          <CopyPlus className="h-4 w-4" />
+                        </button>
                         <button
                           className="p-2 text-blue-500 hover:bg-blue-50 rounded-md transition-all duration-300"
                           onClick={(e) => {
