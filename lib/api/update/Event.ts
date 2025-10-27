@@ -65,6 +65,7 @@ export async function UpdateGettingStarted(eventId: string, isGS: boolean) {
 
 export async function UpdateArchive(eventId: string, isArchived: boolean) {
   revalidatePath("event/");
+  revalidatePath("/home");
   return await prisma.event.update({
     where: {
       id: eventId,

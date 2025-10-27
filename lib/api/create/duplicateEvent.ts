@@ -5,6 +5,7 @@ import { SyncLocations, UpdateGettingStarted, UpdateCampusChristmas } from "../u
 import { GetEventLocationInfo } from "../read/GetEventLocationInfo";
 import SaveState from "../update/ReactFlowSave";
 import { EventWithLocationIds } from "@/types/Event";
+import { revalidatePath } from "next/cache";
 
 /**
  * Duplicates an event with all its locations and node states
@@ -66,6 +67,9 @@ export async function duplicateEvent(
   // The new event's archive status is determined by the options parameter
   // By default it's false (not archived) since newly created events start as isArchived: false
   // If you want to explicitly set it, you can add UpdateArchive call here
+
+  // Revalidate the home page to show the new event
+  revalidatePath("/home");
 
   return newEvent;
 }

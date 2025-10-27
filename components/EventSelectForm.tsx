@@ -54,6 +54,7 @@ export default function EventSelectForm({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
   const [insertDialogOpen, setInsertDialogOpen] = useState(false);
+  const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
   const [eventToCreate, setEventToCreate] = useState<string>("");
   const [dropdownEvents, setDropdownEvents] = useState<Event[]>(events);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -63,6 +64,10 @@ export default function EventSelectForm({
     type: "event" | "location";
   }>();
   const [eventToArchive, setEventToArchive] = useState<{
+    entity: Event;
+    type: "event";
+  }>();
+  const [eventToDuplicate, setEventToDuplicate] = useState<{
     entity: Event;
     type: "event";
   }>();
@@ -87,12 +92,11 @@ export default function EventSelectForm({
   }
 
   async function duplicateEvent(id: string) {
-    const eventToCopy = events.find((e) => e.id === id);
-    if (!eventToCopy) return;
+    const eventToDup = events.find((e) => e.id === id);
+    if (!eventToDup) return;
 
     // Use the shared utility function
-    const newEvent = await duplicateEventUtil(eventToCopy);
-
+    const newEvent = await duplicateEventUtil(eventToDup);
     setDropdownEvents([...dropdownEvents, newEvent]);
     setEventId(newEvent.id);
     setSelectedEventLocations([]);
@@ -170,9 +174,9 @@ export default function EventSelectForm({
                       <Button
                         size="small"
                         sx={{ color: muiTheme.palette.lightblue.main }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          duplicateEvent(event.id);
+                        onClick={() => {
+                          setDuplicateDialogOpen(true);
+                          setEventToDuplicate({ entity: event, type: "event" });
                         }}
                       >
                         <CopyPlus />
@@ -329,6 +333,30 @@ export default function EventSelectForm({
               </AlertDialogAction>
             </AlertDialogFooter>
           </form>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={duplicateDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Duplicate Event</AlertDialogTitle>
+            <AlertDialogDescription>
+              {`Are you sure you want to duplicate "${eventToDuplicate?.entity.name}"?`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDuplicateDialogOpen(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                duplicateEvent(eventToDuplicate!.entity.id);
+                setDuplicateDialogOpen(false);
+              }}
+            >
+              Confirm
+            </AlertDialogAction>
+          </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 

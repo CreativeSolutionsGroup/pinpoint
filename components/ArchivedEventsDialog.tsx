@@ -34,6 +34,7 @@ export default function ArchivedEventsDialog({ open, onOpenChange }: ArchivedEve
   const [archivedEvents, setArchivedEvents] = useState<EventWithLocationIds[]>([]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [unarchiveDialogOpen, setUnarchiveDialogOpen] = useState(false);
+  const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<EventWithLocationIds | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -140,7 +141,7 @@ export default function ArchivedEventsDialog({ open, onOpenChange }: ArchivedEve
                           onClick={(e) => {
                             e.stopPropagation();
                             setSelectedEvent(event);
-                            duplicateEvent(event);
+                            setDuplicateDialogOpen(true);
                           }}
                           title="Copy Event"
                         >
@@ -237,6 +238,33 @@ export default function ArchivedEventsDialog({ open, onOpenChange }: ArchivedEve
                 className="bg-red-500 hover:bg-red-600"
               >
                 Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Duplicate Confirmation Dialog */}
+        <AlertDialog open={duplicateDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Duplicate Event</AlertDialogTitle>
+              <AlertDialogDescription>
+                {`Are you sure you want to duplicate "${selectedEvent?.name}"?`}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setDuplicateDialogOpen(false)}>
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={async () => {
+                  if (selectedEvent) {
+                    await duplicateEvent(selectedEvent);
+                    setDuplicateDialogOpen(false);
+                  }
+                }}
+              >
+                Confirm
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
