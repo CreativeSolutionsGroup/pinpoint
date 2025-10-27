@@ -18,5 +18,6 @@ export type EventWithLocations = {
 export interface EventWithLocationIds extends Event {
   locations: Array<{
     id: string;
+    locationId: string;
   }>;
 }

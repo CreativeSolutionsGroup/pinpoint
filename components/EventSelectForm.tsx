@@ -35,7 +35,12 @@ import CreateEvent from "@/lib/api/create/createEvent";
 import DeleteEntity from "@/lib/api/delete/DeleteEntity";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
+import { CopyPlus, Archive } from "lucide-react";
 import { EventWithLocationIds } from "@/types/Event";
+import {
+  UpdateArchive,
+} from "@/lib/api/update/Event";
+import { duplicateEvent as duplicateEventUtil } from "@/lib/api/create/duplicateEvent";
 
 export default function EventSelectForm({
   events,
@@ -47,7 +52,9 @@ export default function EventSelectForm({
   const [eventId, setEventId] = useState("");
   const [locationAdderOpen, setLocationAdderOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
   const [insertDialogOpen, setInsertDialogOpen] = useState(false);
+  const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
   const [eventToCreate, setEventToCreate] = useState<string>("");
   const [dropdownEvents, setDropdownEvents] = useState<Event[]>(events);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -55,6 +62,14 @@ export default function EventSelectForm({
   const [entityToDelete, setEntityToDelete] = useState<{
     entity: Event | Location;
     type: "event" | "location";
+  }>();
+  const [eventToArchive, setEventToArchive] = useState<{
+    entity: Event;
+    type: "event";
+  }>();
+  const [eventToDuplicate, setEventToDuplicate] = useState<{
+    entity: Event;
+    type: "event";
   }>();
   const [selectedEventLocations, setSelectedEventLocations] = useState<
     Location[]
@@ -74,6 +89,28 @@ export default function EventSelectForm({
     setDropdownEvents([...dropdownEvents, event]);
     setEventId(event.id);
     setSelectedEventLocations([]);
+  }
+
+  async function duplicateEvent(id: string) {
+    const eventToDup = events.find((e) => e.id === id);
+    if (!eventToDup) return;
+
+    // Use the shared utility function
+    const newEvent = await duplicateEventUtil(eventToDup);
+    setDropdownEvents([...dropdownEvents, newEvent]);
+    setEventId(newEvent.id);
+    setSelectedEventLocations([]);
+    router.push(`/home/event/${newEvent.id}`);
+  }
+
+  async function archiveEvent(id: string) {
+    setArchiveDialogOpen(false);
+    
+    // Archive the event in the database
+    await UpdateArchive(id, true);
+
+    // Remove the event from the dropdown list
+    setDropdownEvents(dropdownEvents.filter((e) => e.id !== id));
   }
 
   function deleteLocation(id: string, eventId: string) {
@@ -133,17 +170,39 @@ export default function EventSelectForm({
                 <div className="flex flex-row items-center justify-between w-full">
                   <Typography fontSize={15}>{event.name}</Typography>
                   {canEdit && (
-                    <Button
-                      color="warning"
-                      size="small"
-                      className="ml-2"
-                      onClick={() => {
-                        setDeleteDialogOpen(true);
-                        setEntityToDelete({ entity: event, type: "event" });
-                      }}
-                    >
-                      <RemoveIcon />
-                    </Button>
+                    <div className="flex flex-row items-center ml-auto">
+                      <Button
+                        size="small"
+                        sx={{ color: muiTheme.palette.lightblue.main }}
+                        onClick={() => {
+                          setDuplicateDialogOpen(true);
+                          setEventToDuplicate({ entity: event, type: "event" });
+                        }}
+                      >
+                        <CopyPlus />
+                      </Button>
+                      <Button
+                        size="small"
+                        className="ml-2"
+                        sx={{ color: muiTheme.palette.lightblue.main }}
+                        onClick={() => {
+                          setArchiveDialogOpen(true);
+                          setEventToArchive({ entity: event, type: "event" });
+                        }}
+                      >
+                        <Archive />
+                      </Button>
+                      <Button
+                        color="warning"
+                        size="small"
+                        onClick={() => {
+                          setDeleteDialogOpen(true);
+                          setEntityToDelete({ entity: event, type: "event" });
+                        }}
+                      >
+                        <RemoveIcon />
+                      </Button>
+                    </div>
                   )}
                 </div>
               </MenuItem>
@@ -217,6 +276,29 @@ export default function EventSelectForm({
         </AlertDialogContent>
       </AlertDialog>
 
+      <AlertDialog open={archiveDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Archive Event</AlertDialogTitle>
+            <AlertDialogDescription>
+              {`Are you sure you want to archive "${eventToArchive?.entity.name}"?`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setArchiveDialogOpen(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                archiveEvent(eventToArchive!.entity.id);
+              }}
+            >
+              Confirm
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <AlertDialog open={insertDialogOpen}>
         <AlertDialogContent>
           <form
@@ -251,6 +333,30 @@ export default function EventSelectForm({
               </AlertDialogAction>
             </AlertDialogFooter>
           </form>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={duplicateDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Duplicate Event</AlertDialogTitle>
+            <AlertDialogDescription>
+              {`Are you sure you want to duplicate "${eventToDuplicate?.entity.name}"?`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDuplicateDialogOpen(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                duplicateEvent(eventToDuplicate!.entity.id);
+                setDuplicateDialogOpen(false);
+              }}
+            >
+              Confirm
+            </AlertDialogAction>
+          </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 

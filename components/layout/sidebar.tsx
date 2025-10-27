@@ -8,6 +8,7 @@ import Image from "next/image";
 import Logo from "@/public/pinpoint-logo-color.png";
 import { getRecents } from "@/lib/recents/read";
 import Link from "next/link";
+import ArchivedEventsButton from "./ArchivedEventsButton";
 
 export default async function Sidebar() {
   const session = await getServerSession();
@@ -47,6 +48,7 @@ export default async function Sidebar() {
         ))}
       </div>
       <div className="grow"></div>
+      <ArchivedEventsButton />
       <div className="flex items-center mx-2 mb-1 bg-sidebar hover:bg-secondary transition-colors rounded-md cursor-pointer">
         <span className="text-sm font-medium grow ml-2.5">Settings</span>
         <Settings2 className="h-5 w-5 text-muted-foreground mr-3.5 my-2" />
