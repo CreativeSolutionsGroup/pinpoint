@@ -6,20 +6,21 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { LucideIcon } from "lucide-react";
+
 import React, { useEffect, useState } from "react";
 import { IconButton } from "@mui/material";
 import { Button } from "@/components/ui/button";
 import { Menu as MenuIcon, X as CloseIcon } from "lucide-react";
 import { DraggableEvent } from "react-draggable";
+import { FlexibleIcon } from "@/types/IconTypes";
 import categories from "./Categories";
 import LegendItem from "./LegendItem";
 
-// Updated interface with generics
+// Updated interface with flexible icon type
 interface LegendProps {
   isGettingStarted: boolean;
   isCampusChristmas: boolean;
-  onDrop: (event: DraggableEvent, icon: LucideIcon, label: string) => void;
+  onDrop: (event: DraggableEvent, icon: FlexibleIcon, label: string) => void;
 }
 
 const Legend: React.FC<LegendProps> = ({ isGettingStarted, isCampusChristmas, onDrop }) => {
