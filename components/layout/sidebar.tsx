@@ -47,10 +47,14 @@ export default async function Sidebar() {
         ))}
       </div>
       <div className="grow"></div>
-      <div className="flex items-center mx-2 mb-1 bg-sidebar hover:bg-secondary transition-colors rounded-md cursor-pointer">
-        <a href="https://forms.office.com/r/DbgedKRdxV" target="_blank" className="text-sm font-medium grow ml-2.5">Give Feedback</a>
+      <a 
+        href="https://forms.office.com/r/DbgedKRdxV" 
+        target="_blank" 
+        className="flex items-center mx-2 mb-1 bg-sidebar hover:bg-secondary transition-colors rounded-md cursor-pointer"
+      >
+        <span className="text-sm font-medium grow ml-2.5">Give Feedback</span>
         <Bug className="h-5 w-5 text-muted-foreground mr-3.5 my-2" />
-      </div>
+      </a>
       <div className="flex items-center mx-2 mb-1 bg-sidebar hover:bg-secondary transition-colors rounded-md cursor-pointer">
         <span className="text-sm font-medium grow ml-2.5">Settings</span>
         <Settings2 className="h-5 w-5 text-muted-foreground mr-3.5 my-2" />
