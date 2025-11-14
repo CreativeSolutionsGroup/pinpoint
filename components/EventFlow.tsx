@@ -611,15 +611,21 @@ function Flow({
   }, []);
 
   /**
-   * Handle mouse down on pane for drawing
+   * Handle mouse down for drawing on overlay
    */
-  const onPaneMouseDown = useCallback(
+  const handleDrawingMouseDown = useCallback(
     (event: React.MouseEvent) => {
       if (!isEditable || activeTool === "select") return;
 
+      event.preventDefault();
+      event.stopPropagation();
+
+      const rect = reactFlowWrapper.current?.getBoundingClientRect();
+      if (!rect) return;
+
       const position = screenToFlowPosition({
-        x: event.clientX,
-        y: event.clientY,
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
       });
 
       setIsDrawing(true);
@@ -630,15 +636,20 @@ function Flow({
   );
 
   /**
-   * Handle mouse move while drawing
+   * Handle mouse move while drawing on overlay
    */
-  const onPaneMouseMove = useCallback(
+  const handleDrawingMouseMove = useCallback(
     (event: React.MouseEvent) => {
       if (!isDrawing || activeTool === "select") return;
 
+      event.preventDefault();
+
+      const rect = reactFlowWrapper.current?.getBoundingClientRect();
+      if (!rect) return;
+
       const position = screenToFlowPosition({
-        x: event.clientX,
-        y: event.clientY,
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
       });
 
       if (activeTool === "freehand") {
@@ -651,13 +662,18 @@ function Flow({
   /**
    * Handle mouse up to finish drawing
    */
-  const onPaneMouseUp = useCallback(
+  const handleDrawingMouseUp = useCallback(
     (event: React.MouseEvent) => {
       if (!isDrawing || !drawStartPos) return;
 
+      event.preventDefault();
+
+      const rect = reactFlowWrapper.current?.getBoundingClientRect();
+      if (!rect) return;
+
       const endPosition = screenToFlowPosition({
-        x: event.clientX,
-        y: event.clientY,
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
       });
 
       // Create the appropriate node based on the active tool
@@ -774,6 +790,49 @@ function Flow({
     ]
   );
 
+  /**
+   * Render preview of shape being drawn
+   */
+  const renderDrawingPreview = useCallback(() => {
+    if (!isDrawing || !drawStartPos || activeTool === "select") return null;
+
+    const viewport = rfInstance?.getViewport();
+    if (!viewport) return null;
+
+    if (activeTool === "freehand" && drawingPath.length > 1) {
+      const pathData = drawingPath
+        .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
+        .join(" ");
+
+      return (
+        <svg
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            pointerEvents: "none",
+            zIndex: 1000,
+          }}
+        >
+          <g transform={`translate(${viewport.x}, ${viewport.y}) scale(${viewport.zoom})`}>
+            <path
+              d={pathData}
+              stroke="#000000"
+              strokeWidth={2 / viewport.zoom}
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </g>
+        </svg>
+      );
+    }
+
+    return null;
+  }, [isDrawing, drawStartPos, drawingPath, activeTool, rfInstance]);
+
   // Memoize the active node context value
   const activeNodeContextValue = useMemo(
     () => ({ activeNodeId, setActiveNodeId }),
@@ -782,7 +841,7 @@ function Flow({
 
   return (
     <ActiveNodeContext.Provider value={activeNodeContextValue}>
-      <div style={{ width: "100vw", height: "100vh" }} ref={reactFlowWrapper} className="select-none">
+      <div style={{ width: "100vw", height: "100vh", position: "relative" }} ref={reactFlowWrapper} className="select-none">
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -791,11 +850,9 @@ function Flow({
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
-          onPaneMouseDown={onPaneMouseDown}
-          onPaneMouseMove={onPaneMouseMove}
-          onPaneMouseUp={onPaneMouseUp}
           zoomOnScroll={false}
           panOnScroll={false}
+          panOnDrag={activeTool === "select"}
           nodeTypes={nodeTypes}
           nodesDraggable={isEditable && activeTool === "select"}
           elementsSelectable={isEditable && activeTool === "select"}
@@ -841,6 +898,27 @@ function Flow({
             locations={eventLocations}
           />
         </ReactFlow>
+
+        {/* Drawing overlay - only shown when not in select mode */}
+        {isEditable && activeTool !== "select" && (
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              cursor: activeTool === "freehand" ? "crosshair" : "crosshair",
+              zIndex: 5,
+            }}
+            onMouseDown={handleDrawingMouseDown}
+            onMouseMove={handleDrawingMouseMove}
+            onMouseUp={handleDrawingMouseUp}
+            onMouseLeave={handleDrawingMouseUp}
+          >
+            {renderDrawingPreview()}
+          </div>
+        )}
       </div>
     </ActiveNodeContext.Provider>
   );
