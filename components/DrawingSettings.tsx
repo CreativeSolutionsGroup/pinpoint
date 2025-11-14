@@ -69,7 +69,7 @@ export default function DrawingSettings({
             <Label htmlFor={`label-${id}`}>Label</Label>
             <Input
               id={`label-${id}`}
-              value={data.label}
+              value={data.label || ""}
               onChange={handleLabelChange}
               placeholder="Enter label"
             />
@@ -80,7 +80,7 @@ export default function DrawingSettings({
               <Label htmlFor={`text-${id}`}>Text</Label>
               <Textarea
                 id={`text-${id}`}
-                value={(data as TextAnnotationData).text}
+                value={(data as TextAnnotationData).text || ""}
                 onChange={handleTextChange}
                 placeholder="Enter text"
                 rows={3}
