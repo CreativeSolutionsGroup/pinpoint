@@ -32,6 +32,10 @@ import EventMapSelect from "@components/EventMapSelect";
 import { ActiveNodeContext, IconNode } from "@components/IconNode";
 import Legend from "@components/Legend";
 import ControlButtons from "./ControlButtons";
+import DrawingToolbar, { DrawingTool } from "./DrawingToolbar";
+import { FreehandDrawingNode, FreehandDrawingData } from "./FreehandDrawingNode";
+import { ShapeNode, ShapeData } from "./ShapeNode";
+import { TextAnnotationNode, TextAnnotationData } from "./TextAnnotationNode";
 
 // Types
 import { CustomNode } from "@/types/CustomNode";
@@ -50,6 +54,9 @@ const clientId = createId();
 const nodeTypes = {
   iconNode: IconNode,
   customImageNode: CustomImageNode,
+  freehandDrawing: FreehandDrawingNode,
+  shape: ShapeNode,
+  textAnnotation: TextAnnotationNode,
 };
 
 const edgeTypes = {
@@ -200,6 +207,12 @@ function Flow({
 
   // Add state for tracking the active node
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
+
+  // Drawing tool state
+  const [activeTool, setActiveTool] = useState<DrawingTool>("select");
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [drawingPath, setDrawingPath] = useState<{ x: number; y: number }[]>([]);
+  const [drawStartPos, setDrawStartPos] = useState<{ x: number; y: number } | null>(null);
 
   /**
    * Handle keyboard shortcuts (edit mode only)
@@ -587,6 +600,180 @@ function Flow({
     [screenToFlowPosition, setNodes]
   );
 
+  /**
+   * Handle drawing tool change
+   */
+  const handleToolChange = useCallback((tool: DrawingTool) => {
+    setActiveTool(tool);
+    setIsDrawing(false);
+    setDrawingPath([]);
+    setDrawStartPos(null);
+  }, []);
+
+  /**
+   * Handle mouse down on pane for drawing
+   */
+  const onPaneMouseDown = useCallback(
+    (event: React.MouseEvent) => {
+      if (!isEditable || activeTool === "select") return;
+
+      const position = screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
+      });
+
+      setIsDrawing(true);
+      setDrawStartPos(position);
+      setDrawingPath([position]);
+    },
+    [isEditable, activeTool, screenToFlowPosition]
+  );
+
+  /**
+   * Handle mouse move while drawing
+   */
+  const onPaneMouseMove = useCallback(
+    (event: React.MouseEvent) => {
+      if (!isDrawing || activeTool === "select") return;
+
+      const position = screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
+      });
+
+      if (activeTool === "freehand") {
+        setDrawingPath((path) => [...path, position]);
+      }
+    },
+    [isDrawing, activeTool, screenToFlowPosition]
+  );
+
+  /**
+   * Handle mouse up to finish drawing
+   */
+  const onPaneMouseUp = useCallback(
+    (event: React.MouseEvent) => {
+      if (!isDrawing || !drawStartPos) return;
+
+      const endPosition = screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
+      });
+
+      // Create the appropriate node based on the active tool
+      let newNode: CustomNode | null = null;
+
+      if (activeTool === "freehand" && drawingPath.length > 1) {
+        // Convert drawing path to SVG path
+        const minX = Math.min(...drawingPath.map((p) => p.x));
+        const minY = Math.min(...drawingPath.map((p) => p.y));
+        const pathData = drawingPath
+          .map((p, i) => {
+            const x = p.x - minX;
+            const y = p.y - minY;
+            return `${i === 0 ? "M" : "L"} ${x} ${y}`;
+          })
+          .join(" ");
+
+        newNode = {
+          id: getId(),
+          type: "freehandDrawing",
+          position: { x: minX, y: minY },
+          data: {
+            label: "Drawing",
+            path: pathData,
+            color: "#000000",
+            strokeWidth: 2,
+            rotation: 0,
+          } as FreehandDrawingData,
+          dragging: false,
+          zIndex: 0,
+          selectable: true,
+          deletable: true,
+          selected: false,
+          draggable: true,
+          isConnectable: false,
+          positionAbsoluteX: minX,
+          positionAbsoluteY: minY,
+        };
+      } else if (
+        activeTool === "rectangle" ||
+        activeTool === "circle" ||
+        activeTool === "arrow"
+      ) {
+        const width = Math.abs(endPosition.x - drawStartPos.x);
+        const height = Math.abs(endPosition.y - drawStartPos.y);
+        const x = Math.min(drawStartPos.x, endPosition.x);
+        const y = Math.min(drawStartPos.y, endPosition.y);
+
+        if (width > 5 && height > 5) {
+          newNode = {
+            id: getId(),
+            type: "shape",
+            position: { x, y },
+            data: {
+              label: activeTool.charAt(0).toUpperCase() + activeTool.slice(1),
+              shapeType: activeTool,
+              color: "#000000",
+              strokeWidth: 2,
+              width,
+              height,
+              rotation: 0,
+            } as ShapeData,
+            dragging: false,
+            zIndex: 0,
+            selectable: true,
+            deletable: true,
+            selected: false,
+            draggable: true,
+            isConnectable: false,
+            positionAbsoluteX: x,
+            positionAbsoluteY: y,
+          };
+        }
+      } else if (activeTool === "text") {
+        newNode = {
+          id: getId(),
+          type: "textAnnotation",
+          position: drawStartPos,
+          data: {
+            label: "Text",
+            text: "Click to edit",
+            color: "#000000",
+            fontSize: 16,
+            rotation: 0,
+          } as TextAnnotationData,
+          dragging: false,
+          zIndex: 0,
+          selectable: true,
+          deletable: true,
+          selected: false,
+          draggable: true,
+          isConnectable: false,
+          positionAbsoluteX: drawStartPos.x,
+          positionAbsoluteY: drawStartPos.y,
+        };
+      }
+
+      if (newNode) {
+        setNodes((nds) => [...nds, newNode as CustomNode]);
+      }
+
+      // Reset drawing state
+      setIsDrawing(false);
+      setDrawingPath([]);
+      setDrawStartPos(null);
+    },
+    [
+      isDrawing,
+      drawStartPos,
+      activeTool,
+      drawingPath,
+      screenToFlowPosition,
+      setNodes,
+    ]
+  );
+
   // Memoize the active node context value
   const activeNodeContextValue = useMemo(
     () => ({ activeNodeId, setActiveNodeId }),
@@ -604,11 +791,14 @@ function Flow({
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          onPaneMouseDown={onPaneMouseDown}
+          onPaneMouseMove={onPaneMouseMove}
+          onPaneMouseUp={onPaneMouseUp}
           zoomOnScroll={false}
           panOnScroll={false}
           nodeTypes={nodeTypes}
-          nodesDraggable={isEditable}
-          elementsSelectable={isEditable}
+          nodesDraggable={isEditable && activeTool === "select"}
+          elementsSelectable={isEditable && activeTool === "select"}
           nodesConnectable={isEditable}
           className="touch-none select-none"
           selectionKeyCode={'Shift'}
@@ -628,6 +818,13 @@ function Flow({
                <Legend onDrop={onDrop} isGettingStarted={event.isGS} />
            )}
            </Panel>
+
+          {/* Drawing Toolbar */}
+          <DrawingToolbar
+            activeTool={activeTool}
+            onToolChange={handleToolChange}
+            isEditable={isEditable}
+          />
 
           {isEditable && (
             <ControlButtons
