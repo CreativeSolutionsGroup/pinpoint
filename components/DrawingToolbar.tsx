@@ -36,7 +36,10 @@ export default function DrawingToolbar({
   ];
 
   return (
-    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-white rounded-lg shadow-lg border border-gray-200 p-2 flex gap-1">
+    <div
+      className="absolute top-4 left-1/2 -translate-x-1/2 bg-white rounded-lg shadow-lg border border-gray-200 p-2 flex gap-1"
+      style={{ zIndex: 1000 }}
+    >
       <TooltipProvider>
         {tools.map((tool) => (
           <Tooltip key={tool.id}>

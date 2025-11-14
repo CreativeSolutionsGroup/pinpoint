@@ -109,14 +109,6 @@ export const FreehandDrawingNode = memo(function FreehandDrawingNode({
             strokeLinejoin="round"
           />
         </svg>
-        {data.label && (
-          <div
-            className="text-xs mt-1 text-center"
-            style={{ color: color }}
-          >
-            {data.label}
-          </div>
-        )}
       </div>
       {isEditable && (
         <DrawingSettings

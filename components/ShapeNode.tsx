@@ -183,14 +183,6 @@ export const ShapeNode = memo(function ShapeNode({
         >
           {renderShape()}
         </svg>
-        {data.label && (
-          <div
-            className="text-xs mt-1 text-center"
-            style={{ color: color, maxWidth: width }}
-          >
-            {data.label}
-          </div>
-        )}
       </div>
       {isEditable && (
         <DrawingSettings

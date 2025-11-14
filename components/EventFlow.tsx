@@ -620,12 +620,9 @@ function Flow({
       event.preventDefault();
       event.stopPropagation();
 
-      const rect = reactFlowWrapper.current?.getBoundingClientRect();
-      if (!rect) return;
-
       const position = screenToFlowPosition({
-        x: event.clientX - rect.left,
-        y: event.clientY - rect.top,
+        x: event.clientX,
+        y: event.clientY,
       });
 
       setIsDrawing(true);
@@ -644,12 +641,9 @@ function Flow({
 
       event.preventDefault();
 
-      const rect = reactFlowWrapper.current?.getBoundingClientRect();
-      if (!rect) return;
-
       const position = screenToFlowPosition({
-        x: event.clientX - rect.left,
-        y: event.clientY - rect.top,
+        x: event.clientX,
+        y: event.clientY,
       });
 
       if (activeTool === "freehand") {
@@ -668,12 +662,9 @@ function Flow({
 
       event.preventDefault();
 
-      const rect = reactFlowWrapper.current?.getBoundingClientRect();
-      if (!rect) return;
-
       const endPosition = screenToFlowPosition({
-        x: event.clientX - rect.left,
-        y: event.clientY - rect.top,
+        x: event.clientX,
+        y: event.clientY,
       });
 
       // Create the appropriate node based on the active tool
@@ -876,13 +867,6 @@ function Flow({
            )}
            </Panel>
 
-          {/* Drawing Toolbar */}
-          <DrawingToolbar
-            activeTool={activeTool}
-            onToolChange={handleToolChange}
-            isEditable={isEditable}
-          />
-
           {isEditable && (
             <ControlButtons
               undo={onUndo}
@@ -898,6 +882,13 @@ function Flow({
             locations={eventLocations}
           />
         </ReactFlow>
+
+        {/* Drawing Toolbar - outside ReactFlow with high z-index */}
+        <DrawingToolbar
+          activeTool={activeTool}
+          onToolChange={handleToolChange}
+          isEditable={isEditable}
+        />
 
         {/* Drawing overlay - only shown when not in select mode */}
         {isEditable && activeTool !== "select" && (
