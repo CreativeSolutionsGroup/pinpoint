@@ -74,6 +74,7 @@ export default function EventSelectForm({
     setDropdownEvents([...dropdownEvents, event]);
     setEventId(event.id);
     setSelectedEventLocations([]);
+    return event;
   }
 
   function deleteLocation(id: string, eventId: string) {
@@ -221,10 +222,11 @@ export default function EventSelectForm({
       <AlertDialog open={insertDialogOpen}>
         <AlertDialogContent style={{ zIndex: 1400 }}>
           <form
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault();
               if (eventToCreate) {
-                createEvent(eventToCreate);
+                const newEvent = await createEvent(eventToCreate);
+                exit(() => router.push(`/home/event/${newEvent.id}`));
               }
             }}
           >
