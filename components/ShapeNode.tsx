@@ -179,6 +179,7 @@ export const ShapeNode = memo(function ShapeNode({
         <svg
           width={width}
           height={height}
+          viewBox={`0 0 ${width} ${height}`}
           style={{ overflow: "visible" }}
         >
           {renderShape()}

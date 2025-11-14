@@ -87,6 +87,26 @@ export const FreehandDrawingNode = memo(function FreehandDrawingNode({
   const color = data.color || "#000000";
   const strokeWidth = data.strokeWidth || 2;
 
+  // Calculate bounding box from path data
+  const pathPoints = data.path.match(/[\d.]+/g)?.map(Number) || [];
+  const xCoords: number[] = [];
+  const yCoords: number[] = [];
+
+  for (let i = 0; i < pathPoints.length; i += 2) {
+    if (pathPoints[i] !== undefined) xCoords.push(pathPoints[i]);
+    if (pathPoints[i + 1] !== undefined) yCoords.push(pathPoints[i + 1]);
+  }
+
+  const minX = Math.min(...xCoords, 0);
+  const maxX = Math.max(...xCoords, 100);
+  const minY = Math.min(...yCoords, 0);
+  const maxY = Math.max(...yCoords, 100);
+
+  const width = maxX - minX + strokeWidth * 2;
+  const height = maxY - minY + strokeWidth * 2;
+  const viewBoxWidth = maxX - minX;
+  const viewBoxHeight = maxY - minY;
+
   return (
     <>
       <div
@@ -95,9 +115,9 @@ export const FreehandDrawingNode = memo(function FreehandDrawingNode({
         style={{ transform: `rotate(${data.rotation}deg)` }}
       >
         <svg
-          width="200"
-          height="200"
-          viewBox="0 0 200 200"
+          width={width}
+          height={height}
+          viewBox={`${minX} ${minY} ${viewBoxWidth} ${viewBoxHeight}`}
           style={{ overflow: "visible" }}
         >
           <path
