@@ -18,6 +18,7 @@ export interface FreehandDrawingData {
 export const FreehandDrawingNode = memo(function FreehandDrawingNode({
   data,
   id,
+  selected,
 }: NodeProps<{ data: FreehandDrawingData }>) {
   const { deleteElements, setNodes } = useReactFlow();
   const { activeNodeId, setActiveNodeId } = useContext(ActiveNodeContext);
@@ -112,7 +113,12 @@ export const FreehandDrawingNode = memo(function FreehandDrawingNode({
       <div
         className="cursor-move"
         onClick={() => isEditable && setIsOpen(true)}
-        style={{ transform: `rotate(${data.rotation}deg)` }}
+        style={{
+          transform: `rotate(${data.rotation}deg)`,
+          border: selected ? "2px dashed #3b82f6" : "2px dashed transparent",
+          padding: "2px",
+          borderRadius: "4px",
+        }}
       >
         <svg
           width={width}

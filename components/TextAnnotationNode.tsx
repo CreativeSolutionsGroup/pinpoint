@@ -20,6 +20,7 @@ export interface TextAnnotationData {
 export const TextAnnotationNode = memo(function TextAnnotationNode({
   data,
   id,
+  selected,
 }: NodeProps<{ data: TextAnnotationData }>) {
   const { deleteElements, setNodes } = useReactFlow();
   const { activeNodeId, setActiveNodeId } = useContext(ActiveNodeContext);
@@ -142,7 +143,11 @@ export const TextAnnotationNode = memo(function TextAnnotationNode({
           fontSize: `${fontSize}px`,
           fontWeight: fontWeight,
           backgroundColor: backgroundColor,
-          border: backgroundColor === "transparent" ? "none" : undefined,
+          border: selected
+            ? "2px dashed #3b82f6"
+            : backgroundColor === "transparent"
+            ? "none"
+            : undefined,
           whiteSpace: "pre-wrap",
           wordBreak: "break-word",
         }}
